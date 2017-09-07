@@ -595,8 +595,8 @@
                 <Setter Property="IconTemplate">
                     <Setter.Value>
                         <DataTemplate>
-                            <Controls:MultiFrameImage Width="32"
-                                                      Height="32" Margin="5,0,0,0"
+                            <Controls:MultiFrameImage Width="48"
+                                                      Height="48" Margin="5,0,0,0"
                                                       MultiFrameImageMode="{Binding IconScalingMode, Mode=OneWay, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Controls:MetroWindow}}}"
                                                       RenderOptions.BitmapScalingMode="{Binding IconBitmapScalingMode, Mode=OneWay, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Controls:MetroWindow}}}"
                                                       RenderOptions.EdgeMode="{Binding IconEdgeMode, Mode=OneWay, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Controls:MetroWindow}}}"
