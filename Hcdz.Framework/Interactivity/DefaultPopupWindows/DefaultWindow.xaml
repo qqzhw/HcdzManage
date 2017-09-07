@@ -1,0 +1,28 @@
+﻿<Controls:MetroWindow x:Class="Pvirtech.Framework.Interactivity.DefaultPopupWindows.DefaultWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+		 xmlns:Controls="http://metro.pvirtech.com/winfx/xaml/controls"		
+	     xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+		  xmlns:popup="clr-namespace:Pvirtech.Framework.Interactivity"
+		 BorderBrush="{DynamicResource AccentColorBrush}" x:Name="window"
+           ResizeMode="NoResize"  MinWidth="300" MinHeight="150"
+           WindowStartupLocation="CenterScreen" Topmost="{Binding Topmost}"
+         BorderThickness="1" Title="{Binding Title}"  ShowMaxRestoreButton="False" ShowMinButton="False"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+	<Controls:MetroWindow.Style>
+		<Style TargetType="{x:Type Controls:MetroWindow}" >
+            <Setter Property="SizeToContent" Value="WidthAndHeight" />
+        </Style>
+    </Controls:MetroWindow.Style>
+	<i:Interaction.Triggers>
+		<i:EventTrigger  EventName="Loaded">
+			<i:InvokeCommandAction Command="{Binding LoadedCommand}" />
+		</i:EventTrigger>
+		<popup:InteractionRequestTrigger   SourceObject="{x:Static popup:PopupWindows.SecNotificationRequest}">
+			<popup:PopupWindowAction   IsModal="False"   WindowStartupLocation="CenterScreen" CenterOverAssociatedObject="True" />
+		</popup:InteractionRequestTrigger>
+	</i:Interaction.Triggers>
+	<Grid   HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+		<ContentControl  Content="{Binding Content}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"></ContentControl>
+	</Grid>
+    
+</Controls:MetroWindow>

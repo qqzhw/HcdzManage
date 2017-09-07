@@ -3,8 +3,43 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26228.4
 MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HcdzManage", "HcdzManage\HcdzManage.csproj", "{EEF0B6E0-2232-405D-A50E-CA8999DB9FC7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hcdz.Framework", "Hcdz.Framework\Hcdz.Framework.csproj", "{0ED0A62F-34E7-45A8-9AAF-F307ECFCE255}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Modules", "Modules", "{A4EA99C8-5BA6-45F2-88D3-59048335AEA6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hcdz.ModulePcie", "Modules\Hcdz.ModulePcie\Hcdz.ModulePcie.csproj", "{70E73436-5247-4B4B-8358-F4F42399800A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pvirtech.Metro", "Pvirtech.Metro\Pvirtech.Metro.csproj", "{1A8F5E0B-5EA8-4C04-9F1B-1482D08F878A}"
+EndProject
 Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EEF0B6E0-2232-405D-A50E-CA8999DB9FC7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EEF0B6E0-2232-405D-A50E-CA8999DB9FC7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EEF0B6E0-2232-405D-A50E-CA8999DB9FC7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EEF0B6E0-2232-405D-A50E-CA8999DB9FC7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0ED0A62F-34E7-45A8-9AAF-F307ECFCE255}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0ED0A62F-34E7-45A8-9AAF-F307ECFCE255}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0ED0A62F-34E7-45A8-9AAF-F307ECFCE255}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0ED0A62F-34E7-45A8-9AAF-F307ECFCE255}.Release|Any CPU.Build.0 = Release|Any CPU
+		{70E73436-5247-4B4B-8358-F4F42399800A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{70E73436-5247-4B4B-8358-F4F42399800A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{70E73436-5247-4B4B-8358-F4F42399800A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{70E73436-5247-4B4B-8358-F4F42399800A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1A8F5E0B-5EA8-4C04-9F1B-1482D08F878A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1A8F5E0B-5EA8-4C04-9F1B-1482D08F878A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1A8F5E0B-5EA8-4C04-9F1B-1482D08F878A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1A8F5E0B-5EA8-4C04-9F1B-1482D08F878A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{70E73436-5247-4B4B-8358-F4F42399800A} = {A4EA99C8-5BA6-45F2-88D3-59048335AEA6}
 	EndGlobalSection
 EndGlobal
