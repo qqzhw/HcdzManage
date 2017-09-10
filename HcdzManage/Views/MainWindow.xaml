@@ -1,4 +1,4 @@
-﻿<Controls:MetroWindow x:Class="HcdzManage.MainWindow" 
+﻿<Controls:MetroWindow x:Class="HcdzManage.Views.MainWindow" 
                       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                       xmlns:Controls="http://metro.pvirtech.com/winfx/xaml/controls"
@@ -10,7 +10,7 @@
 					  prism:ViewModelLocator.AutoWireViewModel="True"
 					  xmlns:hcdz="clr-namespace:Pvirtech.Framework.Interactivity;assembly=Hcdz.Framework"
                       Title="{Binding Title}" TitleTemplate="{StaticResource PvirtechWindowTitle}" 
-                      MinWidth="1280"  MinHeight="768"    
+                      MinWidth="1024"  MinHeight="768"    
 					  Icon="/logo.png" IconEdgeMode="Aliased" IconScalingMode="ScaleDownLargerFrame"					 
                       FontFamily="SimHei"
                       Dialog:DialogParticipation.Register="{Binding}"
@@ -26,7 +26,7 @@
 					  TextOptions.TextFormattingMode="Display"  TextOptions.TextRenderingMode="Auto" 
 					  xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
 					  xmlns:control="clr-namespace:Hcdz.Framework.Controls;assembly=Hcdz.Framework"
-					  WindowState="Maximized" x:Name="window">	
+					  x:Name="window">	
 	<Window.Resources>
 		<ResourceDictionary>
 			<ResourceDictionary.MergedDictionaries>
@@ -116,7 +116,7 @@
 			<RowDefinition Height="Auto" />
 		</Grid.RowDefinitions>
 		<Border  x:Name="border" Height="42">
-			<ListBox Margin="45,0,0,0" BorderThickness="0" Background="Transparent"   SelectedItem="{Binding SelectedItem}"  SelectionMode="Single" VerticalAlignment="Center"   ItemsSource="{Binding SystemInfos}"   x:Name="LstBoxMore"
+			<ListBox Margin="45,0,0,0" BorderThickness="0" SelectedIndex="0" Background="Transparent"   SelectedItem="{Binding SelectedItem}"  SelectionMode="Single" VerticalAlignment="Center"   ItemsSource="{Binding SystemInfos}"   x:Name="LstBoxMore"
                       ItemContainerStyle="{StaticResource HeaderListBoxItem}" >
 				<i:Interaction.Triggers>
 					<i:EventTrigger EventName="SelectionChanged">
@@ -146,7 +146,7 @@
 			</Border.Background>
 		</Border>
 		<Rectangle x:Name="rectangle" Grid.Row="1" Height="5" Fill="#E12271ac" Margin="0"/>
-		<ContentControl  Grid.Row="2"  BorderBrush="Black" Background="Black"  />
+        <ContentControl  Grid.Row="2"  prism:RegionManager.RegionName="MainRegion"  BorderBrush="Black" Background="Black"  />
 		<StatusBar Grid.Row="3" Height="36" x:Name="statusBar">
 			<StatusBarItem Content="{Binding UserInfo.User.UserName}"></StatusBarItem>
 			<StatusBarItem  Content="{Binding UserInfo.User.DeptName,StringFormat='sad:{0}'}"></StatusBarItem>

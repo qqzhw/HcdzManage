@@ -95,13 +95,13 @@ namespace Pvirtech.Framework
 						LoadModules(modules);
 					}
                      
-                    foreach (var item in modules)
-                    {
-                       ModuleIsInUserRole(item);
-                    }                    
-                    _menuList = _menuList.OrderBy(o => o.DisplayOrder).ToList();
-                    _eventAggregator = ServiceLocator.Current.GetInstance<IEventAggregator>();
-                    _eventAggregator.GetEvent<MessageSentEvent<List<SystemInfo>>>().Publish(_menuList);
+                    //foreach (var item in modules)
+                    //{
+                    //   ModuleIsInUserRole(item);
+                    //}                    
+                    //_menuList = _menuList.OrderBy(o => o.DisplayOrder).ToList();
+                    //_eventAggregator = ServiceLocator.Current.GetInstance<IEventAggregator>();
+                    //_eventAggregator.GetEvent<MessageSentEvent<List<SystemInfo>>>().Publish(_menuList);
                 }
 			}
 			finally

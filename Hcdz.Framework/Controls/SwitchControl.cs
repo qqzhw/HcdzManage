@@ -112,8 +112,7 @@ namespace Hcdz.Framework.Controls
 			SwitchControl border = d as SwitchControl;
 			if (border.IsSelected)
 			{
-				//border.SelectedBackground = Brushes.Red;
-
+				 border.SelectedBackground = new SolidColorBrush(Color.FromRgb(34,113,172));
 			}
 		}
 

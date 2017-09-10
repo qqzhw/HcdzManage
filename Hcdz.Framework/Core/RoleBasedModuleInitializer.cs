@@ -37,9 +37,9 @@ namespace Pvirtech.Framework
 			{
 				//if (ModuleIsInUserRole(moduleInfo))
 				{
-					//moduleInstance = this.CreateModule(moduleInfo);
-					//if (moduleInstance != null)
-					//	moduleInstance.Initialize();
+					moduleInstance = this.CreateModule(moduleInfo);
+					if (moduleInstance != null)
+					  moduleInstance.Initialize();
 				}
 			}
 			catch (Exception ex)

@@ -13,16 +13,16 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace Hcdz.Framework
+namespace Hcdz.ModulePcie.Views
 {
-	/// <summary>
-	/// MainWindow.xaml 的交互逻辑
-	/// </summary>
-	public partial class MainWindow : Window
-	{
-		public MainWindow()
-		{
-			InitializeComponent();
-		}
-	}
+    /// <summary>
+    /// HardDriveView.xaml 的交互逻辑
+    /// </summary>
+    public partial class HardDriveView : UserControl
+    {
+        public HardDriveView()
+        {
+            InitializeComponent();
+        }
+    }
 }
