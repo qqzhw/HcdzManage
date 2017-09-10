@@ -146,7 +146,7 @@
 			</Border.Background>
 		</Border>
 		<Rectangle x:Name="rectangle" Grid.Row="1" Height="5" Fill="#E12271ac" Margin="0"/>
-        <ContentControl  Grid.Row="2"  prism:RegionManager.RegionName="MainRegion"  BorderBrush="Black" Background="Black"  />
+        <ContentControl  Grid.Row="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"  prism:RegionManager.RegionName="MainRegion"  BorderBrush="Black" Background="Black"  />
 		<StatusBar Grid.Row="3" Height="36" x:Name="statusBar">
 			<StatusBarItem Content="{Binding UserInfo.User.UserName}"></StatusBarItem>
 			<StatusBarItem  Content="{Binding UserInfo.User.DeptName,StringFormat='sad:{0}'}"></StatusBarItem>

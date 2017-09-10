@@ -81,6 +81,8 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Compile Include="Common\BinaryWriterExtensions.cs" />
+    <Compile Include="Common\ByteFormatter.cs" />
     <Compile Include="Common\ListDictionary.cs" />
     <Compile Include="Common\LogHelper.cs" />
     <Compile Include="Common\MvvmHelpers.cs" />
@@ -90,6 +92,7 @@
     <Compile Include="Common\UtilsHelper.cs" />
     <Compile Include="Common\WinHelper.cs" />
     <Compile Include="Common\XmlHelper.cs" />
+    <Compile Include="Controls\DiskShowControl.cs" />
     <Compile Include="Controls\SwitchControl.cs" />
     <Compile Include="Core\CollectionExtensions.cs" />
     <Compile Include="Core\DataItem.cs" />

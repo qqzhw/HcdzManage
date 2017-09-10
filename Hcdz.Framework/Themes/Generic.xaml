@@ -1,6 +1,7 @@
 <ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:metro="http://metro.pvirtech.com/winfx/xaml/controls"
     xmlns:local="clr-namespace:Hcdz.Framework.Controls">
 
 	<Style TargetType="{x:Type local:SwitchControl}">
@@ -48,4 +49,34 @@
 			</Setter.Value>
 		</Setter>
 	</Style>
+
+    <Style TargetType="{x:Type local:DiskShowControl}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type local:DiskShowControl}">
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            Margin="{TemplateBinding Margin}" CornerRadius="5" > 
+                            <Grid >
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="42"/>
+                                    <RowDefinition Height="94"/>
+                                </Grid.RowDefinitions>
+                                <Border Background="#D9EDF7">
+                                    <TextBlock Text="{TemplateBinding DiskName}" FontSize="16" Foreground="#31708F" VerticalAlignment="Center" Margin="20,0,0,0"/>
+                                </Border>
+                                <StackPanel Grid.Row="1" VerticalAlignment="Center">
+                                    <metro:MetroProgressBar  Margin="20,0,20,0" Value="{TemplateBinding Percent}" Foreground="#5DA0C7"    Background="#EDEDED" Height="32"/>
+                                    <StackPanel Orientation="Horizontal"  Margin="20,10,20,0">
+                                    <TextBlock Text="{TemplateBinding AvailableFreeSpace}" FontSize="14"  Foreground="#333333"/>
+                                    <TextBlock Margin="20,0,0,0" FontSize="14"  Foreground="#333333" Text="{TemplateBinding TotalSize}" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </Grid>
+                        </Border> 
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
 </ResourceDictionary>

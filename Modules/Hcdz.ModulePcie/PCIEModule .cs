@@ -30,6 +30,7 @@ namespace Hcdz.ModulePcie
            //  _unityContainer.RegisterTypeForNavigation<MainView>("MainView");
             _unityContainer.RegisterTypeForNavigation<HardDriveView>("HardDriveView");
             _unityContainer.RegisterTypeForNavigation<FilesView>("FilesView");
+            _unityContainer.RegisterTypeForNavigation<SettingsView>("SettingsView");
 
         }
     }

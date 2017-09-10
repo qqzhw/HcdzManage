@@ -78,6 +78,10 @@
     <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ViewModels\SettingsViewModel.cs" />
+    <Compile Include="Views\SettingsView.xaml.cs">
+      <DependentUpon>SettingsView.xaml</DependentUpon>
+    </Compile>
     <Page Include="Views\FilesView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -90,6 +94,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Compile Include="Models\DriveInfoModel.cs" />
     <Compile Include="PCIEModule .cs" />
     <Compile Include="ViewModels\FilesViewModel.cs" />
     <Compile Include="ViewModels\HardDriveViewModel.cs" />
@@ -104,6 +109,10 @@
       <DependentUpon>MainView.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="Views\SettingsView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">
@@ -137,6 +146,13 @@
       <Project>{0ED0A62F-34E7-45A8-9AAF-F307ECFCE255}</Project>
       <Name>Hcdz.Framework</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\Pvirtech.Metro\Pvirtech.Metro.csproj">
+      <Project>{1a8f5e0b-5ea8-4c04-9f1b-1482d08f878a}</Project>
+      <Name>Pvirtech.Metro</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>copy $(TargetPath)  $(SolutionDir)HcdzManage\bin\Debug\Modules</PostBuildEvent>
+  </PropertyGroup>
 </Project>

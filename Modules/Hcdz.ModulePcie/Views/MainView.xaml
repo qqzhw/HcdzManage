@@ -4,10 +4,28 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Hcdz.ModulePcie"
+        xmlns:metro="http://metro.pvirtech.com/winfx/xaml/controls"
         xmlns:prism="http://prismlibrary.com/"
          prism:ViewModelLocator.AutoWireViewModel="True"
         mc:Ignorable="d"  >
-    <Grid>
-        <Border Background="Red" Width="600" Height="400"/>
+    <Grid Width="400" Background="White">
+        <Border  Background="White" Margin="20,30,20,20" BorderThickness="1" BorderBrush="#BCE8F1"     CornerRadius="5">
+            <Grid >
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="42"/>
+                    <RowDefinition Height="94"/>
+                </Grid.RowDefinitions>
+                <Border Background="#D9EDF7">
+                    <TextBlock Text="本地磁盘(C：)" FontSize="16" Foreground="#31708F" VerticalAlignment="Center" Margin="20,0,0,0"/>
+                </Border>
+                <StackPanel Grid.Row="1" VerticalAlignment="Center">
+                    <metro:MetroProgressBar  Margin="20,0,20,0" Value="56" Foreground="#5DA0C7"    Background="#EDEDED" Height="32"/>                    
+                    <StackPanel Orientation="Horizontal"  Margin="20,10,20,0">
+                        <TextBlock Text="125.3G 可用" FontSize="14"  Foreground="#333333"/>
+                        <TextBlock Margin="20,0,0,0" FontSize="14"  Foreground="#333333" Text="共225.3G" />
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
+        </Border>
     </Grid>
 </UserControl>

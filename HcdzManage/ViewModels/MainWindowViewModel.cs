@@ -92,6 +92,13 @@ namespace HcdzManage.ViewModels
                 InitMode = InitializationMode.OnDemand,
                 IsDefaultShow = false,
             });
+            _systemInfos.Add(new SystemInfoViewModel()
+            {
+                Id = "SettingsView",
+                Title = "基本设置",
+                InitMode = InitializationMode.OnDemand,
+                IsDefaultShow = false,
+            });
         }
 
         private void RaiseCustomPopup()
