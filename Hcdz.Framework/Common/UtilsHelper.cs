@@ -17,9 +17,9 @@ namespace Pvirtech.Framework.Common
     /// </summary>
     public class UtilsHelper
     {
-      //  public static IScsClient ScsClient = ScsClientFactory.CreateClient(new ScsTcpEndPoint("127.0.0.1", 32000));
-       
-        private static char[] constant =
+		//  public static IScsClient ScsClient = ScsClientFactory.CreateClient(new ScsTcpEndPoint("127.0.0.1", 32000));
+	    public static string UploadFilePath { get; set; }
+		private static char[] constant =
        {
         '0','1','2','3','4','5','6','7','8','9'
        };
@@ -42,73 +42,14 @@ namespace Pvirtech.Framework.Common
         public static void LogTexts(string Type)
         {
             LogHelper.WriteLog(string.Format("【" + Type + "】" + "{0}" + "\r\n", DateTime.Now.ToString("HH:mm:ss.fff")));
-            //System.IO.File.AppendAllText(@"D:\LogTexts", string.Format("【" + Type + "】" + "{0}" + "\r\n", DateTime.Now.ToString("HH:mm:ss.fff")));
+          
         }
 
         public static void LogTexts(string Type,string content)
         {
             LogHelper.WriteLog(string.Format("【" + Type + "】" + "{0}" + "【{1}】" + "\r\n", content, DateTime.Now.ToString("HH:mm:ss.fff")));
-            //System.IO.File.AppendAllText(@"D:\LogTexts", string.Format("【" + Type + "】" + "{0}" + "\r\n", DateTime.Now.ToString("HH:mm:ss.fff")));
         }
-
-        public static void CopyEntity(object e1, object e2)
-        {
-            if (e1 == null || e2 == null)
-                return;
-             Type te1 = e1.GetType();
-            Type te2 = e2.GetType();
-
-            foreach (PropertyInfo source in te2.GetProperties())
-            {
-                string pName = source.Name;
-                PropertyInfo dest = te1.GetProperty(pName);
-                bool canSet = dest != null && dest.CanWrite
-                    && dest.PropertyType.IsAssignableFrom(source.PropertyType);
-                if (canSet)
-                {
-                    dest.SetValue(e1, source.GetValue(e2, null), null);
-                }
-            }
-        }
-
-
-        public static void CopyEntityAlarmInfo(object e1, object e2)
-        {
-            if (e1 == null || e2 == null)
-                return;
-            Type te1 = e1.GetType();
-            Type te2 = e2.GetType();
-
-            bool isSameAlarm = te1.GetProperty("Jqlsh").GetValue(e1, null).ToString().
-                Equals(te2.GetProperty("Jqlsh").GetValue(e2, null).ToString());
-
-            foreach (PropertyInfo source in te2.GetProperties())
-            {
-                string pName = source.Name;
-                PropertyInfo dest = te1.GetProperty(pName);
-                bool canSet = dest != null && dest.CanWrite 
-                    && dest.PropertyType.IsAssignableFrom(source.PropertyType);
-                if (canSet)
-                {
-                    if (isSameAlarm && (source.GetValue(e2, null) == null || source.GetValue(e2, null).GetType().Name.Contains("DelegateCommand")))
-                        continue;
-                    dest.SetValue(e1, source.GetValue(e2, null), null);
-                }
-            }
-        }
-
-        public static List<T> Clone<T>(List<T> old)
-        {
-            List<T> dest = new List<T>();
-            foreach (T one in old)
-            {
-                T destone = (T)Activator.CreateInstance(typeof(T));
-                CopyEntity(destone, one);
-                dest.Add(destone);
-            }
-            return dest;
-        }
-
+		 
         public static Dictionary<string, T> CopyDict<T>(Dictionary<string, T> para)
         {
             Dictionary<string, T> ones = new Dictionary<string, T>();

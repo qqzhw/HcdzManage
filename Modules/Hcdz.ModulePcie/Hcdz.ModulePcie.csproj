@@ -102,6 +102,14 @@
     <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Models\DirectoryInfoEventArgs.cs" />
+    <Compile Include="Models\DirectoryInfoExtensions.cs" />
+    <Compile Include="Models\DirectoryInfoModel.cs" />
+    <Compile Include="Models\FileHelper.cs" />
+    <Compile Include="Models\FileInfoExtensions.cs" />
+    <Compile Include="Models\PathHelper.cs" />
+    <Compile Include="Models\TimeSpanFormatter.cs" />
+    <Compile Include="ViewModels\DirectoryListModel.cs" />
     <Compile Include="ViewModels\SettingsViewModel.cs" />
     <Compile Include="Views\SettingsView.xaml.cs">
       <DependentUpon>SettingsView.xaml</DependentUpon>
