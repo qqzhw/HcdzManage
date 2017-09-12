@@ -110,7 +110,9 @@ namespace Pvirtech.Framework.Common
 
         public static XmlSerializer CreateDefaultXmlSerializer(Type type)
         {
-			if (_xmlSerializerCache.TryGetValue(type, out XmlSerializer serializer))
+            XmlSerializer serializer;
+
+            if (_xmlSerializerCache.TryGetValue(type, out serializer))
 			{
 				return serializer;
 			}

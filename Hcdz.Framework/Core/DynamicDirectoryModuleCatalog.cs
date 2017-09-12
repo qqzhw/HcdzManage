@@ -22,7 +22,7 @@ namespace Pvirtech.Framework
 
         public string ModulePath { get; set; }
         private List<SystemInfo> _menuList;
-        public List<SystemInfo> MenuList { get=>_menuList; set=>_menuList=value; }
+        public List<SystemInfo> MenuList { get { return _menuList; } set { _menuList = value; } }
 		public DynamicDirectoryModuleCatalog(string modulePath)
 		{
 			_context = SynchronizationContext.Current;            

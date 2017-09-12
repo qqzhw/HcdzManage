@@ -23,6 +23,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -96,6 +97,10 @@
     <Reference Include="Telerik.Windows.Data, Version=2017.2.503.45, Culture=neutral, PublicKeyToken=5803cfa389c90ce7, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\Libs\Telerik.Windows.Data.dll</HintPath>
+    </Reference>
+    <Reference Include="wdapi_dotnet1021, Version=10.2.1.0, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Libs\wdapi_dotnet1021.dll</HintPath>
     </Reference>
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
@@ -177,6 +182,10 @@
     <ProjectReference Include="..\..\Hcdz.Framework\Hcdz.Framework.csproj">
       <Project>{0ED0A62F-34E7-45A8-9AAF-F307ECFCE255}</Project>
       <Name>Hcdz.Framework</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Hcdz.PcieLib\Hcdz.PcieLib.csproj">
+      <Project>{bfaf95f6-c68f-4cbf-bb2e-06bbf625e907}</Project>
+      <Name>Hcdz.PcieLib</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Pvirtech.Metro\Pvirtech.Metro.csproj">
       <Project>{1a8f5e0b-5ea8-4c04-9f1b-1482d08f878a}</Project>

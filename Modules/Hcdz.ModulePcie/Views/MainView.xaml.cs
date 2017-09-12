@@ -22,7 +22,7 @@ namespace Hcdz.ModulePcie.Views
 	public partial class MainView : UserControl
 	{
         private DispatcherTimer dispatcherTimer;
-        public MainView()
+        public MainView( )
 		{
 			InitializeComponent();
             dispatcherTimer = new DispatcherTimer(DispatcherPriority.Background);

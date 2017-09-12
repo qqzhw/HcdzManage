@@ -23,9 +23,9 @@ namespace Pvirtech.Framework
 
 		public RoleBasedModuleInitializer(IServiceLocator serviceLocator, ILoggerFacade loggerFacade, IEventAggregator eventAggregator)
 		{
-			this.serviceLocator = serviceLocator ?? throw new ArgumentNullException("serviceLocator");
-			this.loggerFacade = loggerFacade ?? throw new ArgumentNullException("loggerFacade");
-			this.eventAggregator = eventAggregator ?? throw new ArgumentNullException("eventAggregator");
+			if(serviceLocator ==null)throw new ArgumentNullException("serviceLocator");
+			if(loggerFacade==null) throw new ArgumentNullException("loggerFacade");
+			 if(eventAggregator ==null) throw new ArgumentNullException("eventAggregator");
 		}
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Catches Exception to handle any exception thrown during the initialization process with the HandleModuleInitializationError method.")]
 		public void Initialize(ModuleInfo moduleInfo)

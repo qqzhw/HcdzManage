@@ -6,8 +6,8 @@
         xmlns:local="clr-namespace:Hcdz.ModulePcie"
         xmlns:metro="http://metro.pvirtech.com/winfx/xaml/controls"
         xmlns:prism="http://prismlibrary.com/"
-         prism:ViewModelLocator.AutoWireViewModel="True"
-        mc:Ignorable="d"  >
+        prism:ViewModelLocator.AutoWireViewModel="True"
+        mc:Ignorable="d" >
     <Grid Width="400" Background="White">
         <Border  Background="White" Margin="20,30,20,20" BorderThickness="1" BorderBrush="#BCE8F1"     CornerRadius="5">
             <!--<Grid >
@@ -26,11 +26,13 @@
                     </StackPanel>
                 </StackPanel>
             </Grid>-->
-			<ScrollViewer Height="76" CanContentScroll="True">
-			<TextBlock TextWrapping="Wrap" Text="全面屏是今年智能手机的发展趋势，传闻显示，iPhone X最为瞩目的，将是采用刘海造型设计的全面屏，根据爆料人士Benjamin Geskin给出的iPhone X精确的屏幕尺寸：宽为62.46mm，长为135.08mm，按照圆角对角线计算的话，屏幕尺寸为5.66英寸，按直角计算的话，大约是5.8英寸，屏幕比例大约为19.5:9。走肾大剧透！苹果iPhone X/8/Plus发布会重磅看点汇总大全
-此外，目前各方爆料源的信息都显示，苹果iPhone X将采用OLED屏幕材质，由三星供应。采用OLED屏幕的iPhone X，屏幕将比以往更薄，更省电，同时色域也会更广，视角更大，观赏效果也会更好。
-另外，根据泄露的iOS11 GM版固件代码，OLED屏幕的iPhone X将配备True Tone屏幕技术，功能是通过环境光传感器自动探测周围的光线，将屏幕的色温与亮度调整到合适的水平，固件数据显示，新iPhone的分辨率为1125 x 2436。"  Width="320"></TextBlock>
-			</ScrollViewer>
-		</Border>
+            <ListBox   x:Name="lstBxDevices"  ItemsSource="{Binding DevicesItems}" >
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Name}" />
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </Border>
     </Grid>
 </UserControl>

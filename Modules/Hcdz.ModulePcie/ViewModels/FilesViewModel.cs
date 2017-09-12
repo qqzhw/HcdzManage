@@ -45,7 +45,9 @@ namespace Hcdz.ModulePcie.ViewModels
 		{
 			if (item != null)
 			{
-				if (item.OriginalSource is FrameworkElement originalSender)
+                var originalSender = item.OriginalSource as FrameworkElement;
+
+                if (originalSender!=null)
 				{
 					var row = originalSender.ParentOfType<GridViewRow>();
 					if (row == null)
