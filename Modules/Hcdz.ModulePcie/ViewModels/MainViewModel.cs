@@ -70,12 +70,12 @@ namespace Hcdz.ModulePcie.ViewModels
 						}
 						else
 						{
-							Task.Run(() => {
-								using (var sw = new StreamWriter("D:\\ss1.txt",true))
-								{
-									sw.WriteLine(result);
-								}
-							});
+							//Task.Run(() => {
+							//	using (var sw = new StreamWriter("D:\\ss1.txt",true))
+							//	{
+							//		sw.WriteLine(result);
+							//	}
+							//});
 						}
 					}
 				}
