@@ -1,7 +1,24 @@
 ﻿<?xml version='1.0' encoding='utf-8'?>
-<SettingsFile xmlns="uri:settings" CurrentProfile="(Default)">
-  <Profiles>
-    <Profile Name="(Default)" />
-  </Profiles>
-  <Settings />
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="Hcdz.ModulePcie.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="Bar0" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Bar0</Value>
+    </Setting>
+    <Setting Name="Bar1" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Bar1</Value>
+    </Setting>
+    <Setting Name="Bar2" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Bar2</Value>
+    </Setting>
+    <Setting Name="Bar3" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="Bar4" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="Bar5" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+  </Settings>
 </SettingsFile>

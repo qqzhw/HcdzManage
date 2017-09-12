@@ -4,9 +4,12 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Hcdz.ModulePcie.Views"
+			 xmlns:prism="http://prismlibrary.com/"
+			 prism:ViewModelLocator.AutoWireViewModel="True"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
     <Grid>
-            
-    </Grid>
+		<TextBlock Text="{Binding Bar0}"/>
+		<Button Command="{Binding SaveCommand}" Width="120" Height="26"  Content="保存"/>
+	</Grid>
 </UserControl>

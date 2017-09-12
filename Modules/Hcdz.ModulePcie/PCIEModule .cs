@@ -1,4 +1,5 @@
-﻿using Hcdz.ModulePcie.Views;
+﻿using Hcdz.ModulePcie.ViewModels;
+using Hcdz.ModulePcie.Views;
 using Microsoft.Practices.Unity;
 using Prism.Modularity;
 using Prism.Regions;
@@ -22,9 +23,15 @@ namespace Hcdz.ModulePcie
         {
             _regionManager = regionManager;
             _unityContainer = unityContainer;
-        }
+			RegisterService();
+		}
 
-        public void Initialize()
+		private void RegisterService()
+		{
+			_unityContainer.RegisterType<SettingsViewModel>(new ContainerControlledLifetimeManager());
+		}
+
+		public void Initialize()
         {
             _regionManager.RegisterViewWithRegion("MainRegion", typeof(MainView));
            //  _unityContainer.RegisterTypeForNavigation<MainView>("MainView");
