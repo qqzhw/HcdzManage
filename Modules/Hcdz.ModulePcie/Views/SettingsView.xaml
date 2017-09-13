@@ -10,6 +10,6 @@
              d:DesignHeight="300" d:DesignWidth="300">
     <Grid>
 		<TextBlock Text="{Binding Bar0}"/>
-		<Button Command="{Binding SaveCommand}" Width="120" Height="26"  Content="保存"/>
+		<Button Style="{StaticResource MetroFlatButton}" Command="{Binding SaveCommand}" Width="120" Height="26"  Content="保存"/>
 	</Grid>
 </UserControl>

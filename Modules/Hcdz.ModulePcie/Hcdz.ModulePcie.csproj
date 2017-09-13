@@ -192,6 +192,12 @@
       <Name>Pvirtech.Metro</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\arrow_left_d.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\folder.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>copy $(TargetPath)  $(SolutionDir)HcdzManage\bin\Debug\Modules</PostBuildEvent>

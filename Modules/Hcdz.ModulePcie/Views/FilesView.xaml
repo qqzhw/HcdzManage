@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
 			 xmlns:prism="http://prismlibrary.com/"
+			 xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
 			 prism:ViewModelLocator.AutoWireViewModel="True"
              xmlns:Controls="http://metro.pvirtech.com/winfx/xaml/controls"
              xmlns:telerik="http://schemas.telerik.com/2008/xaml/presentation"
@@ -747,22 +748,28 @@
             <RowDefinition Height="87*"/>
         </Grid.RowDefinitions>
         <StackPanel Orientation="Horizontal">
-            <ComboBox >
-                <ComboBoxItem>sdasd</ComboBoxItem>
-                <ComboBoxItem>sdasd</ComboBoxItem>
-            </ComboBox> 
-        </StackPanel>
+			<Label Content="本地磁盘" Margin="20,0,0,0"/>
+			<ComboBox Margin="10,4,0,4" x:Name="cbxDrive"  ItemsSource="{Binding DriveInfoItems}"  telerik:StyleManager.Theme="Windows8Touch">
+				<ComboBox.ItemTemplate>
+					<DataTemplate>
+						<TextBlock Text="{Binding Name}"  FontSize="14"/>
+					</DataTemplate>
+				</ComboBox.ItemTemplate>
+				<i:Interaction.Triggers>
+					<i:EventTrigger EventName="SelectionChanged">
+						<i:InvokeCommandAction Command="{Binding SelectedLoadDirCmd}"  CommandParameter="{Binding ElementName=cbxDrive,Path=SelectedItem}"/>
+					</i:EventTrigger>
+				</i:Interaction.Triggers>
+			</ComboBox>
+			<Button Width="60" Margin="5,4" Content="新建文件夹" Style="{DynamicResource MetroFlatButton}"  Command="{Binding DataContext.ResetSeek ,RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}"
+                        IsEnabled="{Binding BtnIsEnabled}"/>
+		</StackPanel>
         <Border Grid.Row="1" Background="Orange"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch" > 
 			<telerik:RadGridView x:Name="dgInfo"  telerik:StyleManager.Theme="Windows8Touch" FontSize="14"   ShowGroupPanel="False"
-						    RowHeight="30"   GridLinesVisibility="Horizontal" TextOptions.TextFormattingMode="Display"  IsFilteringAllowed="False" ItemsSource="{Binding DirectoryItems}"  
-							 RowIndicatorVisibility="Collapsed"  FontWeight="Medium"  SelectionUnit="FullRow"  SelectionMode="Single"  RowStyle="{StaticResource normalRowStyle}" AlternateRowStyle="{StaticResource AlterrowStyle}"
-                                 IsReadOnly="True"   SelectedItem="{Binding Path=SelectedAlarm,Mode=TwoWay}"    GroupRenderMode="Flat"    AutoGenerateColumns="False"  
-                                         CanUserSortColumns="False" 	 CanUserFreezeColumns="False" AlternateRowBackground="#E6F4FF"   AlternationCount="2"     >
-				<telerik:RadGridView.SortDescriptors>
-					<telerik:SortDescriptor  SortDirection="Descending" Member="Name">
-
-					</telerik:SortDescriptor>
-				</telerik:RadGridView.SortDescriptors>
+						    RowHeight="32"   GridLinesVisibility="Horizontal" TextOptions.TextFormattingMode="Display"  IsFilteringAllowed="False" ItemsSource="{Binding DirectoryItems}"  
+							 RowIndicatorVisibility="Collapsed"  FontWeight="Medium"  SelectionUnit="FullRow"  SelectionMode="Single"     
+                                 IsReadOnly="True"   SelectedItem="{Binding Path=SelectedItem,Mode=TwoWay}"    GroupRenderMode="Flat"    AutoGenerateColumns="False"  
+                                         CanUserSortColumns="False" 	 CanUserFreezeColumns="False" AlternateRowBackground="#E6F4FF"   AlternationCount="2"     >			 
 
 				<telerik:RadGridView.ContextMenu>
 					<ContextMenu ItemsSource="{Binding Path=Menu,Mode=OneWay}"  />
@@ -773,44 +780,50 @@
 					<telerik:EventBinding Command="{Binding DataContext.DoubleClickCmd ,RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}"    EventName="MouseDoubleClick" 
                         PassEventArgsToCommand="True" />
 				</telerik:EventToCommandBehavior.EventBindings>
-				<telerik:RadGridView.Columns> 
-					<telerik:GridViewDataColumn  Header="级别"  TextAlignment="Center" Width="58" DataMemberBinding="{Binding Caselevel,Mode=TwoWay}" />
-					<telerik:GridViewDataColumn Header="接警时间" Width="156">
-						<telerik:GridViewDataColumn.CellTemplate>
-							<DataTemplate >
-								<TextBlock Text="{Binding Jjsj,StringFormat=yyyy-MM-dd HH:mm:ss}" FontWeight="SemiBold"/>
-							</DataTemplate>
-						</telerik:GridViewDataColumn.CellTemplate>
-					</telerik:GridViewDataColumn>
-					<telerik:GridViewDataColumn Header="辖区"  Width="50" HeaderTextAlignment="Justify"   DataMemberBinding="{Binding UnitName,Mode =TwoWay}" >
+				<telerik:RadGridView.Columns>
+					<telerik:GridViewDataColumn  Header="" >
 						<telerik:GridViewDataColumn.CellTemplate>
 							<DataTemplate>
-								<TextBlock Text="{Binding  Name}" Width="28" TextTrimming="None"  VerticalAlignment="Center" />
+								<Image Source="{Binding Icon}"  Width="24" Height="24"/>
 							</DataTemplate>
 						</telerik:GridViewDataColumn.CellTemplate>
 						<telerik:GridViewDataColumn.CellStyle>
 							<Style TargetType="telerik:GridViewCell">
-								<Setter  Property="HorizontalContentAlignment" Value="Stretch"/>
+								<Setter  Property="VerticalContentAlignment" Value="Stretch"/>
 							</Style>
 						</telerik:GridViewDataColumn.CellStyle>
 					</telerik:GridViewDataColumn>
-					<telerik:GridViewDataColumn Header="类别" Width="80"    DataMemberBinding="{Binding FullName}" />
-					<telerik:GridViewDataColumn Header="类型" Width="110"    DataMemberBinding="{Binding Bjlxlb}" />
-					<telerik:GridViewDataColumn Header="联系电话" HeaderTextAlignment="Center"  DataMemberBinding="{Binding lxdh}" Width="108" />
-					<telerik:GridViewDataColumn HeaderTextAlignment="Center"  TextAlignment="Center"  Header="总计时" DataMemberBinding="{Binding TotalTime}" Width="100" >
+					<telerik:GridViewDataColumn Header="文件名称"  Width="1*"    HeaderTextAlignment="Justify"   DataMemberBinding="{Binding  Name,Mode =TwoWay}"/>
+
+					<telerik:GridViewDataColumn Header="路径" Width="2*"    DataMemberBinding="{Binding FullName}" />
+					<!--<telerik:GridViewDataColumn Header="路径" Width="100"    DataMemberBinding="{Binding DirectoryName}" />-->
+					<telerik:GridViewDataColumn Header="创建时间" Width="156">
+						<telerik:GridViewDataColumn.CellTemplate>
+							<DataTemplate >
+								<TextBlock Text="{Binding CreationTime,StringFormat=yyyy-MM-dd HH:mm:ss}" FontWeight="SemiBold"/>
+							</DataTemplate>
+						</telerik:GridViewDataColumn.CellTemplate>
+					</telerik:GridViewDataColumn>
+					<telerik:GridViewDataColumn Header="更改时间" Width="156"  HeaderTextAlignment="Center" TextAlignment="Center" DataMemberBinding="{Binding LastWriteTime}">
 
 					</telerik:GridViewDataColumn>
-					<telerik:GridViewDataColumn Header="阶段计时" Width="100"  HeaderTextAlignment="Center" TextAlignment="Center" DataMemberBinding="{Binding SegmentTime}">
-
-					</telerik:GridViewDataColumn>
-
-					<telerik:GridViewDataColumn Header="事发地址" DataMemberBinding="{Binding sfdz}" TextWrapping="Wrap" Width="*" />
-					<telerik:GridViewDataColumn Header="报警内容" DataMemberBinding="{Binding bjnr}" TextWrapping="Wrap" Width="*" />
-					<telerik:GridViewDataColumn Header="报警人" DataMemberBinding="{Binding bjrxm}" Width="100" />
+					
+					<telerik:GridViewDataColumn Header="类型" DataMemberBinding="{Binding Length}" TextWrapping="Wrap" Width="80" />
+					<telerik:GridViewDataColumn Header="大小" DataMemberBinding="{Binding Length}" TextWrapping="Wrap" Width="100" />
+					 
 				</telerik:RadGridView.Columns>
 
 			</telerik:RadGridView>
 
 		</Border>
-    </Grid>
+		<Canvas Grid.Row="1">
+			<Image Canvas.Left="3" Canvas.Top="3" Source="pack://application:,,,/Hcdz.ModulePcie;component/Images/arrow_left_d.png" Width="32" Height="32">
+				<i:Interaction.Triggers>
+					<i:EventTrigger EventName="MouseLeftButtonDown">
+						<i:InvokeCommandAction Command="{Binding LoadDirCmd}" />
+					</i:EventTrigger>
+				</i:Interaction.Triggers>
+			</Image>
+		</Canvas>
+	</Grid>
 </UserControl>

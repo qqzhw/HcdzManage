@@ -62,33 +62,33 @@ namespace Hcdz.ModulePcie.ViewModels
            
             pciDevList = PCIE_DeviceList.TheDeviceList();
             queue1 = new ConcurrentQueue<byte[]>();
-            //Thread readThread = new Thread(new ThreadStart(ReadDMA));
-            //readThread.IsBackground = true;
-            //readThread.Start(); 
-            //Thread writeThread = new Thread(new ThreadStart(WriteDMA));
-            //writeThread.IsBackground = true;
-            //writeThread.Start();
-            DWORD dwStatus = pciDevList.Init();
-            if (dwStatus == (DWORD)wdc_err.WD_STATUS_SUCCESS)
-            {
-               RadDesktopAlert alert = new RadDesktopAlert();
-                alert.Content = "加载设备失败!";
-                RadWindow.Alert(new DialogParameters
-                {
-                    Content = "加载设备失败！", 
-                    DefaultPromptResultValue = "default name",
-                    Theme = new Windows8TouchTheme(),
-                      Header="提示",
-                      TopOffset=30,
-                    
-                });
-                return;
-            }
+			Thread readThread = new Thread(new ThreadStart(ReadDMA));
+			readThread.IsBackground = true;
+			readThread.Start();
+			Thread writeThread = new Thread(new ThreadStart(WriteDMA));
+			writeThread.IsBackground = true;
+			writeThread.Start();
+			//DWORD dwStatus = pciDevList.Init();
+			//if (dwStatus == (DWORD)wdc_err.WD_STATUS_SUCCESS)
+			//{
+			//   RadDesktopAlert alert = new RadDesktopAlert();
+			//    alert.Content = "加载设备失败!";
+			//    RadWindow.Alert(new DialogParameters
+			//    {
+			//        Content = "加载设备失败！", 
+			//        DefaultPromptResultValue = "default name",
+			//        Theme = new Windows8TouchTheme(),
+			//          Header="提示",
+			//          TopOffset=30,
 
-            foreach (PCIE_Device dev in pciDevList)
-                devicesItems.Add(dev); 
-      
-        }
+			//    });
+			//    return;
+			//}
+
+			//foreach (PCIE_Device dev in pciDevList)
+			//    devicesItems.Add(dev); 
+
+		}
 		private List<int> s1 = new List<int>();
 		private List<int> s2 = new List<int>();
 		private void WriteDMA()

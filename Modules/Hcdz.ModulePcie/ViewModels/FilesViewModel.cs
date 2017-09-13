@@ -34,7 +34,20 @@ namespace Hcdz.ModulePcie.ViewModels
 			_serviceLocator = serviceLocator;
 			//_directoryItems = new ObservableObject<DirectoryInfoModel>();
 			DoubleClickCmd= new DelegateCommand<MouseButtonEventArgs>(OnDoubleClickDetail);
+			LoadDirCmd = new DelegateCommand<object>(OnBackDir);
+			SelectedLoadDirCmd = new DelegateCommand<DriveInfo>(OnSelectLoadDir);
 			Initializer();
+		}
+
+		private void OnSelectLoadDir(DriveInfo drive)
+		{
+			var items=List(drive.Name);
+			DirectoryItems = new ObservableCollection<DirectoryInfoModel>(items.OrderByDescending(o=>o.IsDir));
+		}
+
+		private void OnBackDir(object obj)
+		{
+			 
 		}
 
 		/// <summary>
@@ -53,41 +66,61 @@ namespace Hcdz.ModulePcie.ViewModels
 					if (row == null)
 						return;
 				}
+				if (SelectedItem!=null)
+				{
+
+				}
 			} 
 		}
+		#region 属性
 
+		
 		private ObservableCollection<DirectoryInfoModel> _directoryItems;
 		public ObservableCollection<DirectoryInfoModel> DirectoryItems
 		{
 			get { return _directoryItems; }
 			set { SetProperty(ref _directoryItems, value); }
 		}
+		private ObservableCollection<DriveInfo>  _driveInfoItems;
+		public ObservableCollection<DriveInfo> DriveInfoItems
+		{
+			get { return _driveInfoItems; }
+			set { SetProperty(ref _driveInfoItems, value); }
+		}
+		private DirectoryInfoModel _selectedItem;
+		public DirectoryInfoModel SelectedItem
+		{
+			get { return _selectedItem; }
+			set { SetProperty(ref _selectedItem, value); }
+		}
 		public ICommand DoubleClickCmd { get; private set; }
-		 
+	    public ICommand LoadDirCmd { get; private set; }
+		public ICommand SelectedLoadDirCmd { get; private set; }
+		#endregion
 
 		private void Initializer()
 		{
+			DriveInfo[] drives = DriveInfo.GetDrives();
+			_driveInfoItems = new ObservableCollection<DriveInfo>(drives);
 			DirectoryListModel model = new DirectoryListModel();
-			_directoryItems = new ObservableCollection<DirectoryInfoModel>(List(model));
+			_directoryItems = new ObservableCollection<DirectoryInfoModel>(List());
 		}
-		public virtual List<DirectoryInfoModel> List(DirectoryListModel model)
+		public virtual List<DirectoryInfoModel> List(string path="")
 		{
-			FileSystemInfo[] dirFileitems = null;
+			 FileSystemInfo[] dirFileitems = null;
 			var list = new List<DirectoryInfoModel>();
-			if (string.IsNullOrEmpty(model.SearchDriverName))
-			{
-				DriveInfo[] drives = DriveInfo.GetDrives();
-				model.SearchDriverId = drives[0].Name;
-				DirectoryInfo dirInfo = new DirectoryInfo(model.SearchDriverId);//根目录
-				UtilsHelper.UploadFilePath = model.SearchDriverId;
+			if (string.IsNullOrEmpty(path))
+			{				
+				path= _driveInfoItems[0].Name;
+				DirectoryInfo dirInfo = new DirectoryInfo(path);//根目录				
 				dirFileitems = dirInfo.GetFileSystemInfos();
 			}
 			else
 			{
-				DirectoryInfo dirInfo = new DirectoryInfo(model.SearchDriverName);//根目录
-				UtilsHelper.UploadFilePath = model.SearchDriverName;
+				DirectoryInfo dirInfo = new DirectoryInfo(path);//根目录				 
 				dirFileitems = dirInfo.GetFileSystemInfos();
 			}
+			UtilsHelper.UploadFilePath = path;
 			foreach (var item in dirFileitems)
 			{
 				if (item is DirectoryInfo)
@@ -100,7 +133,7 @@ namespace Hcdz.ModulePcie.ViewModels
 							Root = directory.Root,
 							FullName = directory.FullName,
 							IsDir = true,
-							Icon = "folder.png",
+							Icon = "pack://application:,,,/Hcdz.ModulePcie;component/Images/folder.png",
 							Name = directory.Name,
 							Parent = directory.Parent,
 							CreationTime = directory.CreationTime,

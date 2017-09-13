@@ -14,12 +14,12 @@ namespace Hcdz.PcieLib
 {
     public class PCIE_DeviceList : ArrayList
     {
-        private string NEWAMD86_DEFAULT_LICENSE_STRING = "12345abcde12345.abcde";
+        private string   PCIE_DEFAULT_LICENSE_STRING = "12345abcde12345.abcde";
         // TODO: If you have renamed the WinDriver kernel module (windrvr6.sys),
         //  change the driver name below accordingly
-        private string NEWAMD86_DEFAULT_DRIVER_NAME = "windrvr6";
-        private DWORD NEWAMD86_DEFAULT_VENDOR_ID = 0x10EE;
-        private DWORD NEWAMD86_DEFAULT_DEVICE_ID = 0x7028;
+        private string PCIE_DEFAULT_DRIVER_NAME = "windrvr6";
+        private DWORD PCIE_DEFAULT_VENDOR_ID = 0x10EE;
+        private DWORD PCIE_DEFAULT_DEVICE_ID = 0x7028;
 
         private static PCIE_DeviceList instance;
 
@@ -36,7 +36,7 @@ namespace Hcdz.PcieLib
 
         public DWORD Init()
         {
-            if (windrvr_decl.WD_DriverName(NEWAMD86_DEFAULT_DRIVER_NAME) == null)
+            if (windrvr_decl.WD_DriverName(PCIE_DEFAULT_DRIVER_NAME) == null)
             {
                 Log.ErrLog("NEWAMD86_DeviceList.Init: Failed to set driver name for the " +
                     "WDC library.");
@@ -55,7 +55,7 @@ namespace Hcdz.PcieLib
 
             dwStatus = wdc_lib_decl.WDC_DriverOpen(
                 (WDC_DRV_OPEN_OPTIONS)wdc_lib_consts.WDC_DRV_OPEN_DEFAULT,
-                NEWAMD86_DEFAULT_LICENSE_STRING);
+			   PCIE_DEFAULT_LICENSE_STRING);
             if (dwStatus != (DWORD)wdc_err.WD_STATUS_SUCCESS)
             {
                 Log.ErrLog("NEWAMD86_DeviceList.Init: Failed to initialize the WDC library. "
@@ -87,8 +87,8 @@ namespace Hcdz.PcieLib
             DWORD dwStatus;
             WDC_PCI_SCAN_RESULT scanResult = new WDC_PCI_SCAN_RESULT();
 
-            dwStatus = wdc_lib_decl.WDC_PciScanDevices(NEWAMD86_DEFAULT_VENDOR_ID,
-                NEWAMD86_DEFAULT_DEVICE_ID, scanResult);
+            dwStatus = wdc_lib_decl.WDC_PciScanDevices(PCIE_DEFAULT_VENDOR_ID,
+			   PCIE_DEFAULT_DEVICE_ID, scanResult);
 
             if ((DWORD)wdc_err.WD_STATUS_SUCCESS != dwStatus)
             {
@@ -101,8 +101,8 @@ namespace Hcdz.PcieLib
             if (scanResult.dwNumDevices == 0)
             {
                 Log.ErrLog("NEWAMD86_DeviceList.Populate: No matching PCI " +
-                    "device was found for search criteria " + NEWAMD86_DEFAULT_VENDOR_ID.ToString("X")
-                    + ", " + NEWAMD86_DEFAULT_DEVICE_ID.ToString("X"));
+                    "device was found for search criteria " + PCIE_DEFAULT_VENDOR_ID.ToString("X")
+                    + ", " + PCIE_DEFAULT_DEVICE_ID.ToString("X"));
                 return (DWORD)wdc_err.WD_INVALID_PARAMETER;
             }
 
