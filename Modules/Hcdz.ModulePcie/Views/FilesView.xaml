@@ -750,7 +750,7 @@
         </Grid.RowDefinitions>
         <StackPanel Orientation="Horizontal" Margin="0">
 			<Label Content="本地磁盘" VerticalAlignment="Center" Margin="20,0,0,0"/>
-			<ComboBox Margin="10,4,0,4" x:Name="cbxDrive" SelectedIndex="0" Width="60"  ItemsSource="{Binding DriveInfoItems}"  telerik:StyleManager.Theme="Windows8Touch">
+			<ComboBox Margin="10,4,0,4" x:Name="cbxDrive"  SelectedIndex="{Binding SelectedIndex}" Width="60"  ItemsSource="{Binding DriveInfoItems}"  telerik:StyleManager.Theme="Windows8Touch">
 				<ComboBox.ItemTemplate>
 					<DataTemplate>
 						<TextBlock Text="{Binding Name}"  FontSize="14"/>

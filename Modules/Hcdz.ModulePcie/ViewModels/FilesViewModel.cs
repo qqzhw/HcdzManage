@@ -36,10 +36,18 @@ namespace Hcdz.ModulePcie.ViewModels
 			DoubleClickCmd= new DelegateCommand<MouseButtonEventArgs>(OnDoubleClickDetail);
 			LoadDirCmd = new DelegateCommand<object>(OnBackDir);
 			SelectedLoadDirCmd = new DelegateCommand<DriveInfo>(OnSelectLoadDir);
-			Initializer();
+            
+            LoadedCommand = new DelegateCommand<object>(OnLoad);
+
+          
 		}
 
-		private async void OnSelectLoadDir(DriveInfo drive)
+        private void OnLoad(object obj)
+        {
+            Initializer();
+        }
+
+        private async void OnSelectLoadDir(DriveInfo drive)
 		{
             IsBusy = true;
 			var items=await List(drive.Name);
@@ -92,7 +100,14 @@ namespace Hcdz.ModulePcie.ViewModels
             } 
         }
         #region 属性
-        private bool _isBusy=true;
+        private int selectedIndex;
+        public int SelectedIndex
+        {
+            get { return selectedIndex; }
+            set { SetProperty(ref selectedIndex, value); }
+        }
+        
+        private bool _isBusy=false;
         public bool IsBusy {
             get { return _isBusy; }
             set { SetProperty(ref _isBusy, value); }
@@ -118,18 +133,21 @@ namespace Hcdz.ModulePcie.ViewModels
 		public ICommand DoubleClickCmd { get; private set; }
 	    public ICommand LoadDirCmd { get; private set; }
 		public ICommand SelectedLoadDirCmd { get; private set; }
-		#endregion
+        public ICommand LoadedCommand { get; private set; }
+       
+        #endregion
 
-		private async void Initializer()
+        private async void Initializer()
 		{
             IsBusy = true;
 			DriveInfo[] drives = DriveInfo.GetDrives();
 			_driveInfoItems = new ObservableCollection<DriveInfo>(drives);
-			DirectoryListModel model = new DirectoryListModel();            
-            var items = await List();
-			DirectoryItems = new ObservableCollection<DirectoryInfoModel>(items);
-            IsBusy = false;
-		}
+			  
+           var items = await List();
+		  DirectoryItems = new ObservableCollection<DirectoryInfoModel>(items);
+          IsBusy = false;
+          
+        }
 		public async Task<List<DirectoryInfoModel>> List(string path="")
 		{ 
             FileSystemInfo[] dirFileitems = null;
