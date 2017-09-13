@@ -1,4 +1,5 @@
 ﻿using Hcdz.ModulePcie.Models;
+using Pvirtech.Framework.Common;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -78,7 +79,7 @@ namespace Hcdz.ModulePcie.ViewModels
                             try
                             {
                                 File.Delete(directoryInfoModel.FullName);
-                                Application.Current.Dispatcher.Invoke(new Action(() => {
+                                Application.Current.Dispatcher.BeginInvoke(new Action(() => {
                                     RadWindow.Alert(new DialogParameters
                                     {
                                         Content = "删除成功！",
@@ -91,9 +92,10 @@ namespace Hcdz.ModulePcie.ViewModels
                                 }));
                                
                             }                            
-                            catch (Exception)
+                            catch (Exception ex)
                             {
-                                Application.Current.Dispatcher.Invoke(new Action(() => {
+                                LogHelper.ErrorLog(ex,"删除文件");
+                                Application.Current.Dispatcher.BeginInvoke(new Action(() => {
                                     RadWindow.Alert(new DialogParameters
                                     {
                                         Content = "删除失败！",

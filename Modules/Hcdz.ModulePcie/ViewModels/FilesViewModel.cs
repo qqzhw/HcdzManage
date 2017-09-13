@@ -39,12 +39,13 @@ namespace Hcdz.ModulePcie.ViewModels
             
             LoadedCommand = new DelegateCommand<object>(OnLoad);
 
-          
-		}
+            Initializer();
+
+        }
 
         private void OnLoad(object obj)
         {
-            Initializer();
+            
         }
 
         private async void OnSelectLoadDir(DriveInfo drive)

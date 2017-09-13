@@ -771,8 +771,8 @@
 							 RowIndicatorVisibility="Collapsed"  FontWeight="Medium"  SelectionUnit="FullRow"  SelectionMode="Single"     
                                  IsReadOnly="True"   SelectedItem="{Binding Path=SelectedItem,Mode=TwoWay}"    GroupRenderMode="Flat"    AutoGenerateColumns="False"  
                                          CanUserSortColumns="False"  IsBusy="{Binding IsBusy}"	 CanUserFreezeColumns="False" AlternateRowBackground="#E6F4FF"   AlternationCount="2"   local:ContextMenuBehavior.ContextMenu="{Binding ElementName=GridContextMenu}" >
-                <telerik:RadContextMenu.ContextMenu>
-                    <telerik:RadContextMenu x:Name="GridContextMenu">
+                <telerik:RadContextMenu.ContextMenu >
+                    <telerik:RadContextMenu FontFamily="SimHei" x:Name="GridContextMenu">
                         <telerik:RadContextMenu.Items>
                             <telerik:RadMenuItem Header="新建"  />
                             <telerik:RadMenuItem Header="编辑" />

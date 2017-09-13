@@ -4,35 +4,127 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Hcdz.ModulePcie"
+        xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+        xmlns:telerik="http://schemas.telerik.com/2008/xaml/presentation"
         xmlns:metro="http://metro.pvirtech.com/winfx/xaml/controls"
-        xmlns:prism="http://prismlibrary.com/"
+        xmlns:prism="http://prismlibrary.com/" FontSize="14"
         prism:ViewModelLocator.AutoWireViewModel="True"
         mc:Ignorable="d" >
-    <Grid Width="400" Background="White">
-        <Border  Background="White" Margin="20,30,20,20" BorderThickness="1" BorderBrush="#BCE8F1"     CornerRadius="5">
-            <!--<Grid >
+    <WrapPanel  VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Background="White">
+        <Border   Margin="20"     BorderThickness="1" BorderBrush="#BCE8F1"     CornerRadius="5">
+            <Grid MinHeight="150" Margin="10" >
                 <Grid.RowDefinitions>
                     <RowDefinition Height="42"/>
-                    <RowDefinition Height="94"/>
+                    <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
                 <Border Background="#D9EDF7">
-                    <TextBlock Text="本地磁盘(C：)" FontSize="16" Foreground="#31708F" VerticalAlignment="Center" Margin="20,0,0,0"/>
+                    <TextBlock Text="板卡1 (10EE,7028)" FontSize="16" Foreground="#31708F" VerticalAlignment="Center" Margin="20,0,0,0"/>
                 </Border>
-                <StackPanel Grid.Row="1" VerticalAlignment="Center">
-                    <metro:MetroProgressBar  Margin="20,0,20,0" Value="56" Foreground="#5DA0C7"    Background="#EDEDED" Height="32"/>                    
-                    <StackPanel Orientation="Horizontal"  Margin="20,10,20,0">
-                        <TextBlock Text="125.3G 可用" FontSize="14"  Foreground="#333333"/>
-                        <TextBlock Margin="20,0,0,0" FontSize="14"  Foreground="#333333" Text="共225.3G" />
+                <Border Grid.Row="1" BorderBrush="#D9EDF7" BorderThickness="1">
+                <StackPanel  VerticalAlignment="Center" Margin="5,10,5,10">
+                    <StackPanel Orientation="Horizontal" >
+                        <Label Content="磁盘目录"  VerticalAlignment="Center" Margin="10,0,0,0"/>
+                        <ComboBox Margin="2,0,0,0" x:Name="cbxDrive" Height="20"  SelectedIndex="{Binding SelectedIndex}" Width="50"  ItemsSource="{Binding DriveInfoItems}"  telerik:StyleManager.Theme="Windows8Touch">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Name}"  FontSize="14"/>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                            <i:Interaction.Triggers>
+                                <i:EventTrigger EventName="SelectionChanged">
+                                    <i:InvokeCommandAction Command="{Binding SelectedLoadDirCmd}"  CommandParameter="{Binding ElementName=cbxDrive,Path=SelectedItem}"/>
+                                </i:EventTrigger>
+                            </i:Interaction.Triggers>
+                        </ComboBox>
+
+                        <Label Content="DMA大小" VerticalAlignment="Center" Margin="20,0,0,0"/>
+                        <ComboBox Margin="2,0,0,0" x:Name="cbxDma" Height="20"  SelectedIndex="{Binding SelectedIndex}" Width="80"  ItemsSource="{Binding DriveInfoItems}"  telerik:StyleManager.Theme="Windows8Touch">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Name}"  FontSize="14"/>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                            <i:Interaction.Triggers>
+                                <i:EventTrigger EventName="SelectionChanged">
+                                    <i:InvokeCommandAction Command="{Binding SelectedLoadDirCmd}"  CommandParameter="{Binding ElementName=cbxDrive,Path=SelectedItem}"/>
+                                </i:EventTrigger>
+                            </i:Interaction.Triggers>
+                        </ComboBox>
+
+                        <Button HorizontalAlignment="Right" Margin="20,0,0,0" Width="60"  Content="开始" Style="{DynamicResource MetroFlatButton}"  Command="{Binding DataContext.ResetSeek ,RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}"
+                        IsEnabled="{Binding BtnIsEnabled}"/>
+                        <Button HorizontalAlignment="Right" Margin="20,0,0,0" Width="60"  Content="停止" Style="{DynamicResource MetroFlatButton}"  Command="{Binding DataContext.ResetSeek ,RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}"
+                        IsEnabled="{Binding BtnIsEnabled}"/>
+                    </StackPanel>
+                    <metro:MetroProgressBar  Margin="15,10,0,0" Value="56" Foreground="#5DA0C7"    Background="#EDEDED" Height="32"/>                    
+                    <StackPanel Orientation="Horizontal"  Margin="15,2,20,0">
+                        <TextBlock Text="传输速率：" FontSize="14"  Foreground="#333333"/>
+                        <TextBlock Margin="2,0,0,0" FontSize="14"  Foreground="#333333" Text="2.3GB/s" />
                     </StackPanel>
                 </StackPanel>
-            </Grid>-->
-            <ListBox   x:Name="lstBxDevices"  ItemsSource="{Binding DevicesItems}" >
+                </Border>
+            </Grid>
+            <!--<ListBox   x:Name="lstBxDevices"  ItemsSource="{Binding DevicesItems}" >
                 <ListBox.ItemTemplate>
                     <DataTemplate>
                         <TextBlock Text="{Binding Name}" />
                     </DataTemplate>
                 </ListBox.ItemTemplate>
-            </ListBox>
+            </ListBox>-->
         </Border>
-    </Grid>
+        <Border   Margin="20"     BorderThickness="1" BorderBrush="#BCE8F1"     CornerRadius="5">
+            <Grid MinHeight="150" Margin="10" >
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="42"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Border Background="#D9EDF7">
+                    <TextBlock Text="板卡2 (10EE,7028)" FontSize="16" Foreground="#31708F" VerticalAlignment="Center" Margin="20,0,0,0"/>
+                </Border>
+                <Border Grid.Row="1" BorderBrush="#D9EDF7" BorderThickness="1">
+                    <StackPanel  VerticalAlignment="Center" Margin="5,10,5,10">
+                        <StackPanel Orientation="Horizontal" >
+                            <Label Content="磁盘目录"  VerticalAlignment="Center" Margin="10,0,0,0"/>
+                            <ComboBox Margin="2,0,0,0" x:Name="cbxDrive1" Height="20"  SelectedIndex="{Binding SelectedIndex}" Width="50"  ItemsSource="{Binding DriveInfoItems}"  telerik:StyleManager.Theme="Windows8Touch">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Name}"  FontSize="14"/>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                                <i:Interaction.Triggers>
+                                    <i:EventTrigger EventName="SelectionChanged">
+                                        <i:InvokeCommandAction Command="{Binding SelectedLoadDirCmd}"  CommandParameter="{Binding ElementName=cbxDrive,Path=SelectedItem}"/>
+                                    </i:EventTrigger>
+                                </i:Interaction.Triggers>
+                            </ComboBox>
+
+                            <Label Content="DMA大小" VerticalAlignment="Center" Margin="20,0,0,0"/>
+                            <ComboBox Margin="2,0,0,0" x:Name="cbxDma1" Height="20"  SelectedIndex="{Binding SelectedIndex}" Width="80"  ItemsSource="{Binding DriveInfoItems}"  telerik:StyleManager.Theme="Windows8Touch">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Name}"  FontSize="14"/>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                                <i:Interaction.Triggers>
+                                    <i:EventTrigger EventName="SelectionChanged">
+                                        <i:InvokeCommandAction Command="{Binding SelectedLoadDirCmd}"  CommandParameter="{Binding ElementName=cbxDrive,Path=SelectedItem}"/>
+                                    </i:EventTrigger>
+                                </i:Interaction.Triggers>
+                            </ComboBox>
+
+                            <Button HorizontalAlignment="Right" Margin="20,0,0,0" Width="60"  Content="开始" Style="{DynamicResource MetroFlatButton}"  Command="{Binding DataContext.ResetSeek ,RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}"
+                        IsEnabled="{Binding BtnIsEnabled}"/>
+                            <Button HorizontalAlignment="Right" Margin="20,0,0,0" Width="60"  Content="停止" Style="{DynamicResource MetroFlatButton}"  Command="{Binding DataContext.ResetSeek ,RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}"
+                        IsEnabled="{Binding BtnIsEnabled}"/>
+                        </StackPanel>
+                        <metro:MetroProgressBar  Margin="15,10,0,0" Value="56" Foreground="#5DA0C7"    Background="#EDEDED" Height="32"/>
+                        <StackPanel Orientation="Horizontal"  Margin="15,2,20,0">
+                            <TextBlock Text="传输速率：" FontSize="14"  Foreground="#333333"/>
+                            <TextBlock Margin="2,0,0,0" FontSize="14"  Foreground="#333333" Text="2.3GB/s" />
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </Grid> 
+        </Border>
+    </WrapPanel>
 </UserControl>

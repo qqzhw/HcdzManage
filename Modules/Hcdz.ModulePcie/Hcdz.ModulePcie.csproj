@@ -116,6 +116,7 @@
     <Compile Include="Models\TimeSpanFormatter.cs" />
     <Compile Include="ViewModels\ContextMenuBehavior.cs" />
     <Compile Include="ViewModels\DirectoryListModel.cs" />
+    <Compile Include="ViewModels\PcieViewModel.cs" />
     <Compile Include="ViewModels\SettingsViewModel.cs" />
     <Compile Include="Views\SettingsView.xaml.cs">
       <DependentUpon>SettingsView.xaml</DependentUpon>
