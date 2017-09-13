@@ -39,43 +39,65 @@ namespace Hcdz.ModulePcie.ViewModels
 			Initializer();
 		}
 
-		private void OnSelectLoadDir(DriveInfo drive)
+		private async void OnSelectLoadDir(DriveInfo drive)
 		{
-			var items=List(drive.Name);
+            IsBusy = true;
+			var items=await List(drive.Name);
 			DirectoryItems = new ObservableCollection<DirectoryInfoModel>(items.OrderByDescending(o=>o.IsDir));
-		}
+            IsBusy = false;
+        }
 
-		private void OnBackDir(object obj)
+		private async void OnBackDir(object obj)
 		{
-			 
-		}
+            if (string.IsNullOrEmpty(UtilsHelper.UploadFilePath))
+            {
+                return;
+            }
+            var index = UtilsHelper.UploadFilePath.LastIndexOf("\\");
+            if (index < 0)
+                return;
+            var parentPath = UtilsHelper.UploadFilePath.Substring(0, index);
+            IsBusy = true;
+            var items =await List(parentPath);
+            DirectoryItems = new ObservableCollection<DirectoryInfoModel>(items.OrderByDescending(o => o.IsDir));
+            IsBusy = false;
+    }
 
-		/// <summary>
-		/// 双击查看详细
-		/// </summary>
-		/// <param name="obj"></param>
-		private void OnDoubleClickDetail(MouseButtonEventArgs item)
-		{
-			if (item != null)
-			{
+        /// <summary>
+        /// 双击查看详细
+        /// </summary>
+        /// <param name="obj"></param>
+        private async void OnDoubleClickDetail(MouseButtonEventArgs item)
+        {
+            if (item != null)
+            {
                 var originalSender = item.OriginalSource as FrameworkElement;
 
-                if (originalSender!=null)
-				{
-					var row = originalSender.ParentOfType<GridViewRow>();
-					if (row == null)
-						return;
-				}
-				if (SelectedItem!=null)
-				{
-
-				}
-			} 
-		}
-		#region 属性
-
-		
-		private ObservableCollection<DirectoryInfoModel> _directoryItems;
+                if (originalSender != null)
+                {
+                    var row = originalSender.ParentOfType<GridViewRow>();
+                    if (row == null)
+                        return;
+                }
+                if (SelectedItem != null)
+                {
+                    if (!SelectedItem.IsDir)
+                        return;
+                    IsBusy = true;
+                    var items = await List(SelectedItem.FullName);
+                    DirectoryItems = new ObservableCollection<DirectoryInfoModel>(items.OrderByDescending(o => o.IsDir));
+                    // UtilsHelper.UploadFilePath = SelectedItem.FullName;
+                    IsBusy = false;
+                }
+            } 
+        }
+        #region 属性
+        private bool _isBusy=true;
+        public bool IsBusy {
+            get { return _isBusy; }
+            set { SetProperty(ref _isBusy, value); }
+        }
+        private ObservableCollection<DirectoryInfoModel> _directoryItems;
 		public ObservableCollection<DirectoryInfoModel> DirectoryItems
 		{
 			get { return _directoryItems; }
@@ -98,79 +120,86 @@ namespace Hcdz.ModulePcie.ViewModels
 		public ICommand SelectedLoadDirCmd { get; private set; }
 		#endregion
 
-		private void Initializer()
+		private async void Initializer()
 		{
+            IsBusy = true;
 			DriveInfo[] drives = DriveInfo.GetDrives();
 			_driveInfoItems = new ObservableCollection<DriveInfo>(drives);
-			DirectoryListModel model = new DirectoryListModel();
-			_directoryItems = new ObservableCollection<DirectoryInfoModel>(List());
+			DirectoryListModel model = new DirectoryListModel();            
+            var items = await List();
+			DirectoryItems = new ObservableCollection<DirectoryInfoModel>(items);
+            IsBusy = false;
 		}
-		public virtual List<DirectoryInfoModel> List(string path="")
-		{
-			 FileSystemInfo[] dirFileitems = null;
+		public async Task<List<DirectoryInfoModel>> List(string path="")
+		{ 
+            FileSystemInfo[] dirFileitems = null;
 			var list = new List<DirectoryInfoModel>();
-			if (string.IsNullOrEmpty(path))
-			{				
-				path= _driveInfoItems[0].Name;
-				DirectoryInfo dirInfo = new DirectoryInfo(path);//根目录				
-				dirFileitems = dirInfo.GetFileSystemInfos();
-			}
-			else
-			{
-				DirectoryInfo dirInfo = new DirectoryInfo(path);//根目录				 
-				dirFileitems = dirInfo.GetFileSystemInfos();
-			}
-			UtilsHelper.UploadFilePath = path;
-			foreach (var item in dirFileitems)
-			{
-				if (item is DirectoryInfo)
-				{
-					var directory = item as DirectoryInfo;
-					if ((directory.Attributes & FileAttributes.Hidden) != FileAttributes.Hidden && (directory.Attributes & FileAttributes.System) != FileAttributes.System)
-					{
-						list.Add(new DirectoryInfoModel()
-						{
-							Root = directory.Root,
-							FullName = directory.FullName,
-							IsDir = true,
-							Icon = "pack://application:,,,/Hcdz.ModulePcie;component/Images/folder.png",
-							Name = directory.Name,
-							Parent = directory.Parent,
-							CreationTime = directory.CreationTime,
-							Exists = directory.Exists,
-							Extension = directory.Extension,
-							LastAccessTime = directory.LastAccessTime,
-							LastWriteTime = directory.LastWriteTime.ToString("yyyy-MM-dd HH:mm:ss"),
-						});
-					}
-				}
-				else if (item is FileInfo)
-				{
-					var file = item as FileInfo;
-					if ((file.Attributes & FileAttributes.Hidden) != FileAttributes.Hidden && (file.Attributes & FileAttributes.System) != FileAttributes.System)
-					{
-						list.Add(new DirectoryInfoModel()
-						{
+              await Task.Run(() =>
+            {
+                if (string.IsNullOrEmpty(path))
+                {
+                    path = _driveInfoItems[0].Name;
+                    DirectoryInfo dirInfo = new DirectoryInfo(path);//根目录				
+                    dirFileitems = dirInfo.GetFileSystemInfos();
+                }
+                else
+                {
+                    DirectoryInfo dirInfo = new DirectoryInfo(path);//根目录				 
+                    dirFileitems = dirInfo.GetFileSystemInfos();
+                }
+                UtilsHelper.UploadFilePath = path;
+                foreach (var item in dirFileitems)
+                {
+                    if (item is DirectoryInfo)
+                    {
+                        var directory = item as DirectoryInfo;
+                        if ((directory.Attributes & FileAttributes.Hidden) != FileAttributes.Hidden && (directory.Attributes & FileAttributes.System) != FileAttributes.System)
+                        {
+                            list.Add(new DirectoryInfoModel()
+                            {
+                                Root = directory.Root,
+                                FullName = directory.FullName,
+                                IsDir = true,
+                                Icon = "pack://application:,,,/Hcdz.ModulePcie;component/Images/folder.png",
+                                Name = directory.Name,
+                                Parent = directory.Parent,
+                                CreationTime = directory.CreationTime,
+                                Exists = directory.Exists,
+                                Extension = directory.Extension,
+                                LastAccessTime = directory.LastAccessTime,
+                                LastWriteTime = directory.LastWriteTime.ToString("yyyy-MM-dd HH:mm:ss"),
+                            });
+                        }
+                    }
+                    else if (item is FileInfo)
+                    {
+                        var file = item as FileInfo;
+                        if ((file.Attributes & FileAttributes.Hidden) != FileAttributes.Hidden && (file.Attributes & FileAttributes.System) != FileAttributes.System)
+                        {
+                            list.Add(new DirectoryInfoModel()
+                            {
+                                FullName = file.FullName,
+                                // FullPath=file.FullPath
+                                IsDir = false,
+                                Name = file.Name,
+                                CreationTime = file.CreationTime,
+                                Exists = file.Exists,
+                                Extension = file.Extension,
+                                LastAccessTime = file.LastAccessTime,
+                                LastWriteTime = file.LastWriteTime.ToString("yyyy-MM-dd HH:mm:ss"),
+                                IsReadOnly = file.IsReadOnly,
+                                //Directory = file.Directory,
+                                DirectoryName = file.DirectoryName,
+                                LengthText= ByteFormatter.ToString(file.Length),
+                                Length =file. Length
+                            });
+                        }
 
-							FullName = file.FullName,
-							// FullPath=file.FullPath
-							IsDir = false,
-							Name = file.Name,
-							CreationTime = file.CreationTime,
-							Exists = file.Exists,
-							Extension = file.Extension,
-							LastAccessTime = file.LastAccessTime,
-							LastWriteTime = file.LastWriteTime.ToString("yyyy-MM-dd HH:mm:ss"),
-							IsReadOnly = file.IsReadOnly,
-							Directory = file.Directory,
-							DirectoryName = file.DirectoryName,
-							Length = file.Length,
-						});
-					}
-
-				}
-			}
-			return list;
+                    }
+                }
+                return list;
+            });            
+            return list;
 		}
 	}
 }

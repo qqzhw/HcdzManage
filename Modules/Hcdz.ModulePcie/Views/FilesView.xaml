@@ -9,6 +9,7 @@
              xmlns:Controls="http://metro.pvirtech.com/winfx/xaml/controls"
              xmlns:telerik="http://schemas.telerik.com/2008/xaml/presentation"
              mc:Ignorable="d" 
+              xmlns:local="clr-namespace:Hcdz.ModulePcie.ViewModels" 
              d:DesignHeight="300" d:DesignWidth="300">
 	<UserControl.Resources>
 		<Style x:Key="rowStyle" TargetType="telerik:GridViewRow">
@@ -747,9 +748,9 @@
             <RowDefinition Height="40"/>
             <RowDefinition Height="87*"/>
         </Grid.RowDefinitions>
-        <StackPanel Orientation="Horizontal">
-			<Label Content="本地磁盘" Margin="20,0,0,0"/>
-			<ComboBox Margin="10,4,0,4" x:Name="cbxDrive"  ItemsSource="{Binding DriveInfoItems}"  telerik:StyleManager.Theme="Windows8Touch">
+        <StackPanel Orientation="Horizontal" Margin="0">
+			<Label Content="本地磁盘" VerticalAlignment="Center" Margin="20,0,0,0"/>
+			<ComboBox Margin="10,4,0,4" x:Name="cbxDrive" SelectedIndex="0" Width="60"  ItemsSource="{Binding DriveInfoItems}"  telerik:StyleManager.Theme="Windows8Touch">
 				<ComboBox.ItemTemplate>
 					<DataTemplate>
 						<TextBlock Text="{Binding Name}"  FontSize="14"/>
@@ -761,20 +762,25 @@
 					</i:EventTrigger>
 				</i:Interaction.Triggers>
 			</ComboBox>
-			<Button Width="60" Margin="5,4" Content="新建文件夹" Style="{DynamicResource MetroFlatButton}"  Command="{Binding DataContext.ResetSeek ,RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}"
+			<Button HorizontalAlignment="Right" Width="120" Margin="5,4" Content="新建文件夹" Style="{DynamicResource MetroFlatButton}"  Command="{Binding DataContext.ResetSeek ,RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}"
                         IsEnabled="{Binding BtnIsEnabled}"/>
 		</StackPanel>
         <Border Grid.Row="1" Background="Orange"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch" > 
 			<telerik:RadGridView x:Name="dgInfo"  telerik:StyleManager.Theme="Windows8Touch" FontSize="14"   ShowGroupPanel="False"
-						    RowHeight="32"   GridLinesVisibility="Horizontal" TextOptions.TextFormattingMode="Display"  IsFilteringAllowed="False" ItemsSource="{Binding DirectoryItems}"  
+						    RowHeight="32" CanUserInsertRows="True"    GridLinesVisibility="Horizontal" TextOptions.TextFormattingMode="Display"  IsFilteringAllowed="False" ItemsSource="{Binding DirectoryItems}"  
 							 RowIndicatorVisibility="Collapsed"  FontWeight="Medium"  SelectionUnit="FullRow"  SelectionMode="Single"     
                                  IsReadOnly="True"   SelectedItem="{Binding Path=SelectedItem,Mode=TwoWay}"    GroupRenderMode="Flat"    AutoGenerateColumns="False"  
-                                         CanUserSortColumns="False" 	 CanUserFreezeColumns="False" AlternateRowBackground="#E6F4FF"   AlternationCount="2"     >			 
-
-				<telerik:RadGridView.ContextMenu>
-					<ContextMenu ItemsSource="{Binding Path=Menu,Mode=OneWay}"  />
-				</telerik:RadGridView.ContextMenu>
-				<telerik:EventToCommandBehavior.EventBindings>
+                                         CanUserSortColumns="False"  IsBusy="{Binding IsBusy}"	 CanUserFreezeColumns="False" AlternateRowBackground="#E6F4FF"   AlternationCount="2"   local:ContextMenuBehavior.ContextMenu="{Binding ElementName=GridContextMenu}" >
+                <telerik:RadContextMenu.ContextMenu>
+                    <telerik:RadContextMenu x:Name="GridContextMenu">
+                        <telerik:RadContextMenu.Items>
+                            <telerik:RadMenuItem Header="新建"  />
+                            <telerik:RadMenuItem Header="编辑" />
+                            <telerik:RadMenuItem Header="删除"  />
+                        </telerik:RadContextMenu.Items>
+                    </telerik:RadContextMenu>
+                </telerik:RadContextMenu.ContextMenu>      
+                    <telerik:EventToCommandBehavior.EventBindings>
 					<telerik:EventBinding Command="{Binding ListRightMenue}" EventName="MouseRightButtonUp" 
                         PassEventArgsToCommand="True" />
 					<telerik:EventBinding Command="{Binding DataContext.DoubleClickCmd ,RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}"    EventName="MouseDoubleClick" 
@@ -793,23 +799,23 @@
 							</Style>
 						</telerik:GridViewDataColumn.CellStyle>
 					</telerik:GridViewDataColumn>
-					<telerik:GridViewDataColumn Header="文件名称"  Width="1*"    HeaderTextAlignment="Justify"   DataMemberBinding="{Binding  Name,Mode =TwoWay}"/>
+                    <telerik:GridViewDataColumn Header="文件名称"  Width="1*"    HeaderTextAlignment="Justify"  TextBlock.FontWeight="SemiBold"  DataMemberBinding="{Binding  Name,Mode =TwoWay}"/>
 
 					<telerik:GridViewDataColumn Header="路径" Width="2*"    DataMemberBinding="{Binding FullName}" />
 					<!--<telerik:GridViewDataColumn Header="路径" Width="100"    DataMemberBinding="{Binding DirectoryName}" />-->
 					<telerik:GridViewDataColumn Header="创建时间" Width="156">
 						<telerik:GridViewDataColumn.CellTemplate>
 							<DataTemplate >
-								<TextBlock Text="{Binding CreationTime,StringFormat=yyyy-MM-dd HH:mm:ss}" FontWeight="SemiBold"/>
+								<TextBlock Text="{Binding CreationTime,StringFormat=yyyy-MM-dd HH:mm:ss}" />
 							</DataTemplate>
 						</telerik:GridViewDataColumn.CellTemplate>
 					</telerik:GridViewDataColumn>
 					<telerik:GridViewDataColumn Header="更改时间" Width="156"  HeaderTextAlignment="Center" TextAlignment="Center" DataMemberBinding="{Binding LastWriteTime}">
 
 					</telerik:GridViewDataColumn>
-					
-					<telerik:GridViewDataColumn Header="类型" DataMemberBinding="{Binding Length}" TextWrapping="Wrap" Width="80" />
-					<telerik:GridViewDataColumn Header="大小" DataMemberBinding="{Binding Length}" TextWrapping="Wrap" Width="100" />
+
+                    <telerik:GridViewDataColumn Header="类型" DataMemberBinding="{Binding Extension}" TextWrapping="Wrap" Width="80" />
+                    <telerik:GridViewDataColumn Header="大小" DataMemberBinding="{Binding LengthText}" TextWrapping="Wrap" Width="100" />
 					 
 				</telerik:RadGridView.Columns>
 
