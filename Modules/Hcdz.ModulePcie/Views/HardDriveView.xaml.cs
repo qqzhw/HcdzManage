@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Hcdz.ModulePcie.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -24,5 +25,13 @@ namespace Hcdz.ModulePcie.Views
         {
             InitializeComponent();
         }
-    }
+
+		private void MenuItem_Click(object sender, RoutedEventArgs e)
+		{
+			var menuItem = (sender as MenuItem).DataContext as DriveInfoModel;
+			if (menuItem == null)
+				return;
+
+		}
+	}
 }

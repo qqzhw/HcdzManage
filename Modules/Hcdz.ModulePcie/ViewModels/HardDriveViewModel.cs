@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 using System.Collections.ObjectModel;
 using Hcdz.ModulePcie.Models;
 using Microsoft.Practices.Unity;
+using System.Windows.Input;
+using Prism.Commands;
 
 namespace Hcdz.ModulePcie.ViewModels
 {
@@ -17,16 +19,25 @@ namespace Hcdz.ModulePcie.ViewModels
         public HardDriveViewModel()
         {
             driveInfoItems = new ObservableCollection<DriveInfoModel>();
-            Init();
+			FormatCmd= new DelegateCommand<object>(OnFormatDisk);
+
+			Init();
         }
-        private ObservableCollection<DriveInfoModel> driveInfoItems;
+
+		private void OnFormatDisk(object obj)
+		{
+			 
+		}
+
+		private ObservableCollection<DriveInfoModel> driveInfoItems;
         public ObservableCollection<DriveInfoModel> DriveInfoItems
         {
             get { return driveInfoItems; }
             set { SetProperty(ref driveInfoItems,value); }
         }
-         
-        private  void Init()
+         public ICommand FormatCmd { get; private set; }
+
+		private  void Init()
         {
             var models = new ObservableCollection<DriveInfoModel>();
             DriveInfo[] drives = DriveInfo.GetDrives();

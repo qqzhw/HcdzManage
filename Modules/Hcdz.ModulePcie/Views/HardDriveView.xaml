@@ -4,12 +4,13 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"  
              mc:Ignorable="d" 
-             xmlns:prism="http://prismlibrary.com/"
+			 xmlns:telerik="http://schemas.telerik.com/2008/xaml/presentation"
+             xmlns:prism="http://prismlibrary.com/" 
              prism:ViewModelLocator.AutoWireViewModel="True"
              xmlns:controls="clr-namespace:Hcdz.Framework.Controls;assembly=Hcdz.Framework"
              d:DesignHeight="300" d:DesignWidth="300">
     <Grid>
-        <ItemsControl ItemsSource="{Binding DriveInfoItems}"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+		<ItemsControl ItemsSource="{Binding DriveInfoItems}" x:Name="diskcontrol" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
                     <WrapPanel  ></WrapPanel>
@@ -17,9 +18,16 @@
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
                 <DataTemplate >
-                    <controls:DiskShowControl MinWidth="320" Percent="{Binding Percent}"  Margin="20,20,0,0" DiskName="{Binding  NameDesc}"  BorderThickness="1" BorderBrush="#BCE8F1"   AvailableFreeSpace="{Binding AvailableFreeSpaceText}" TotalSize="{Binding TotalSizeText}"/>
+					<controls:DiskShowControl MinWidth="320" Percent="{Binding Percent}"  Margin="20,20,0,0" DiskName="{Binding  NameDesc}"  BorderThickness="1" BorderBrush="#BCE8F1"   AvailableFreeSpace="{Binding AvailableFreeSpaceText}" TotalSize="{Binding TotalSizeText}">
+						<controls:DiskShowControl.ContextMenu>
+							<ContextMenu >
+								<MenuItem Header="格式化" Click="MenuItem_Click" />
+							</ContextMenu>
+						</controls:DiskShowControl.ContextMenu>
+					</controls:DiskShowControl>
+					
                 </DataTemplate>
-            </ItemsControl.ItemTemplate>
-        </ItemsControl>
+            </ItemsControl.ItemTemplate> 
+		</ItemsControl>
     </Grid>
 </UserControl>
