@@ -729,6 +729,22 @@ namespace Hcdz.PcieLib
             Thread.Sleep(1);
             return true;
         }
+        public  bool ReadBAR0(DWORD index, UINT64 offset, ref DWORD outdata)
+        {
+            DWORD dw;
+            if (index >= 4)
+            {
+                //strcpy_s(infor,"不支持4块及以上板卡");
+                return false;
+            } 
+            if (wdc_lib_decl.WDC_ReadAddr32(Handle, 0, offset, ref outdata) != 0)
+            {
+                //strcpy_s(infor,"读取BAR0空间错误\n");
+                //strcat(infor,Stat2Str(dw));
+                return false;
+            }
+            return true;        
+        }
         public bool WriteBAR0(DWORD index, UINT64 offset, DWORD indata)
         {
             if (wdc_lib_decl.WDC_WriteAddr32(Handle, 0, offset, indata) != 0)

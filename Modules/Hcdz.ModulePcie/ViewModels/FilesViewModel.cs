@@ -17,7 +17,9 @@ using Prism.Commands;
 using System.Windows;
 using Telerik.Windows.Controls;
 using Telerik.Windows.Controls.GridView;
-
+using Hcdz.ModulePcie.Views;
+using Pvirtech.Framework.Interactivity;
+ 
 namespace Hcdz.ModulePcie.ViewModels
 {
 	public class FilesViewModel : BindableBase
@@ -38,14 +40,41 @@ namespace Hcdz.ModulePcie.ViewModels
 			SelectedLoadDirCmd = new DelegateCommand<DriveInfo>(OnSelectLoadDir);
             
             LoadedCommand = new DelegateCommand<object>(OnLoad);
-
+            CreateNewCmd=new DelegateCommand<object>(OnCreateNew);
             Initializer();
 
         }
-
-        private void OnLoad(object obj)
+ 
+        private void OnCreateNew(object obj)
         {
-            
+            var confirmation = new Confirmation()
+            {
+                Content = _container.Resolve<ChildView>(),
+                IsModal=true,
+                Title="新建",
+            };
+            PopupWindows.NotificationRequest.Raise(confirmation, (o)=> {
+                var context = (ChildView)o.Content;
+                var dir=context.txtDir.Text.Trim();
+                if (!Directory.Exists(dir))
+                {
+                    Directory.CreateDirectory(dir);
+                    OnLoad();
+                }
+                else
+                {
+                    MessageBox.Show("创建失败,已存在该文件夹！");
+                }
+            });
+           //ChildView window = new ChildView();
+          //  window.ShowDialog();
+        }
+
+        private async void OnLoad(object obj=null)
+        {
+            var items = await List(SelectedPath);
+            DirectoryItems = new ObservableCollection<DirectoryInfoModel>(items.OrderByDescending(o => o.IsDir));
+
         }
 
         private async void OnSelectLoadDir(DriveInfo drive)
@@ -65,6 +94,10 @@ namespace Hcdz.ModulePcie.ViewModels
             var index = UtilsHelper.UploadFilePath.LastIndexOf("\\");
             if (index < 0)
                 return;
+            if (index==2)
+            {
+                index+=1;
+            }
             var parentPath = UtilsHelper.UploadFilePath.Substring(0, index);
             IsBusy = true;
             var items =await List(parentPath);
@@ -101,11 +134,11 @@ namespace Hcdz.ModulePcie.ViewModels
             } 
         }
         #region 属性
-        private int selectedIndex;
-        public int SelectedIndex
+        private string _selectedPath;
+        public string SelectedPath
         {
-            get { return selectedIndex; }
-            set { SetProperty(ref selectedIndex, value); }
+            get { return _selectedPath; }
+            set { SetProperty(ref _selectedPath, value); }
         }
         
         private bool _isBusy=false;
@@ -135,7 +168,7 @@ namespace Hcdz.ModulePcie.ViewModels
 	    public ICommand LoadDirCmd { get; private set; }
 		public ICommand SelectedLoadDirCmd { get; private set; }
         public ICommand LoadedCommand { get; private set; }
-       
+        public ICommand CreateNewCmd { get; private set; }
         #endregion
 
         private async void Initializer()
@@ -150,7 +183,8 @@ namespace Hcdz.ModulePcie.ViewModels
           
         }
 		public async Task<List<DirectoryInfoModel>> List(string path="")
-		{ 
+		{
+            _directoryItems?.Clear();
             FileSystemInfo[] dirFileitems = null;
 			var list = new List<DirectoryInfoModel>();
               await Task.Run(() =>
@@ -159,13 +193,14 @@ namespace Hcdz.ModulePcie.ViewModels
                 {
                     path = _driveInfoItems[0].Name;
                     DirectoryInfo dirInfo = new DirectoryInfo(path);//根目录				
-                    dirFileitems = dirInfo.GetFileSystemInfos();
+                    dirFileitems = dirInfo.GetFileSystemInfos("*",SearchOption.TopDirectoryOnly);
                 }
                 else
-                {
+                {                    
                     DirectoryInfo dirInfo = new DirectoryInfo(path);//根目录				 
-                    dirFileitems = dirInfo.GetFileSystemInfos();
+                    dirFileitems = dirInfo.GetFileSystemInfos("*", SearchOption.TopDirectoryOnly);
                 }
+                SelectedPath = path;
                 UtilsHelper.UploadFilePath = path;
                 foreach (var item in dirFileitems)
                 {

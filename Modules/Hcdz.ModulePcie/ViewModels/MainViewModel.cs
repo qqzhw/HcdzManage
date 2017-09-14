@@ -24,6 +24,9 @@ using WDC_ADDR_SIZE = System.UInt32;
 using HANDLE = System.IntPtr;
 using System.Collections.ObjectModel;
 using Telerik.Windows.Controls;
+using System.Windows.Threading;
+using System.Windows.Input;
+using Prism.Commands;
 
 namespace Hcdz.ModulePcie.ViewModels
 {
@@ -33,7 +36,8 @@ namespace Hcdz.ModulePcie.ViewModels
 		private readonly IUnityContainer _container;
 		private readonly IRegionManager _regionManager;
 		private readonly IServiceLocator _serviceLocator;
-		private ConcurrentQueue<int> queue;
+        private DispatcherTimer dispatcherTimer;
+        private ConcurrentQueue<int> queue;
 		private bool IsCompleted=false;
         private int index = 0;
         private int index1 = 0;
@@ -45,21 +49,104 @@ namespace Hcdz.ModulePcie.ViewModels
 			_serviceLocator = serviceLocator;
 			 queue = new ConcurrentQueue<int>();
             devicesItems = new ObservableCollection<PCIE_Device>();
-
+            dispatcherTimer = new DispatcherTimer(DispatcherPriority.Background);
+            dispatcherTimer.Interval = TimeSpan.FromSeconds(10);
+            dispatcherTimer.Tick += DispatcherTimer_Tick;
+            _openDeviceText = "打开设备";
+            OpenDevice = new DelegateCommand<object>(OnOpenDevice);
+            _viewModel = new PcieViewModel();
              Initializer();
 		}
+
+        private void OnOpenDevice(object obj)
+        {
+            if (!IsOpen)
+            {
+                if (DeviceOpen(0) == true)
+                {
+                    OpenDeviceText = "关闭设备";
+                    IsOpen = true;
+                    var device = pciDevList.Get(0);
+                    DWORD outData=0;
+                    device.ReadBAR0(0, 0x00, ref outData);
+                    if ((outData & 0x10) == 0x10)
+                        DeviceDesc += "链路速率：2.5Gb/s\r\n";
+                    else if ((outData & 0x20) == 0x20)
+                        DeviceDesc += "链路速率：5.0Gb/s\r\n";
+                    else
+                        DeviceDesc += "speed judge error/s\r\n";
+
+                    outData = (outData & 0xF);
+                    if (outData == 1)
+                        DeviceDesc += "链路宽度：x1";
+                    else if (outData == 2)
+                        DeviceDesc += "链路宽度：x2";
+                    else if (outData == 4)
+                        DeviceDesc += "链路宽度：x4";
+                    else if (outData == 8)
+                        DeviceDesc += "链路宽度：x8";
+                    else
+                        DeviceDesc += "width judge error/s\r\n";                    
+                }
+            }
+            else
+            {
+                PCIE_Device dev = pciDevList.Get(0);
+                DeviceClose(0);
+                OpenDeviceText = "打开设备";
+                IsOpen = false;
+            }
+        }
+
+        private void DispatcherTimer_Tick(object sender, EventArgs e)
+        {
+            
+        }
+
+        #region 属性
+        
         ConcurrentQueue<byte[]> queue1;
         private PCIE_DeviceList pciDevList;
         private Log log;
+
+        private PcieViewModel _viewModel;
+        public PcieViewModel ViewModel
+        {
+            get { return _viewModel; }
+            set { SetProperty(ref _viewModel,value); }
+        }
         private ObservableCollection<PCIE_Device> devicesItems;
         public ObservableCollection<PCIE_Device> DevicesItems
         {
             get { return devicesItems; }
             set { SetProperty(ref devicesItems, value); }
         }
+        private bool _isOpen;
+        public bool IsOpen { get { return _isOpen; } set { SetProperty(ref _isOpen, value); } }
+
+        private string _openDeviceText;
+        public string OpenDeviceText { get { return _openDeviceText; }set { SetProperty(ref _openDeviceText,value); } }
+
+        private string  _deviceDesc;
+        public string DeviceDesc { get { return _deviceDesc; } set { SetProperty(ref _deviceDesc, value); } }
+
+        
+        private ObservableCollection<DriveInfo> _driveInfoItems;
+        public ObservableCollection<DriveInfo> DriveInfoItems
+        {
+            get { return _driveInfoItems; }
+            set { SetProperty(ref _driveInfoItems, value); }
+        }
+        public ICommand OpenDevice { get; private set; }
+
+        #endregion
+
+
         private void Initializer()
 		{
-           
+            DriveInfo[] drives = DriveInfo.GetDrives();
+            _driveInfoItems = new ObservableCollection<DriveInfo>(drives);
+
             pciDevList = PCIE_DeviceList.TheDeviceList();
             queue1 = new ConcurrentQueue<byte[]>();
 			Thread readThread = new Thread(new ThreadStart(ReadDMA));
@@ -68,28 +155,68 @@ namespace Hcdz.ModulePcie.ViewModels
 			Thread writeThread = new Thread(new ThreadStart(WriteDMA));
 			writeThread.IsBackground = true;
 			writeThread.Start();
-			//DWORD dwStatus = pciDevList.Init();
-			//if (dwStatus == (DWORD)wdc_err.WD_STATUS_SUCCESS)
-			//{
-			//   RadDesktopAlert alert = new RadDesktopAlert();
-			//    alert.Content = "加载设备失败!";
-			//    RadWindow.Alert(new DialogParameters
-			//    {
-			//        Content = "加载设备失败！", 
-			//        DefaultPromptResultValue = "default name",
-			//        Theme = new Windows8TouchTheme(),
-			//          Header="提示",
-			//          TopOffset=30,
+            DWORD dwStatus = pciDevList.Init();
+            if (dwStatus != (DWORD)wdc_err.WD_STATUS_SUCCESS)
+            {
+                RadDesktopAlert alert = new RadDesktopAlert();
+                alert.Content = "加载设备失败!";
+                RadWindow.Alert(new DialogParameters
+                {
+                    Content = "加载设备失败！",
+                    DefaultPromptResultValue = "default name",
+                    Theme = new Windows8TouchTheme(),
+                    Header = "提示",
+                    TopOffset = 30,
+                });
+                return;
+            }
 
-			//    });
-			//    return;
-			//}
+            foreach (PCIE_Device dev in pciDevList)
+                devicesItems.Add(dev);
+            if (devicesItems.Count > 0)
+            {
+                ViewModel.ShortDesc = devicesItems[0].Name;
+            }
+           
+        }
 
-			//foreach (PCIE_Device dev in pciDevList)
-			//    devicesItems.Add(dev); 
+        /* Open a handle to a device */
+        private bool DeviceOpen(int iSelectedIndex)
+        {
+            DWORD dwStatus;
+           PCIE_Device device = pciDevList.Get(iSelectedIndex);
 
-		}
-		private List<int> s1 = new List<int>();
+            /* Open a handle to the device */
+            dwStatus = device.Open();
+            if (dwStatus != (DWORD)wdc_err.WD_STATUS_SUCCESS)
+            {
+                Log.ErrLog("NEWAMD86_diag.DeviceOpen: Failed opening a " +
+                    "handle to the device (" + device.ToString(false) + ")");
+                return false;
+            }
+            Log.TraceLog("NEWAMD86_diag.DeviceOpen: The device was successfully open." +
+                "You can now activate the device through the enabled menu above");
+            return true;
+        }
+
+        /* Close handle to a NEWAMD86 device */
+        private BOOL DeviceClose(int iSelectedIndex)
+        {
+            PCIE_Device device = pciDevList.Get(iSelectedIndex);
+            BOOL bStatus = false;
+
+            if (device.Handle != IntPtr.Zero && !(bStatus = device.Close()))
+            {
+                Log.ErrLog("NEWAMD86_diag.DeviceClose: Failed closing NEWAMD86 "
+                    + "device (" + device.ToString(false) + ")");
+            }
+            else
+                device.Handle = IntPtr.Zero;
+            return bStatus;
+        }
+
+
+        private List<int> s1 = new List<int>();
 		private List<int> s2 = new List<int>();
 		private void WriteDMA()
 		{

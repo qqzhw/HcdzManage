@@ -9,7 +9,12 @@ namespace Hcdz.ModulePcie.ViewModels
 {
     public class PcieViewModel: BindableBase
     {
+        public string VendorId { get; set; }
         public string DeviceName { get; set; }
+        public string DeviceId { get; set; }
+        public string VendorId0 { get; set; }
+        public string DeviceName0 { get; set; }
+        public string ShortDesc { get; set; }
         private bool _isStart;
         public bool IsStart {
             get { return _isStart; }

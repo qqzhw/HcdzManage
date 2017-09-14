@@ -115,12 +115,20 @@
     <Compile Include="Models\PathHelper.cs" />
     <Compile Include="Models\TimeSpanFormatter.cs" />
     <Compile Include="ViewModels\ContextMenuBehavior.cs" />
+    <Compile Include="ViewModels\DeviceModel.cs" />
     <Compile Include="ViewModels\DirectoryListModel.cs" />
     <Compile Include="ViewModels\PcieViewModel.cs" />
     <Compile Include="ViewModels\SettingsViewModel.cs" />
+    <Compile Include="Views\ChildView.xaml.cs">
+      <DependentUpon>ChildView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\SettingsView.xaml.cs">
       <DependentUpon>SettingsView.xaml</DependentUpon>
     </Compile>
+    <Page Include="Views\ChildView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\FilesView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

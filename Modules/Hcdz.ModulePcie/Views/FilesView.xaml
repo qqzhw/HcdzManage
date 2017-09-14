@@ -10,7 +10,7 @@
              xmlns:telerik="http://schemas.telerik.com/2008/xaml/presentation"
              mc:Ignorable="d" 
               xmlns:local="clr-namespace:Hcdz.ModulePcie.ViewModels" 
-             d:DesignHeight="300" d:DesignWidth="300">
+             d:DesignHeight="300" d:DesignWidth="600">
 	<UserControl.Resources>
 		<Style x:Key="rowStyle" TargetType="telerik:GridViewRow">
 			<Setter Property="IsTabStop" Value="False"/>
@@ -761,10 +761,11 @@
 						<i:InvokeCommandAction Command="{Binding SelectedLoadDirCmd}"  CommandParameter="{Binding ElementName=cbxDrive,Path=SelectedItem}"/>
 					</i:EventTrigger>
 				</i:Interaction.Triggers>
-			</ComboBox>
-			<Button HorizontalAlignment="Right" Width="120" Margin="5,4" Content="新建文件夹" Style="{DynamicResource MetroFlatButton}"  Command="{Binding DataContext.ResetSeek ,RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}"
-                        IsEnabled="{Binding BtnIsEnabled}"/>
-		</StackPanel>
+			</ComboBox> 
+            <Label Content="当前位置" VerticalAlignment="Center"/>
+            <TextBlock Text="{Binding SelectedPath}" FontSize="14"  VerticalAlignment="Center"/>
+            <Button  Width="120" Margin="10,4,0,4" Content="新建文件夹" Style="{DynamicResource MetroFlatButton}"  Command="{Binding CreateNewCmd}" />
+        </StackPanel>
         <Border Grid.Row="1" Background="Orange"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch" > 
 			<telerik:RadGridView x:Name="dgInfo"  telerik:StyleManager.Theme="Windows8Touch" FontSize="14"   ShowGroupPanel="False"
 						    RowHeight="32" CanUserInsertRows="True"    GridLinesVisibility="Horizontal" TextOptions.TextFormattingMode="Display"  IsFilteringAllowed="False" ItemsSource="{Binding DirectoryItems}"  
