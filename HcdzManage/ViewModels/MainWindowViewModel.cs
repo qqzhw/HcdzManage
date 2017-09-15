@@ -1,4 +1,5 @@
-﻿using HcdzManage.Properties;
+﻿using Hcdz.Framework.Common;
+using HcdzManage.Properties;
 using Microsoft.Practices.ServiceLocation;
 using Microsoft.Practices.Unity;
 using Prism.Commands;
@@ -13,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -66,9 +68,38 @@ namespace HcdzManage.ViewModels
             _eventAggregator.GetEvent<MessageSentEvent<SystemInfo>>().Subscribe(MessageReceived);
             SelectedCommand = new DelegateCommand<object[]>(OnItemSelected);
             InitHeader();
-        }
 
-        private void InitHeader()
+
+			string fileName = "testdb.bak";
+			String sourceFullPath = Path.Combine("D:\\", fileName);
+			if (!File.Exists(sourceFullPath))
+			{
+				throw new Exception("A file given by the sourcePath doesn't exist."); 
+			}
+
+			String targetFullPath = Path.Combine("F:\\5555\\", fileName); 
+
+
+			//FileUtilities.CreateDirectoryIfNotExist(Path.GetDirectoryName(targetFullPath));
+
+			//FileUtilities.CopyFileEx(sourceFullPath, targetFullPath, token);
+
+			SetMaxProgress();
+		   
+	}
+
+		private void token(string source, string destination, long totalFileSize, long totalBytesTransferred)
+		{
+			double dProgress = (totalBytesTransferred / (double)totalFileSize) * 100.0;
+			//progressBar1.Value = (int)dProgress;
+		}
+
+		private void SetMaxProgress()
+		{
+			 
+		}
+
+		private void InitHeader()
         {
             _systemInfos.Add(new SystemInfoViewModel()
             {

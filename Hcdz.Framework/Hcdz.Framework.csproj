@@ -83,6 +83,9 @@
     </Page>
     <Compile Include="Common\BinaryWriterExtensions.cs" />
     <Compile Include="Common\ByteFormatter.cs" />
+    <Compile Include="Common\CopyFileExWrapper.cs" />
+    <Compile Include="Common\ExtendedCopy.cs" />
+    <Compile Include="Common\FileUtilities.cs" />
     <Compile Include="Common\ListDictionary.cs" />
     <Compile Include="Common\LogHelper.cs" />
     <Compile Include="Common\MvvmHelpers.cs" />

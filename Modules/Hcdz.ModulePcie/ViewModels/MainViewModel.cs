@@ -155,7 +155,7 @@ namespace Hcdz.ModulePcie.ViewModels
 			Thread writeThread = new Thread(new ThreadStart(WriteDMA));
 			writeThread.IsBackground = true;
 			writeThread.Start();
-            DWORD dwStatus = pciDevList.Init();
+			DWORD dwStatus = 0;// pciDevList.Init();
             if (dwStatus != (DWORD)wdc_err.WD_STATUS_SUCCESS)
             {
                 RadDesktopAlert alert = new RadDesktopAlert();

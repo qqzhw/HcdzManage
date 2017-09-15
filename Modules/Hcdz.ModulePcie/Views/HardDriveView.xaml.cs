@@ -31,7 +31,7 @@ namespace Hcdz.ModulePcie.Views
 			var menuItem = (sender as MenuItem).DataContext as DriveInfoModel;
 			if (menuItem == null)
 				return;
-
+			 
 		}
 	}
 }

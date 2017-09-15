@@ -10,7 +10,7 @@
 					  prism:ViewModelLocator.AutoWireViewModel="True"
 					  xmlns:hcdz="clr-namespace:Pvirtech.Framework.Interactivity;assembly=Hcdz.Framework"
                       Title="{Binding Title}" TitleTemplate="{StaticResource PvirtechWindowTitle}" 
-                      MinWidth="1024"  MinHeight="768"    
+                      Width="1280"  MinHeight="768"    
 					  Icon="/logo.png" IconEdgeMode="Aliased" IconScalingMode="ScaleDownLargerFrame"					 
                       FontFamily="SimHei"
                       Dialog:DialogParticipation.Register="{Binding}"
