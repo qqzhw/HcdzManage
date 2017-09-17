@@ -46,7 +46,52 @@
         </Style.Triggers>
     </Style>
 
-	<Style x:Key="MetroFlatBtnTwo" TargetType="{x:Type Button}"> 
+    <Style x:Key="MetroFlatButtonDisable" TargetType="{x:Type Button}">
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="Background" Value="#999999" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="FontSize" Value="{DynamicResource FlatButtonFontSize}" />
+        <Setter Property="Padding" Value="10 5 10 5" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type Button}">
+                    <Border x:Name="Border"
+                            Margin="0" CornerRadius="5"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}">
+                        <Controls:ContentControlEx x:Name="PART_ContentPresenter"
+                                                   Padding="{TemplateBinding Padding}"
+                                                   HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                   VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                   Content="{TemplateBinding Content}"
+                                                   ContentCharacterCasing="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=(Controls:ControlsHelper.ContentCharacterCasing)}"
+                                                   ContentStringFormat="{TemplateBinding ContentStringFormat}"
+                                                   ContentTemplate="{TemplateBinding ContentTemplate}"
+                                                   ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
+                                                   RecognizesAccessKey="True"
+                                                   SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Opacity" Value="0.9" />
+            </Trigger>
+            <Trigger Property="IsPressed" Value="True">
+                <Setter Property="Foreground" Value="White" />
+                <Setter Property="Background" Value="#888888" />
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Foreground" Value="White" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+
+    <Style x:Key="MetroFlatBtnTwo" TargetType="{x:Type Button}"> 
 		<Setter Property="Foreground" Value="White" />
 		<Setter Property="Background" Value="#2272ac" />
 		<Setter Property="BorderThickness" Value="0" />

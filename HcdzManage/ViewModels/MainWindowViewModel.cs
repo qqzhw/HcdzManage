@@ -70,14 +70,14 @@ namespace HcdzManage.ViewModels
             InitHeader();
 
 
-			string fileName = "testdb.bak";
-			String sourceFullPath = Path.Combine("D:\\", fileName);
-			if (!File.Exists(sourceFullPath))
-			{
-				throw new Exception("A file given by the sourcePath doesn't exist."); 
-			}
+			//string fileName = "testdb.bak";
+			//String sourceFullPath = Path.Combine("D:\\", fileName);
+			//if (!File.Exists(sourceFullPath))
+			//{
+			//	throw new Exception("A file given by the sourcePath doesn't exist."); 
+			//}
 
-			String targetFullPath = Path.Combine("F:\\5555\\", fileName); 
+			//String targetFullPath = Path.Combine("F:\\5555\\", fileName); 
 
 
 			//FileUtilities.CreateDirectoryIfNotExist(Path.GetDirectoryName(targetFullPath));

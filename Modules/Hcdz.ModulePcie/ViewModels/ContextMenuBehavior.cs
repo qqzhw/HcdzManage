@@ -66,10 +66,10 @@ namespace Hcdz.ModulePcie.ViewModels
                 switch (header)
                 {
                     case "新建":
-                        gridView.BeginInsert();
+                       
                         break;
                     case "编辑":
-                        gridView.BeginEdit();
+                     
                         break;
                     case "删除":
                         DirectoryInfoModel directoryInfoModel = row.DataContext as DirectoryInfoModel;

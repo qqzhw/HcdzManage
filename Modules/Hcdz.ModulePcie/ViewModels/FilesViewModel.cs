@@ -38,13 +38,18 @@ namespace Hcdz.ModulePcie.ViewModels
 			DoubleClickCmd= new DelegateCommand<MouseButtonEventArgs>(OnDoubleClickDetail);
 			LoadDirCmd = new DelegateCommand<object>(OnBackDir);
 			SelectedLoadDirCmd = new DelegateCommand<DriveInfo>(OnSelectLoadDir);
-            
+            ListRightMenue = new DelegateCommand<object>(OnRightMenue);
             LoadedCommand = new DelegateCommand<object>(OnLoad);
             CreateNewCmd=new DelegateCommand<object>(OnCreateNew);
             Initializer();
 
         }
- 
+
+        private void OnRightMenue(object obj)
+        {
+            
+        }
+
         private void OnCreateNew(object obj)
         {
             var confirmation = new Confirmation()
@@ -167,6 +172,7 @@ namespace Hcdz.ModulePcie.ViewModels
 		public ICommand DoubleClickCmd { get; private set; }
 	    public ICommand LoadDirCmd { get; private set; }
 		public ICommand SelectedLoadDirCmd { get; private set; }
+        public ICommand ListRightMenue { get; private set; }
         public ICommand LoadedCommand { get; private set; }
         public ICommand CreateNewCmd { get; private set; }
         #endregion

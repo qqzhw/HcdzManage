@@ -771,18 +771,18 @@
 						    RowHeight="32" CanUserInsertRows="True"    GridLinesVisibility="Horizontal" TextOptions.TextFormattingMode="Display"  IsFilteringAllowed="False" ItemsSource="{Binding DirectoryItems}"  
 							 RowIndicatorVisibility="Collapsed"  FontWeight="Medium"  SelectionUnit="FullRow"  SelectionMode="Single"     
                                  IsReadOnly="True"   SelectedItem="{Binding Path=SelectedItem,Mode=TwoWay}"    GroupRenderMode="Flat"    AutoGenerateColumns="False"  
-                                         CanUserSortColumns="False"  IsBusy="{Binding IsBusy}"	 CanUserFreezeColumns="False" AlternateRowBackground="#E6F4FF"   AlternationCount="2"   local:ContextMenuBehavior.ContextMenu="{Binding ElementName=GridContextMenu}" >
-                <telerik:RadContextMenu.ContextMenu >
-                    <telerik:RadContextMenu FontFamily="SimHei" x:Name="GridContextMenu">
-                        <telerik:RadContextMenu.Items>
-                            <telerik:RadMenuItem Header="新建"  />
+                                         CanUserSortColumns="False"  IsBusy="{Binding IsBusy}"	 CanUserFreezeColumns="False" AlternateRowBackground="#E6F4FF"   AlternationCount="2"   >
+                <telerik:RadGridView.ContextMenu >
+                    <ContextMenu FontFamily="SimHei" x:Name="GridContextMenu">
+
+                        <telerik:RadMenuItem Header="新建"  Command="{Binding DataContext.ListRightMenue ,RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}" CommandParameter="{Binding}"/>
                             <telerik:RadMenuItem Header="编辑" />
                             <telerik:RadMenuItem Header="删除"  />
-                        </telerik:RadContextMenu.Items>
-                    </telerik:RadContextMenu>
-                </telerik:RadContextMenu.ContextMenu>      
+                         
+                    </ContextMenu>
+                </telerik:RadGridView.ContextMenu>      
                     <telerik:EventToCommandBehavior.EventBindings>
-					<telerik:EventBinding Command="{Binding ListRightMenue}" EventName="MouseRightButtonUp" 
+					<telerik:EventBinding Command="{Binding}" EventName="MouseRightButtonUp" 
                         PassEventArgsToCommand="True" />
 					<telerik:EventBinding Command="{Binding DataContext.DoubleClickCmd ,RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}"    EventName="MouseDoubleClick" 
                         PassEventArgsToCommand="True" />

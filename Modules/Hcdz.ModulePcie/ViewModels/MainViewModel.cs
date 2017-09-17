@@ -54,6 +54,8 @@ namespace Hcdz.ModulePcie.ViewModels
             dispatcherTimer.Tick += DispatcherTimer_Tick;
             _openDeviceText = "打开设备";
             OpenDevice = new DelegateCommand<object>(OnOpenDevice);
+            _deviceChannelModels = new ObservableCollection<DeviceChannelModel>();//主板1 四通道
+            _deviceChannel2 = new ObservableCollection<DeviceChannelModel>();//主板2 通道
             _viewModel = new PcieViewModel();
              Initializer();
 		}
@@ -137,6 +139,19 @@ namespace Hcdz.ModulePcie.ViewModels
             get { return _driveInfoItems; }
             set { SetProperty(ref _driveInfoItems, value); }
         }
+        private ObservableCollection<DeviceChannelModel> _deviceChannelModels;
+        public ObservableCollection<DeviceChannelModel> DeviceChannelModels
+        {
+            get { return _deviceChannelModels; }
+            set { SetProperty(ref _deviceChannelModels, value); }
+        }
+        private ObservableCollection<DeviceChannelModel> _deviceChannel2;
+        public ObservableCollection<DeviceChannelModel> DeviceChannel2
+        {
+            get { return _deviceChannel2; }
+            set { SetProperty(ref _deviceChannel2, value); }
+        }
+
         public ICommand OpenDevice { get; private set; }
 
         #endregion
@@ -147,6 +162,8 @@ namespace Hcdz.ModulePcie.ViewModels
             DriveInfo[] drives = DriveInfo.GetDrives();
             _driveInfoItems = new ObservableCollection<DriveInfo>(drives);
 
+            LoadDeviceChannel();
+
             pciDevList = PCIE_DeviceList.TheDeviceList();
             queue1 = new ConcurrentQueue<byte[]>();
 			Thread readThread = new Thread(new ThreadStart(ReadDMA));
@@ -155,7 +172,7 @@ namespace Hcdz.ModulePcie.ViewModels
 			Thread writeThread = new Thread(new ThreadStart(WriteDMA));
 			writeThread.IsBackground = true;
 			writeThread.Start();
-			DWORD dwStatus = 0;// pciDevList.Init();
+            DWORD dwStatus =0;//  pciDevList.Init();
             if (dwStatus != (DWORD)wdc_err.WD_STATUS_SUCCESS)
             {
                 RadDesktopAlert alert = new RadDesktopAlert();
@@ -178,6 +195,52 @@ namespace Hcdz.ModulePcie.ViewModels
                 ViewModel.ShortDesc = devicesItems[0].Name;
             }
            
+        }
+
+        private void LoadDeviceChannel()
+        {
+            DeviceChannelModel channel0 = new DeviceChannelModel
+            {
+                Id = 1,
+                Name = "通道1",
+                RegAddress = 0x30
+            };
+            DeviceChannelModel channel1 = new DeviceChannelModel
+            {
+                Id = 2,
+                Name = "通道2",
+                RegAddress = 0x34
+            };
+            DeviceChannelModel channel2 = new DeviceChannelModel
+            {
+                Id = 3,
+                Name = "通道3",
+                RegAddress = 0x38
+            };
+            DeviceChannelModel channel3 = new DeviceChannelModel
+            {
+                Id = 4,
+                Name = "通道4",
+                RegAddress = 0x40
+            };
+            DeviceChannelModel channel4 = new DeviceChannelModel
+            {
+                Id = 5,
+                Name = "通道5",
+                RegAddress = 0x44
+            };
+            DeviceChannelModel channel5 = new DeviceChannelModel
+            {
+                Id = 6,
+                Name = "通道6",
+                RegAddress = 0x48
+            };
+            _deviceChannelModels.Add(channel0);
+            _deviceChannelModels.Add(channel1);
+            _deviceChannelModels.Add(channel2);
+            _deviceChannelModels.Add(channel3);
+            _deviceChannel2.Add(channel4);
+            _deviceChannel2.Add(channel5);
         }
 
         /* Open a handle to a device */

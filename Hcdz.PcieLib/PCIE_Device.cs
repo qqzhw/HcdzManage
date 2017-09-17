@@ -24,7 +24,7 @@ namespace Hcdz.PcieLib
     public delegate void USER_INTERRUPT_CALLBACK(PCIE_Device device);
 
 
-    public class PCIE_Device
+    public partial class PCIE_Device
     {
         private WDC_DEVICE m_wdcDevice = new WDC_DEVICE();
         protected MarshalWdcDevice m_wdcDeviceMarshaler;
