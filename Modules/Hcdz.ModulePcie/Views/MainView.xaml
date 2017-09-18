@@ -16,7 +16,7 @@
 			<RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
 		</Grid.RowDefinitions>
-        <Border  Margin="10,0,10,0"  Height="40"  >
+        <Border  Height="40"  >
             <Border.Background>
                 <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
                     <GradientStop Offset="0" Color="#dde1e2"></GradientStop>
@@ -65,8 +65,8 @@
                         </i:EventTrigger>
                     </i:Interaction.Triggers>
                 </ComboBox>
-                <Button   Margin="20,0,0,0" VerticalAlignment="Center" Width="80"  Content="自检" Style="{DynamicResource MetroFlatButton}"  Command="{Binding OpenDevice}" />
-                <Button   Margin="20,0,0,0" VerticalAlignment="Center" Width="80"  Content="启动DMA" Style="{DynamicResource MetroFlatButton}"  Command="{Binding OpenDevice}" />
+                <Button   Margin="20,0,0,0" VerticalAlignment="Center" Width="80"  Content="自检" Style="{DynamicResource MetroFlatButton}"  Command="{Binding ScanDeviceCmd}" CommandParameter="{Binding}"/>
+                <Button   Margin="20,0,0,0" VerticalAlignment="Center" Width="80"  Content="启动DMA" Style="{DynamicResource MetroFlatButton}"  Command="{Binding ReadDmaCmd}"  CommandParameter="{Binding}"/>
 
                 <!--<metro:MetroProgressBar  Margin="10,0,0,0" Width="400" Value="56" Foreground="#5DA0C7"    Background="#EDEDED" Height="32"/>-->
                 <StackPanel Orientation="Horizontal"  VerticalAlignment="Center" Margin="30,0,0,0">
@@ -102,9 +102,9 @@
                                             <Border  BorderBrush="#D9EDF7" BorderThickness="1">
                                                 <StackPanel  VerticalAlignment="Center" Margin="0,10,15,10">
                                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" >
-                                                        <Button HorizontalAlignment="Right" Margin="30,0,0,0" Width="60"  Content="打开" Style="{DynamicResource MetroFlatButton}"  Command="{Binding DataContext.ResetSeek ,RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}"
+                                                        <Button HorizontalAlignment="Right" Margin="30,0,0,0" Width="60"  Content="打开" Style="{DynamicResource MetroFlatButton}"  Command="{Binding DataContext.OpenChannel ,RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}"
                         IsEnabled="{Binding BtnIsEnabled}"/>
-                                                        <Button HorizontalAlignment="Right" Margin="20,0,0,0" Width="60"  Content="关闭" Style="{DynamicResource MetroFlatButton}"  Command="{Binding DataContext.ResetSeek ,RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}" />
+                                                        <Button HorizontalAlignment="Right" Margin="20,0,0,0" Width="60"  Content="关闭" Style="{DynamicResource MetroFlatButton}"  Command="{Binding DataContext.OpenChannel ,RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}" />
                                                     </StackPanel>
                                                     <!--<metro:MetroProgressBar  Margin="10,10,0,0" Value="56" Foreground="#5DA0C7"    Background="#EDEDED" Height="32"/>-->
                                                     <StackPanel Orientation="Horizontal"  Margin="15,2,20,0">
@@ -181,8 +181,8 @@
                 <TextBlock Text="磁盘空间："   VerticalAlignment="Center"/>
                 <metro:MetroProgressBar Grid.Column="1" HorizontalAlignment="Left" Width="500" Value="56" Foreground="#5DA0C7"    Background="#EDEDED" Height="32"/>
                 <TextBlock Text="456.23GB 可用" Grid.Column="2" Margin="2,0,0,0" VerticalAlignment="Center"/>
-                <TextBlock Grid.Row="1" Text="自检信息："  HorizontalAlignment="Left" VerticalAlignment="Center"/>
-                <TextBlock Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Margin="0,5,0,0" MinHeight="88"/>
+                <TextBlock Grid.Row="1" Text="自检信息："  HorizontalAlignment="Left" Margin="0,5,0,0"/>
+                <TextBlock Grid.Row="1" Text="{Binding DeviceDesc}" Grid.Column="1" Grid.ColumnSpan="2" Margin="0,5,0,0" MinHeight="88"/>
                 <!--<StackPanel Orientation="Horizontal"  VerticalAlignment="Center" Margin="30,0,0,0">
                     <TextBlock Text="传输速率：" FontSize="14"  Foreground="#333333"/>
                     <TextBlock Margin="2,0,0,0" FontSize="14"  Foreground="#333333" Text="2.3GB/s" />

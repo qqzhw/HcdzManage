@@ -27,6 +27,9 @@ using Telerik.Windows.Controls;
 using System.Windows.Threading;
 using System.Windows.Input;
 using Prism.Commands;
+using System.Windows;
+using Jungo.wdapi_dotnet;
+using System.Runtime.InteropServices;
 
 namespace Hcdz.ModulePcie.ViewModels
 {
@@ -37,8 +40,11 @@ namespace Hcdz.ModulePcie.ViewModels
 		private readonly IRegionManager _regionManager;
 		private readonly IServiceLocator _serviceLocator;
         private DispatcherTimer dispatcherTimer;
-        private ConcurrentQueue<int> queue;
+        private ConcurrentQueue<byte[]> queue;
 		private bool IsCompleted=false;
+        private bool IsStop = false;
+        Int64 times;
+        long total = 0;
         private int index = 0;
         private int index1 = 0;
 		public MainViewModel(IUnityContainer container, IEventAggregator eventAggregator, IRegionManager regionManager, IServiceLocator serviceLocator)
@@ -47,18 +53,157 @@ namespace Hcdz.ModulePcie.ViewModels
 			_eventAggregator = eventAggregator;
 			_regionManager = regionManager; 
 			_serviceLocator = serviceLocator;
-			 queue = new ConcurrentQueue<int>();
+			 queue = new ConcurrentQueue<byte[]>();
             devicesItems = new ObservableCollection<PCIE_Device>();
-            dispatcherTimer = new DispatcherTimer(DispatcherPriority.Background);
-            dispatcherTimer.Interval = TimeSpan.FromSeconds(10);
+            dispatcherTimer = new DispatcherTimer(DispatcherPriority.Background)
+            {
+                Interval = TimeSpan.FromSeconds(1)
+            };
             dispatcherTimer.Tick += DispatcherTimer_Tick;
             _openDeviceText = "连接设备";
             OpenDevice = new DelegateCommand<object>(OnOpenDevice);
+            ScanDeviceCmd=new DelegateCommand<object>(OnScanDevice);
+            ReadDmaCmd =new DelegateCommand<object>(OnReadDma);
+            OpenChannel=new DelegateCommand<object>(OnOpenChannel);
+            CloseChannel = new DelegateCommand<object>(OnCloseChannel);
             _deviceChannelModels = new ObservableCollection<DeviceChannelModel>();//主板1 四通道
             _deviceChannel2 = new ObservableCollection<DeviceChannelModel>();//主板2 通道
             _viewModel = new PcieViewModel();
              Initializer();
 		}
+
+        private void OnCloseChannel(object obj)
+        {
+            var device = pciDevList.Get(0);
+            //device.WriteBAR0(0, 0x28, 1);          
+            device.WriteBAR0(0, 0x30, 0);
+        }
+
+        private void OnOpenChannel(object obj)
+        {
+            var device = pciDevList.Get(0);
+            //device.WriteBAR0(0, 0x28, 1);
+            device.WriteBAR0(0, 0x30, 1);
+        }
+
+        private void OnScanDevice(object obj)
+        {
+            var device = pciDevList.Get(0);
+            //device.WriteBAR0(0, 0x28, 1);
+            DWORD outData = 0;
+            device.ReadBAR0(0, 0x28, ref outData);
+        }
+
+        private void OnReadDma(object obj)
+        {
+            PCIE_Device dev =pciDevList.Get(0);
+            dev.FPGAReset(0);
+            if (dev.WDC_DMAContigBufLock() != 0)
+            {
+                MessageBox.Show(("分配报告内存失败"));
+                return;
+            }
+            DWORD wrDMASize = 16; //16kb
+            if (!dev.DMAWriteMenAlloc((uint)0, (uint)1, wrDMASize * 1024))
+            {
+                MessageBox.Show("内存分配失败!");
+                return;
+            }
+            dev.StartWrDMA(0);
+            //if (p->bWriteDisc[0])
+            //CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)savefile0, p, 0, NULL);
+            Thread nonParameterThread = new Thread(new ParameterizedThreadStart(p => NonParameterRun(dev)));
+
+            nonParameterThread.Start();
+
+
+
+            //p->WriteBAR0(0, 0x28, 1);			//dma wr 使能
+            //using (FileStream fs = new FileStream("G:\\dd4", FileMode.OpenOrCreate, FileAccess.Write))
+            //{
+            //    var s = Marshal.ReadByte(dev.pWbuffer);
+            //    var sr = dev.pWbuffer.ToString();
+            //    byte[] ss = new Byte[16*1024];
+            //    var temp = new byte[Marshal.SizeOf(dev.pWbuffer)];
+            //    Marshal.Copy(dev.pWbuffer, ss, 0, ss.Length);
+            //    int d = 0;
+            //    IntPtr dd = IntPtr.Zero;
+            //    StringBuilder stringBuilder = new StringBuilder();
+
+            //    var tmp = new byte[16];
+            //    var bytes = ss.Length / 16;
+            //    for (int i = 0; i <bytes; i++)
+            //    {
+            //        var index = i * 16;
+            //        byte[] result = new byte[16];
+            //        for (int j = 0; j < 16; j++)
+            //        {
+            //            result[j] = ss[index+j]; 
+            //        }
+            //        var barValue = Convert.ToBoolean(result[15]);
+            //        if (barValue)
+            //        {
+            //            int s2 = 9;
+            //            var barfile = result[8]; 
+            //            WriteFile(result);
+            //        }
+            //    }
+            //    fs.Write(ss, 0, ss.Length);
+            //    UInt32* h = (UInt32*)d;
+            //    // dev.pReportWrBuffer = IntPtr.Zero;
+            //    var ssss = *(UInt32*)dev.pReportWrBuffer;
+            //    ByteToString(ss);
+            // 	中断模式*/
+            //  while (*(UInt32*)dev.pReportWrBuffer != 0x1)
+            //{
+            //if (p->stop[0])//还得通知程序已经完成
+            //{		
+            //    goto dma_write_end;
+            //}
+            //  }
+            // *(UInt32*)dev.pReportWrBuffer = 0;
+
+            //dev.WriteBAR0(0, 0x10, 1);
+
+            //  var ssss22 = dev.pReportWrBuffer;
+            //  byte[] ss1 = new Byte[8192];
+            //  Marshal.Copy(dev.pWbuffer, ss1, 0, ss.Length);
+            // fs.Write(ss1,0, 8192);
+            //NEWAMD86_Device.WriteFile(fs.Handle,ref dev.pWbuffer, (uint)8192, out dd, 0);
+            // }
+
+        }
+
+        private void NonParameterRun(PCIE_Device dev)
+        {
+            dev.WriteBAR0(0, 0x60, 1);		//中断屏蔽
+            dev.WriteBAR0(0, 0x50, 1);		//dma 写报告使能
+
+            var dma = (WD_DMA)dev.m_dmaMarshaler.MarshalNativeToManaged(dev.pReportWrDMA);
+            var ppwDma = (WD_DMA)dev.m_dmaMarshaler.MarshalNativeToManaged(dev.ppwDma);
+
+            dev.WriteBAR0(0, 0x58, (uint)dma.Page[0].pPhysicalAddr);		//dma 写报告地址
+            //设置初始DMA写地址,长度等
+            dev.WriteBAR0(0, 0x4, (uint)ppwDma.Page[0].pPhysicalAddr);		//wr_addr low
+            dev.WriteBAR0(0, 0x8, (uint)(ppwDma.Page[0].pPhysicalAddr >> 32));	//wr_addr high
+            dev.WriteBAR0(0, 0xC, 16 * 1024);			//dma wr size
+
+            //启动DMA
+            dev.WriteBAR0(0, 0x10, 1);			//dma wr 使能
+            var startTime = DateTime.Now.Ticks;
+            while (!IsStop)
+            {
+                byte[] ss = new Byte[16 * 1024];
+                Marshal.Copy(dev.pWbuffer, ss, 0, ss.Length);
+                queue.Enqueue(ss);
+                index++;
+                total += 16 * 1024;
+                dev.WriteBAR0(0, 0x10, 1);//执行下次读取
+                var end = DateTime.Now.Ticks - startTime;
+                times = TimeSpan.FromTicks(end).Ticks;
+            }
+            dev.WriteBAR0(0, 0x10, 0);
+        }
 
         private void OnOpenDevice(object obj)
         {
@@ -153,7 +298,10 @@ namespace Hcdz.ModulePcie.ViewModels
         }
 
         public ICommand OpenDevice { get; private set; }
-
+        public ICommand ReadDmaCmd { get; private set; }
+        public ICommand ScanDeviceCmd { get; private set; }
+        public ICommand OpenChannel { get; private set; }
+        public ICommand CloseChannel { get; private set; }
         #endregion
 
 
@@ -285,7 +433,7 @@ namespace Hcdz.ModulePcie.ViewModels
 		{
 			for (int i = 0; i < 10000; i++)
 			{
-				queue.Enqueue(i);
+				//queue.Enqueue(Convert.ToByte(i));
 			}
 			
 		}
@@ -302,25 +450,17 @@ namespace Hcdz.ModulePcie.ViewModels
                 }
 				else
 				{
-					int result;
+					byte[] result;
 					if (queue.TryDequeue(out result))
 					{
-						if (result%2==0)
+						//if (result%2==0)
 						{
                             // ThreadPool.QueueUserWorkItem(WriteBar);
                             //  WriteBar(result); 
                             index1++;
                            WriteBar(result);
                         }
-						else
-						{
-							//Task.Run(() => {
-							//	using (var sw = new StreamWriter("D:\\ss1.txt",true))
-							//	{
-							//		sw.WriteLine(result);
-							//	}
-							//});
-						}
+					 
 					}
 				}
 			}
