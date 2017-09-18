@@ -102,5 +102,7 @@ namespace Hcdz.ModulePcie.Views
 				client.Dispose();
 			}
 		}
-	}
+
+       
+    }
 }
