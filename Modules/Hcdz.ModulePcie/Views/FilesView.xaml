@@ -775,9 +775,9 @@
                 <telerik:RadGridView.ContextMenu >
                     <ContextMenu FontFamily="SimHei" x:Name="GridContextMenu">
 
-                        <telerik:RadMenuItem Header="新建"  Command="{Binding DataContext.ListRightMenue ,RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}" CommandParameter="{Binding}"/>
-                            <telerik:RadMenuItem Header="编辑" />
-                            <telerik:RadMenuItem Header="删除"  />
+                        <MenuItem Header="新建"  Command="{Binding ListRightMenue}" CommandParameter="{Binding}"/>
+                            <MenuItem Header="编辑"   />
+                            <telerik:RadMenuItem IsSeparator="True"  Header="删除"  />
                          
                     </ContextMenu>
                 </telerik:RadGridView.ContextMenu>      
