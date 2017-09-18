@@ -191,7 +191,8 @@ namespace Hcdz.ModulePcie.ViewModels
             //启动DMA
             dev.WriteBAR0(0, 0x10, 1);			//dma wr 使能
             var startTime = DateTime.Now.Ticks;
-            while (!IsStop)
+            int i = 1;
+            while (i>0)
             {
                 byte[] ss = new Byte[16 * 1024];
                 Marshal.Copy(dev.pWbuffer, ss, 0, ss.Length);
@@ -201,6 +202,7 @@ namespace Hcdz.ModulePcie.ViewModels
                 dev.WriteBAR0(0, 0x10, 1);//执行下次读取
                 var end = DateTime.Now.Ticks - startTime;
                 times = TimeSpan.FromTicks(end).Ticks;
+                i--;
             }
             dev.WriteBAR0(0, 0x10, 0);
         }
@@ -314,34 +316,42 @@ namespace Hcdz.ModulePcie.ViewModels
 
             pciDevList = PCIE_DeviceList.TheDeviceList();
             queue1 = new ConcurrentQueue<byte[]>();
-			Thread readThread = new Thread(new ThreadStart(ReadDMA));
-			readThread.IsBackground = true;
-			readThread.Start();
-			Thread writeThread = new Thread(new ThreadStart(WriteDMA));
-			writeThread.IsBackground = true;
-			writeThread.Start();
-            DWORD dwStatus =0;//  pciDevList.Init();
-            if (dwStatus != (DWORD)wdc_err.WD_STATUS_SUCCESS)
+            Thread readThread = new Thread(new ThreadStart(ReadDMA));
+            readThread.IsBackground = true;
+            readThread.Start();
+            //Thread writeThread = new Thread(new ThreadStart(WriteDMA));
+            //writeThread.IsBackground = true;
+            //writeThread.Start();
+            try
             {
-                RadDesktopAlert alert = new RadDesktopAlert();
-                alert.Content = "加载设备失败!";
-                RadWindow.Alert(new DialogParameters
+                DWORD dwStatus = pciDevList.Init();
+                if (dwStatus != (DWORD)wdc_err.WD_STATUS_SUCCESS)
                 {
-                    Content = "加载设备失败！",
-                    DefaultPromptResultValue = "default name",
-                    Theme = new Windows8TouchTheme(),
-                    Header = "提示",
-                    TopOffset = 30,
-                });
-                return;
-            }
+                    RadDesktopAlert alert = new RadDesktopAlert();
+                    alert.Content = "加载设备失败!";
+                    RadWindow.Alert(new DialogParameters
+                    {
+                        Content = "加载设备失败！",
+                        DefaultPromptResultValue = "default name",
+                        Theme = new Windows8TouchTheme(),
+                        Header = "提示",
+                        TopOffset = 30,
+                    });
+                    return;
+                }
 
-            foreach (PCIE_Device dev in pciDevList)
-                devicesItems.Add(dev);
-            if (devicesItems.Count > 0)
-            {
-                ViewModel.ShortDesc = devicesItems[0].Name;
+                foreach (PCIE_Device dev in pciDevList)
+                    devicesItems.Add(dev);
+                if (devicesItems.Count > 0)
+                {
+                    ViewModel.ShortDesc = devicesItems[0].Name;
+                }
             }
+            catch (Exception)
+            {
+                MessageBox.Show("初始化设备失败!");                
+            }
+            
            
         }
 
@@ -450,15 +460,35 @@ namespace Hcdz.ModulePcie.ViewModels
                 }
 				else
 				{
-					byte[] result;
-					if (queue.TryDequeue(out result))
+					byte[] item;
+					if (queue.TryDequeue(out item))
 					{
 						//if (result%2==0)
 						{
                             // ThreadPool.QueueUserWorkItem(WriteBar);
                             //  WriteBar(result); 
                             index1++;
-                           WriteBar(result);
+                            // WriteBar(result);
+                            byte[] ss = new Byte[16 * 1024];
+                            var tmp = new byte[16];
+                            var bytes = item.Length / 16;
+                            for (int i = 0; i < bytes; i++)
+                            {
+                                var index = i * 16;
+                                byte[] result = new byte[16];
+                                for (int j = 0; j < 16; j++)
+                                {
+                                    result[j] = item[index + j];
+                                }
+                                var barValue = Convert.ToBoolean(result[15]);
+                                if (barValue)
+                                {
+                                    int s2 = 9;
+                                    var barfile = result[8];
+                                    WriteFile(result);
+                                }
+                            }
+                          //  WriteFile(result);
                         }
 					 
 					}
@@ -471,12 +501,73 @@ namespace Hcdz.ModulePcie.ViewModels
             byte[] s = new byte[1];
             s[0] = Convert.ToByte(1);
             sw.Position = sw.Length;
-            sw.Write(s, 0, 1);
-            index++;
+            sw.Write(s, 0, 1);            
             if (queue.IsEmpty)
             { 
                 var s1 = index;
             }
         }
-	}
+        private void WriteFile(BYTE[] result)
+        {
+            Thread.Sleep(1);
+            lock (this)
+            {            
+            var channelNo = Convert.ToInt32(result[8]);
+            string dir = "G:\\Bar" + channelNo;
+            if (!Directory.Exists(dir))
+            {
+                Directory.CreateDirectory(dir);
+            }
+            var fileName = dir + "\\" + DateTime.Now.ToString("yyyy-MM-dd");
+                using (FileStream fs = new FileStream(fileName, FileMode.Append, FileAccess.Write))
+                {
+                     byte[] trueValue = new byte[8];
+                    for (int i = 0; i < 8; i++)
+                    {
+                       trueValue[i] = result[i];
+                   }
+                    fs.Lock(fs.Position, fs.Length);
+                    fs.Position = fs.Length;
+                 
+                    fs.Write(trueValue, 0, 8);
+                }
+                //using (StreamWriter sw = new StreamWriter(fileName, true))
+                //{
+                //    var str = ByteToString(trueValue);
+                //    sw.Write(str);
+                //}
+            }
+        }
+        public string ByteToString(byte[] InBytes, int len)
+        {
+            string StringOut = "";
+            for (int i = 0; i < len; i++)
+            {
+                StringOut = StringOut + String.Format("{0:X2} ", InBytes[i]);
+            }
+            return StringOut;
+        }
+        public static string ByteToString(byte[] InBytes)
+        {
+            string StringOut = "";
+            foreach (byte InByte in InBytes)
+            {
+                StringOut = StringOut + String.Format("{0:X2} ", InByte);
+            }
+            return StringOut;
+        }
+        public static byte[] StringToByte(string InString)
+        {
+            string[] ByteStrings;
+            ByteStrings = InString.Split(" ".ToCharArray());
+            byte[] ByteOut;
+            ByteOut = new byte[ByteStrings.Length - 1];
+            for (int i = 0; i == ByteStrings.Length - 1; i++)
+            {
+                ByteOut[i] = Convert.ToByte(("0x" + ByteStrings[i]));
+            }
+            return ByteOut;
+        }
+
+    }
 }
