@@ -52,7 +52,7 @@ namespace Hcdz.ModulePcie.ViewModels
             dispatcherTimer = new DispatcherTimer(DispatcherPriority.Background);
             dispatcherTimer.Interval = TimeSpan.FromSeconds(10);
             dispatcherTimer.Tick += DispatcherTimer_Tick;
-            _openDeviceText = "打开设备";
+            _openDeviceText = "连接设备";
             OpenDevice = new DelegateCommand<object>(OnOpenDevice);
             _deviceChannelModels = new ObservableCollection<DeviceChannelModel>();//主板1 四通道
             _deviceChannel2 = new ObservableCollection<DeviceChannelModel>();//主板2 通道
@@ -95,7 +95,7 @@ namespace Hcdz.ModulePcie.ViewModels
             {
                 PCIE_Device dev = pciDevList.Get(0);
                 DeviceClose(0);
-                OpenDeviceText = "打开设备";
+                OpenDeviceText = "连接设备";
                 IsOpen = false;
             }
         }
@@ -238,7 +238,7 @@ namespace Hcdz.ModulePcie.ViewModels
             _deviceChannelModels.Add(channel0);
             _deviceChannelModels.Add(channel1);
             _deviceChannelModels.Add(channel2);
-            _deviceChannelModels.Add(channel3);
+            _deviceChannel2.Add(channel3);
             _deviceChannel2.Add(channel4);
             _deviceChannel2.Add(channel5);
         }

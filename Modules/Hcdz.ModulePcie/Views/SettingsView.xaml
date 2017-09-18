@@ -94,7 +94,7 @@
                                 <Button Height="28" Margin="20,0,0,0" Width="60"  Content="断开" Style="{DynamicResource MetroFlatButtonDisable}" Click="CloseClick" />
                             </StackPanel>
                             <ScrollViewer  Grid.Row="1" Margin="20,0,0,0">
-                                <TextBox Width="auto"  x:Name="txtMsg" BorderBrush="#2471a" ScrollViewer.CanContentScroll="True" IsReadOnly="True"  TextWrapping="Wrap"/>
+                                <TextBox Width="auto"  x:Name="txtMsg"   BorderBrush="#2471ac"  ScrollViewer.CanContentScroll="True" IsReadOnly="True"  TextWrapping="Wrap"/>
                             </ScrollViewer>
                         </Grid>
                     </Border>
