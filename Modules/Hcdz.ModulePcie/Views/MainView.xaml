@@ -26,7 +26,7 @@
             </Border.Background>
             <StackPanel Orientation="Horizontal">
                 <Label Content="目录"  VerticalAlignment="Center" Margin="5,0,0,0"/>
-                <ComboBox Margin="2,0,0,0" x:Name="cbxDrive" Height="20"  SelectedIndex="1" Width="60"  ItemsSource="{Binding DriveInfoItems}"  telerik:StyleManager.Theme="Windows8Touch">
+                <ComboBox Margin="2,0,0,0" x:Name="cbxDrive" SelectedValue="{Binding SelectedDsik}" Height="20"  SelectedIndex="1" Width="60"  ItemsSource="{Binding DriveInfoItems}"  telerik:StyleManager.Theme="Windows8Touch">
                     <ComboBox.ItemTemplate>
                         <DataTemplate>
                             <TextBlock Text="{Binding Name}"  FontSize="14"/>
@@ -34,12 +34,12 @@
                     </ComboBox.ItemTemplate>
                     <i:Interaction.Triggers>
                         <i:EventTrigger EventName="SelectionChanged">
-                            <i:InvokeCommandAction Command="{Binding SelectedLoadDirCmd}"  CommandParameter="{Binding ElementName=cbxDrive,Path=SelectedItem}"/>
+                            <i:InvokeCommandAction Command="{Binding SelectedDirCmd}"  CommandParameter="{Binding ElementName=cbxDrive,Path=SelectedItem}"/>
                         </i:EventTrigger>
                     </i:Interaction.Triggers>
                 </ComboBox>
                 <Label Content="DMA大小" VerticalAlignment="Center" Margin="20,0,0,0"/>
-                <ComboBox Margin="2,0,0,0" x:Name="cbxDma" Width="60" Height="20"  SelectedIndex="1"      telerik:StyleManager.Theme="Windows8Touch">
+                <ComboBox Margin="2,0,0,0" x:Name="cbxDma" Width="60" Height="20"  SelectedIndex="1"  SelectedValue="{Binding SelectedDMA}"    telerik:StyleManager.Theme="Windows8Touch">
                     <ComboBoxItem Content="8K"/>
                     <ComboBoxItem Content="16K"/>
                     <ComboBoxItem Content="32K"/>
@@ -48,22 +48,12 @@
                     <ComboBoxItem Content="256K"/>
                     <ComboBoxItem Content="512K"/>
                     <ComboBoxItem Content="1024K"/>
-                    <ComboBoxItem Content="2048K"/>
-                    <i:Interaction.Triggers>
-                        <i:EventTrigger EventName="SelectionChanged">
-                            <i:InvokeCommandAction Command="{Binding SelectedLoadDirCmd}"  CommandParameter="{Binding ElementName=cbxDrive,Path=SelectedItem}"/>
-                        </i:EventTrigger>
-                    </i:Interaction.Triggers>
-                </ComboBox>
+                    <ComboBoxItem Content="2048K"/>                
+                 </ComboBox>
                 <Label Content="方式" VerticalAlignment="Center" Margin="10,0,0,0"/>
                 <ComboBox Margin="2,0,0,0" x:Name="cbxMothed" Height="20"   SelectedIndex="0"     telerik:StyleManager.Theme="Windows8Touch">
-                    <ComboBoxItem Content="测速" />
-                    <ComboBoxItem Content="存盘"/>
-                    <i:Interaction.Triggers>
-                        <i:EventTrigger EventName="SelectionChanged">
-                            <i:InvokeCommandAction Command="{Binding SelectedLoadDirCmd}"  CommandParameter="{Binding ElementName=cbxDrive,Path=SelectedItem}"/>
-                        </i:EventTrigger>
-                    </i:Interaction.Triggers>
+                    <ComboBoxItem Content="存盘" />
+                    <ComboBoxItem Content="测速"/>                    
                 </ComboBox>
                 <Button   Margin="20,0,0,0" VerticalAlignment="Center" Width="80"  Content="自检" Style="{DynamicResource MetroFlatButton}"  Command="{Binding ScanDeviceCmd}" CommandParameter="{Binding}"/>
                 <Button   Margin="20,0,0,0" VerticalAlignment="Center" Width="80"  Content="启动DMA" Style="{DynamicResource MetroFlatButton}"  Command="{Binding ReadDmaCmd}"  CommandParameter="{Binding}"/>
@@ -179,8 +169,8 @@
                     <ColumnDefinition  Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <TextBlock Text="磁盘空间："   VerticalAlignment="Center"/>
-                <metro:MetroProgressBar Grid.Column="1" HorizontalAlignment="Left" Width="500" Value="56" Foreground="#5DA0C7"    Background="#EDEDED" Height="32"/>
-                <TextBlock Text="456.23GB 可用" Grid.Column="2" Margin="2,0,0,0" VerticalAlignment="Center"/>
+                <metro:MetroProgressBar Grid.Column="1" HorizontalAlignment="Left" Width="500" Value="{Binding DiskPercent}" Foreground="#5DA0C7"    Background="#EDEDED" Height="32"/>
+                <TextBlock Text="{Binding DiskVal}" Grid.Column="2" Margin="2,0,0,0" VerticalAlignment="Center"/>
                 <TextBlock Grid.Row="1" Text="自检信息："  HorizontalAlignment="Left" Margin="0,5,0,0"/>
                 <TextBlock Grid.Row="1" Text="{Binding DeviceDesc}" Grid.Column="1" Grid.ColumnSpan="2" Margin="0,5,0,0" MinHeight="88"/>
                 <!--<StackPanel Orientation="Horizontal"  VerticalAlignment="Center" Margin="30,0,0,0">

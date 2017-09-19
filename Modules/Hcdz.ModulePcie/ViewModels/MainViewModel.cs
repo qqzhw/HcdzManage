@@ -30,6 +30,7 @@ using Prism.Commands;
 using System.Windows;
 using Jungo.wdapi_dotnet;
 using System.Runtime.InteropServices;
+using Pvirtech.Framework.Common;
 
 namespace Hcdz.ModulePcie.ViewModels
 {
@@ -66,11 +67,29 @@ namespace Hcdz.ModulePcie.ViewModels
             ReadDmaCmd =new DelegateCommand<object>(OnReadDma);
             OpenChannel=new DelegateCommand<DeviceChannelModel>(OnOpenChannel);
             CloseChannel = new DelegateCommand<DeviceChannelModel>(OnCloseChannel);
+            SelectedDirCmd = new DelegateCommand<object>(OnLoadSelectDir);
             _deviceChannelModels = new ObservableCollection<DeviceChannelModel>();//主板1 四通道
             _deviceChannel2 = new ObservableCollection<DeviceChannelModel>();//主板2 通道
             _viewModel = new PcieViewModel();
              Initializer();
 		}
+        
+        private void OnLoadSelectDir(object obj)
+        {
+            if (obj==null)
+            {
+                return;
+            }
+            DriveInfo[] drives =DriveInfo.GetDrives();
+            foreach (var drive in drives)
+            {
+                if (drive.Name.Contains(obj.ToString()))
+                {
+                    DiskVal = ByteFormatter.ToString(drive.AvailableFreeSpace) + " 可用";
+                    DiskPercent = 100.0 - (int)(drive.AvailableFreeSpace * 100.0 / drive.TotalSize); 
+                }
+            }
+        }
 
         private void OnCloseChannel(DeviceChannelModel model)
         {
@@ -306,10 +325,75 @@ namespace Hcdz.ModulePcie.ViewModels
                 SetProperty(ref _openDeviceText1, value);
             }
         }
+        /// <summary>
+        /// 选中磁盘目录
+        /// </summary>
+        private string _selectedDsik;
+        public string SelectedDsik
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(_selectedDsik))
+                {
+                    OnLoadSelectDir("D:\\");
+                }
+                return _selectedDsik;
+            }
+            set
+            {
+                SetProperty(ref _selectedDsik, value);
+            }
+        }
+        /// <summary>
+        /// DMA读取数据大小
+        /// </summary>
+        private string  _selectedDMA;
+        public string SelectedDMA
+        {
+            get
+            {
+                return _selectedDMA;
+            }
+            set
+            {
+                SetProperty(ref _selectedDMA, value);
+            }
+        }
+        /// <summary>
+        /// 硬盘使用百分比
+        /// </summary>
+        private double _diskPercent;
+        public double  DiskPercent
+        {
+            get
+            {
+                return _diskPercent;
+            }
+            set
+            {
+                SetProperty(ref _diskPercent, value);
+            }
+        }
+
+        /// <summary>
+        /// 硬盘剩余空间
+        /// </summary>
+        private string _diskVal;
+        public string  DiskVal
+        {
+            get
+            {
+                return _diskVal;
+            }
+            set
+            {
+                SetProperty(ref _diskVal, value);
+            }
+        }
+
         private string  _deviceDesc;
         public string DeviceDesc { get { return _deviceDesc; } set { SetProperty(ref _deviceDesc, value); } }
-
-        
+                
         private ObservableCollection<DriveInfo> _driveInfoItems;
         public ObservableCollection<DriveInfo> DriveInfoItems
         {
@@ -334,6 +418,7 @@ namespace Hcdz.ModulePcie.ViewModels
         public ICommand ScanDeviceCmd { get; private set; }
         public ICommand OpenChannel { get; private set; }
         public ICommand CloseChannel { get; private set; }
+        public ICommand SelectedDirCmd { get; private set; }
         #endregion
 
 
