@@ -41,6 +41,14 @@ namespace Hcdz.ModulePcie.ViewModels
             get { return _isOpen; }
             set { SetProperty(ref _isOpen, value); }
         }
+        private bool _btnOpenTrue;
+        public bool BtnOpenTrue
+        {
+            get { return _btnOpenTrue; }
+            set { SetProperty(ref _btnOpenTrue, value); }
+        }
+      
+
         private string _diskPath;
         public string DiskPath
         {

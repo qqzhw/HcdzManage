@@ -60,38 +60,47 @@ namespace Hcdz.ModulePcie.ViewModels
                 Interval = TimeSpan.FromSeconds(1)
             };
             dispatcherTimer.Tick += DispatcherTimer_Tick;
-            _openDeviceText = "连接设备";
+            _openDeviceText =_openDeviceText1= "连接设备";
             OpenDevice = new DelegateCommand<object>(OnOpenDevice);
             ScanDeviceCmd=new DelegateCommand<object>(OnScanDevice);
             ReadDmaCmd =new DelegateCommand<object>(OnReadDma);
-            OpenChannel=new DelegateCommand<object>(OnOpenChannel);
-            CloseChannel = new DelegateCommand<object>(OnCloseChannel);
+            OpenChannel=new DelegateCommand<DeviceChannelModel>(OnOpenChannel);
+            CloseChannel = new DelegateCommand<DeviceChannelModel>(OnCloseChannel);
             _deviceChannelModels = new ObservableCollection<DeviceChannelModel>();//主板1 四通道
             _deviceChannel2 = new ObservableCollection<DeviceChannelModel>();//主板2 通道
             _viewModel = new PcieViewModel();
              Initializer();
 		}
 
-        private void OnCloseChannel(object obj)
+        private void OnCloseChannel(DeviceChannelModel model)
         {
-            var device = pciDevList.Get(0);
-            //device.WriteBAR0(0, 0x28, 1);          
-            device.WriteBAR0(0, 0x30, 0);
+            var device = model.Device;
+            // var device = pciDevList.Get(0);
+            //device.WriteBAR0(0, 0x28, 1);
+            device.WriteBAR0(0, model.RegAddress, 0);
         }
 
-        private void OnOpenChannel(object obj)
+        private void OnOpenChannel(DeviceChannelModel model)
         {
-            var device = pciDevList.Get(0);
+            var device = model.Device;
+           // var device = pciDevList.Get(0);
             //device.WriteBAR0(0, 0x28, 1);
-            device.WriteBAR0(0, 0x30, 1);
+            device.WriteBAR0(0, model.RegAddress, 1);
         }
 
         private void OnScanDevice(object obj)
         {
+            if (pciDevList.Count==0)
+            {
+                MessageBox.Show("未发现设备!");
+            }
             var device = pciDevList.Get(0);
             //device.WriteBAR0(0, 0x28, 1);
             DWORD outData = 0;
-            device.ReadBAR0(0, 0x28, ref outData);
+           if (!device.ReadBAR0(0, 0x28, ref outData))
+            {
+                MessageBox.Show("自检失败!");
+            }
         }
 
         private void OnReadDma(object obj)
@@ -209,13 +218,23 @@ namespace Hcdz.ModulePcie.ViewModels
 
         private void OnOpenDevice(object obj)
         {
+            int index = 0;
+            int.TryParse(obj.ToString(), out index);
             if (!IsOpen)
             {
-                if (DeviceOpen(0) == true)
+                if (DeviceOpen(index) == true)
                 {
-                    OpenDeviceText = "关闭设备";
-                    IsOpen = true;
-                    var device = pciDevList.Get(0);
+                    if (index == 1)
+                    {
+                        OpenDeviceText1 = "关闭设备";
+                        IsOpen = true;
+                    }
+                    else
+                    {
+                        OpenDeviceText = "关闭设备";
+                        IsOpen = true;
+                    }
+                    var device = pciDevList.Get(index);
                     DWORD outData=0;
                     device.ReadBAR0(0, 0x00, ref outData);
                     if ((outData & 0x10) == 0x10)
@@ -275,7 +294,18 @@ namespace Hcdz.ModulePcie.ViewModels
 
         private string _openDeviceText;
         public string OpenDeviceText { get { return _openDeviceText; }set { SetProperty(ref _openDeviceText,value); } }
-
+        private string _openDeviceText1;
+        public string OpenDeviceText1
+        {
+            get
+            {
+                return _openDeviceText1;
+            }
+            set
+            {
+                SetProperty(ref _openDeviceText1, value);
+            }
+        }
         private string  _deviceDesc;
         public string DeviceDesc { get { return _deviceDesc; } set { SetProperty(ref _deviceDesc, value); } }
 
@@ -513,7 +543,7 @@ namespace Hcdz.ModulePcie.ViewModels
             lock (this)
             {            
             var channelNo = Convert.ToInt32(result[8]);
-            string dir = "G:\\Bar" + channelNo;
+            string dir = "D:\\Bar" + channelNo;
             if (!Directory.Exists(dir))
             {
                 Directory.CreateDirectory(dir);

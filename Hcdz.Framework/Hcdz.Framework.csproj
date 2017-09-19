@@ -97,6 +97,8 @@
     <Compile Include="Common\XmlHelper.cs" />
     <Compile Include="Controls\DiskShowControl.cs" />
     <Compile Include="Controls\SwitchControl.cs" />
+    <Compile Include="Converters\Class1.cs" />
+    <Compile Include="Converters\VisibilityConverter.cs" />
     <Compile Include="Core\CollectionExtensions.cs" />
     <Compile Include="Core\DataItem.cs" />
     <Compile Include="Core\DynamicDirectoryModuleCatalog.cs" />
