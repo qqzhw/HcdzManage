@@ -747,7 +747,8 @@ namespace Hcdz.PcieLib
         }
         public bool WriteBAR0(DWORD index, UINT64 offset, DWORD indata)
         {
-            if (wdc_lib_decl.WDC_WriteAddr32(Handle, 0, offset, indata) != 0)
+            var result = wdc_lib_decl.WDC_WriteAddr32(Handle, 0, offset, indata);
+            if (result != 0)
             {
                 //strcpy_s(infor,"写BAR0空间错误\n");
                 //strcat(infor,Stat2Str(dw));

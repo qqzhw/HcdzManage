@@ -2,6 +2,7 @@
 using Prism.Mvvm;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -20,6 +21,16 @@ namespace Hcdz.ModulePcie.ViewModels
             get { return _isAurora; }
             set { SetProperty(ref _isAurora, value); }
         }
+
+        private string _filePath;
+        public string FilePath
+        {
+            get { return _filePath; }
+            set { SetProperty(ref _filePath, value); }
+        }
+        public FileStream Stream { get; set; }
+        public byte[] FileByte { get; set; }
+        public StringBuilder ByteString { get; set; }
         private string _error;
         public string Error
         {

@@ -57,7 +57,7 @@
                 </ComboBox>
                 <Button   Margin="20,0,0,0" VerticalAlignment="Center" Width="80"  Content="自检" Style="{DynamicResource MetroFlatButton}"  Command="{Binding ScanDeviceCmd}" CommandParameter="{Binding}"/>
                 <Button   Margin="20,0,0,0" VerticalAlignment="Center" Width="80"  Content="启动DMA" Style="{DynamicResource MetroFlatButton}"  Command="{Binding ReadDmaCmd}"  CommandParameter="{Binding}"/>
-
+                <Button   Margin="20,0,0,0" VerticalAlignment="Center" Width="80"  Content="关闭DMA" Style="{DynamicResource MetroFlatButton}"  Command="{Binding CloseDmaCmd}"  CommandParameter="{Binding}"/>
                 <!--<metro:MetroProgressBar  Margin="10,0,0,0" Width="400" Value="56" Foreground="#5DA0C7"    Background="#EDEDED" Height="32"/>-->
                 <StackPanel Orientation="Horizontal"  VerticalAlignment="Center" Margin="30,0,0,0">
                     <TextBlock Text="传输速率：" FontSize="14"  Foreground="#333333"/>
