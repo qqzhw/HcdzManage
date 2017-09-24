@@ -46,8 +46,7 @@ namespace Hcdz.ModulePcie.ViewModels
         private bool IsStop = false;
         Int64 times;
         long total = 0;
-        private int index = 0;
-        private int index1 = 0;
+        private FileStream Stream;
 		public MainViewModel(IUnityContainer container, IEventAggregator eventAggregator, IRegionManager regionManager, IServiceLocator serviceLocator)
 		{
 			_container = container;
@@ -73,11 +72,14 @@ namespace Hcdz.ModulePcie.ViewModels
             _deviceChannel2 = new ObservableCollection<DeviceChannelModel>();//主板2 通道
             _viewModel = new PcieViewModel();
              Initializer();
-		}
+            Stream = new FileStream("D:\\test", FileMode.Append, FileAccess.Write);
+
+        }
 
         private void OnCloseReadDma(object obj)
         {
             IsStop = true;
+            dispatcherTimer.Stop();
         }
 
         private void OnLoadSelectDir(object obj)
@@ -170,6 +172,7 @@ namespace Hcdz.ModulePcie.ViewModels
 
             }
             dev.StartWrDMA(0);
+            dispatcherTimer.Start();
             //if (p->bWriteDisc[0])
             //CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)savefile0, p, 0, NULL);
             Thread nonParameterThread = new Thread(new ParameterizedThreadStart(p => NonParameterRun(dev)));
@@ -264,6 +267,7 @@ namespace Hcdz.ModulePcie.ViewModels
               
                 byte[]  tmpResult = new Byte[16 * 1024];
                 Marshal.Copy(dev.pWbuffer, tmpResult, 0, tmpResult.Length);
+                Stream.Write(tmpResult, 0, tmpResult.Length);
                 var bytes = tmpResult.Length / 16;
                 for (int i = 0; i < bytes; i++)
                 {
@@ -280,7 +284,7 @@ namespace Hcdz.ModulePcie.ViewModels
                     }
                 }
                 //  queue.Enqueue(tmpResult);
-
+                //tranIndex++;
                 total += 16 * 1024;
                 foreach (var item in _deviceChannelModels)
                 {
@@ -345,7 +349,11 @@ namespace Hcdz.ModulePcie.ViewModels
 
         private void DispatcherTimer_Tick(object sender, EventArgs e)
         {
-            
+            Application.Current.Dispatcher.Invoke(() => {
+                var text = (total /1048576.0).ToString("f2")+"MB/s";
+                TextRate = text;
+                total = 0;
+            });
         }
 
         #region 属性
@@ -448,7 +456,17 @@ namespace Hcdz.ModulePcie.ViewModels
                 SetProperty(ref _diskVal, value);
             }
         }
-
+        private string _textRate;
+        public string TextRate {
+            get
+            {
+                return _textRate;
+            }
+            set
+            {
+                SetProperty(ref _textRate, value);
+            }
+        }
         private string  _deviceDesc;
         public string DeviceDesc { get { return _deviceDesc; } set { SetProperty(ref _deviceDesc, value); } }
                 

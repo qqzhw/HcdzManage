@@ -61,7 +61,7 @@
                 <!--<metro:MetroProgressBar  Margin="10,0,0,0" Width="400" Value="56" Foreground="#5DA0C7"    Background="#EDEDED" Height="32"/>-->
                 <StackPanel Orientation="Horizontal"  VerticalAlignment="Center" Margin="30,0,0,0">
                     <TextBlock Text="传输速率：" FontSize="14"  Foreground="#333333"/>
-                    <TextBlock Margin="2,0,0,0" FontSize="14"  Foreground="#333333" Text="2.3GB/s" />
+                    <TextBlock Margin="2,0,0,0" FontSize="14"  Foreground="#333333" Text="{Binding TextRate}" />
                 </StackPanel>
             </StackPanel>
         </Border>
