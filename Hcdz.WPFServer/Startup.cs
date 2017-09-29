@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNet.SignalR;
+﻿using Hcdz.PcieLib;
+using Microsoft.AspNet.SignalR;
 using Microsoft.AspNet.SignalR.Configuration;
 using Microsoft.AspNet.SignalR.Hubs;
 using Microsoft.AspNet.SignalR.Infrastructure;
@@ -15,7 +16,8 @@ using System.Net.Http.Formatting;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web.Http;
-
+using wdc_err = Jungo.wdapi_dotnet.WD_ERROR_CODES;
+using DWORD = System.UInt32;
 namespace Hcdz.WPFServer
 {
 	public class Startup
@@ -39,11 +41,17 @@ namespace Hcdz.WPFServer
 			//app.MapSignalR();
 			SetupWebApi(app); 
 			SetupFileUpload(app);
-		
-		}
-		 
+            // Initializer();
+        }
 
-		private void SetupWebApi(IAppBuilder app)
+        private void Initializer()
+        {
+           var pciDevList = PCIE_DeviceList.TheDeviceList();
+           GlobalHost.DependencyResolver.Register(typeof(PCIE_DeviceList),() =>pciDevList);
+             
+        }
+
+        private void SetupWebApi(IAppBuilder app)
 		{
 			var httpConfiguration = new HttpConfiguration();
 

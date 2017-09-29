@@ -1,4 +1,5 @@
-﻿using Hcdz.WPFServer.Models;
+﻿using Hcdz.PcieLib;
+using Hcdz.WPFServer.Models;
 using Microsoft.AspNet.SignalR;
 using System;
 using System.Collections.Generic;
@@ -7,11 +8,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
-
+using wdc_err = Jungo.wdapi_dotnet.WD_ERROR_CODES;
+using DWORD = System.UInt32;
 namespace Hcdz.WPFServer
 { 
 	public class MyHub : Hub
 	{
+        public  MyHub()
+        {
+           InitLoad();
+        }
 		public void Send(string name, string message)
 		{
 			Clients.All.addMessage(name, message);
@@ -23,7 +29,7 @@ namespace Hcdz.WPFServer
 				((MainWindow)Application.Current.MainWindow).WriteToConsole("Client connected: " + Context.ConnectionId));
 			//发送消息成功  
 			var hub = GlobalHost.ConnectionManager.GetHubContext<MyHub>();
-			hub.Clients.All.NoticeMessage("asdfasdf");
+			hub.Clients.Client(Context.ConnectionId).Connected(true);
 			return base.OnConnected();
 		}
 		 
@@ -113,5 +119,28 @@ namespace Hcdz.WPFServer
 			});
 			return list;
 		}
-	}
+
+        private async Task<DWORD> InitLoad()
+        {
+            var pciDevList = PCIE_DeviceList.TheDeviceList();
+            //GlobalHost.DependencyResolver.Register(typeof(PCIE_DeviceList), () => pciDevList);
+            try
+            {
+                var result = await Task.Run(() =>
+                 {
+                     DWORD dwStatus = pciDevList.Init();
+                     if (dwStatus != (DWORD)wdc_err.WD_STATUS_SUCCESS)
+                     {
+                         return dwStatus;
+                     }
+                     return (DWORD)1000;
+                 });
+                return result;
+            }
+            catch (Exception)
+            {
+                return 1000;
+            } 
+        }
+    }
 }

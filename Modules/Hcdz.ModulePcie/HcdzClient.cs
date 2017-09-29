@@ -40,8 +40,10 @@ namespace Hcdz.ModulePcie
 		public event Action<string, string, string> AddMessageContent;
 		  
 		// Global  
-		public event Action<ClientMessage> OnGetMessage; 
-		public string SourceUrl { get; private set; }
+		public event Action<ClientMessage> OnGetMessage;
+        public event Action<bool> Connected;
+       
+        public string SourceUrl { get; private set; }
 		public bool AutoReconnect { get; set; }
 		public TextWriter TraceWriter { get; set; }
 		public TraceLevels TraceLevel { get; set; }
@@ -204,8 +206,11 @@ namespace Hcdz.ModulePcie
 			{
 				Disconnected += OnDisconnected;
 			}
-			 
-			_chat.On<string>(ClientEvents.NoticeMessage, (message) =>
+            _chat.On<bool>(ClientEvents.Connected, (message) =>
+            {
+                Execute(Connected, msg => msg(message));
+            });
+            _chat.On<string>(ClientEvents.NoticeMessage, (message) =>
 			{
 				Execute(MessageReceived, messageReceived => messageReceived(message));
 			});
@@ -282,8 +287,9 @@ namespace Hcdz.ModulePcie
 			}
 		}
 
+        public bool IsConnected { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
-		public async Task GetAllUsers()
+        public async Task GetAllUsers()
 		{
 			if (_connection.State == ConnectionState.Connected)
 			{
@@ -355,7 +361,14 @@ namespace Hcdz.ModulePcie
 
 			return false;
 		}
- 
-	 
-	}
+
+        public async Task<UInt32> InitializerDevice()
+        {
+            if (_connection.State == ConnectionState.Connected)
+            {
+                return await _chat.Invoke<UInt32>("InitLoad");
+            }
+            return 1000;
+        }
+    }
 }

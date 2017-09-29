@@ -73,13 +73,24 @@ namespace Hcdz.ModulePcie.ViewModels
             _deviceChannelModels = new ObservableCollection<DeviceChannelModel>();//主板1 四通道
             _deviceChannel2 = new ObservableCollection<DeviceChannelModel>();//主板2 通道
             _viewModel = new PcieViewModel();
-             Initializer();
+           
             Stream = new FileStream("D:\\test", FileMode.Append, FileAccess.Write);
 			_hcdzClient.MessageReceived += _hcdzClient_MessageReceived;
+            _hcdzClient.Connected +=ClientConnected;
 			_hcdzClient.Connect("dddd");
+
+            
         }
 
-		private void _hcdzClient_MessageReceived(string obj)
+        private void ClientConnected(bool result)
+        {
+            if (result)
+            {
+                Initializer();
+            }
+        }
+
+        private void _hcdzClient_MessageReceived(string obj)
 		{
 			 
 		}
@@ -507,38 +518,38 @@ namespace Hcdz.ModulePcie.ViewModels
         #endregion
 
 
-        private void Initializer()
+        private async void Initializer()
 		{
-            DriveInfo[] drives = DriveInfo.GetDrives();
-            _driveInfoItems = new ObservableCollection<DriveInfo>(drives);
+            //DriveInfo[] drives = DriveInfo.GetDrives();
+            //_driveInfoItems = new ObservableCollection<DriveInfo>(drives);
 
-            LoadDeviceChannel();
-
+            //LoadDeviceChannel();
+            var result =await _hcdzClient.InitializerDevice();
             pciDevList = PCIE_DeviceList.TheDeviceList();
-            queue1 = new ConcurrentQueue<byte[]>();
+          //  queue1 = new ConcurrentQueue<byte[]>();
             Thread readThread = new Thread(new ThreadStart(ReadDMA));
             readThread.IsBackground = true;
             readThread.Start();
             //Thread writeThread = new Thread(new ThreadStart(WriteDMA));
             //writeThread.IsBackground = true;
             //writeThread.Start();
-            try
-            {
-                DWORD dwStatus = pciDevList.Init();
-                if (dwStatus != (DWORD)wdc_err.WD_STATUS_SUCCESS)
-                {
-                    RadDesktopAlert alert = new RadDesktopAlert();
-                    alert.Content = "加载设备失败!";
-                    RadWindow.Alert(new DialogParameters
-                    {
-                        Content = "加载设备失败！",
-                        DefaultPromptResultValue = "default name",
-                        Theme = new Windows8TouchTheme(),
-                        Header = "提示",
-                        TopOffset = 30,
-                    });
-                    return;
-                }
+            //try
+            //{
+            //    DWORD dwStatus = pciDevList.Init();
+            //    if (dwStatus != (DWORD)wdc_err.WD_STATUS_SUCCESS)
+            //    {
+            //        RadDesktopAlert alert = new RadDesktopAlert();
+            //        alert.Content = "加载设备失败!";
+            //        RadWindow.Alert(new DialogParameters
+            //        {
+            //            Content = "加载设备失败！",
+            //            DefaultPromptResultValue = "default name",
+            //            Theme = new Windows8TouchTheme(),
+            //            Header = "提示",
+            //            TopOffset = 30,
+            //        });
+            //        return;
+            //    }
 
                 foreach (PCIE_Device dev in pciDevList)
                     devicesItems.Add(dev);
@@ -546,11 +557,11 @@ namespace Hcdz.ModulePcie.ViewModels
                 {
                     ViewModel.ShortDesc = devicesItems[0].Name;
                 }
-            }
-            catch (Exception)
-            {
-                MessageBox.Show("初始化设备失败!");                
-            }
+           // }
+            //catch (Exception)
+            //{
+            //    MessageBox.Show("初始化设备失败!");                
+            //}
             
            
         }

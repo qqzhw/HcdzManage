@@ -6,7 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
+using DWORD = System.UInt32;
 namespace Hcdz.ModulePcie
 {
 	public interface IHcdzClient
@@ -14,9 +14,11 @@ namespace Hcdz.ModulePcie
 		event Action<string> MessageReceived;
 		event Action<IEnumerable<string>> LoggedOut; 
 		event Action<string, string, string> AddMessageContent;  
-		event Action Disconnected; 
-		event Action<ClientMessage> OnGetMessage;
+		event Action Disconnected;
+        event Action<bool> Connected;
+        event Action<ClientMessage> OnGetMessage;
 	   
+        bool IsConnected { get; set; }
 		string SourceUrl { get; }
 		bool AutoReconnect { get; set; } 
 		HubConnection Connection { get; } 
@@ -33,5 +35,6 @@ namespace Hcdz.ModulePcie
 		Task<List<DirectoryInfoModel>> GetFileList(string path);
         Task<DriveInfo[]> GetDrives();
 
+        Task<DWORD> InitializerDevice();
     }
 }

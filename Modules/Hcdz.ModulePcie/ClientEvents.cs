@@ -2,6 +2,7 @@
 {
     public static class ClientEvents
     {
+        public static readonly string Connected = "connected";
         public static readonly string NoticeMessage = "noticeMessage";
         public static readonly string AddMessageContent = "addMessageContent"; 
         public static readonly string AddUser = "addUser"; 
