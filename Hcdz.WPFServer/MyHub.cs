@@ -21,7 +21,7 @@ namespace Hcdz.WPFServer
 				((MainWindow)Application.Current.MainWindow).WriteToConsole("Client connected: " + Context.ConnectionId));
 			//发送消息成功  
 			var hub = GlobalHost.ConnectionManager.GetHubContext<MyHub>();
-			hub.Clients.All.Message("asdfasdf");
+			hub.Clients.All.NoticeMessage("asdfasdf");
 			return base.OnConnected();
 		}
 		 

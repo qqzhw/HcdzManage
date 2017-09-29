@@ -10,7 +10,7 @@ namespace Hcdz.ModulePcie
 {
 	public interface IHcdzClient
 	{
-		event Action<ClientMessage, string> MessageReceived;
+		event Action<string> MessageReceived;
 		event Action<IEnumerable<string>> LoggedOut; 
 		event Action<string, string, string> AddMessageContent;  
 		event Action Disconnected; 

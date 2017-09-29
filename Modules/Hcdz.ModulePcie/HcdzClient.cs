@@ -34,7 +34,7 @@ namespace Hcdz.ModulePcie
 			TraceLevel = TraceLevels.All;  
 		}
 
-		public event Action<ClientMessage, string> MessageReceived;
+		public event Action<string> MessageReceived;
 		public event Action<IEnumerable<string>> LoggedOut; 
 		public event Action<string, string, string> TopicChanged; 
 		public event Action<string, string, string> AddMessageContent;
@@ -205,9 +205,9 @@ namespace Hcdz.ModulePcie
 				Disconnected += OnDisconnected;
 			}
 			 
-			_chat.On<ClientMessage, string>(ClientEvents.AddMessage, (message, room) =>
+			_chat.On<string>(ClientEvents.NoticeMessage, (message) =>
 			{
-				Execute(MessageReceived, messageReceived => messageReceived(message, room));
+				Execute(MessageReceived, messageReceived => messageReceived(message));
 			});
 
 			_chat.On<IEnumerable<string>>(ClientEvents.LogOut, rooms =>

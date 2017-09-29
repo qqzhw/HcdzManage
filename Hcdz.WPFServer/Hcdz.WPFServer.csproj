@@ -135,5 +135,11 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Hcdz.PcieLib\Hcdz.PcieLib.csproj">
+      <Project>{bfaf95f6-c68f-4cbf-bb2e-06bbf625e907}</Project>
+      <Name>Hcdz.PcieLib</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

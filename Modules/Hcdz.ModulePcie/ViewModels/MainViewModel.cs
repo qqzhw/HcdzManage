@@ -75,10 +75,16 @@ namespace Hcdz.ModulePcie.ViewModels
             _viewModel = new PcieViewModel();
              Initializer();
             Stream = new FileStream("D:\\test", FileMode.Append, FileAccess.Write);
+			_hcdzClient.MessageReceived += _hcdzClient_MessageReceived;
 			_hcdzClient.Connect("dddd");
         }
 
-        private void OnCloseReadDma(object obj)
+		private void _hcdzClient_MessageReceived(string obj)
+		{
+			 
+		}
+
+		private void OnCloseReadDma(object obj)
         {
             IsStop = true;
             dispatcherTimer.Stop();
