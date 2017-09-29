@@ -40,19 +40,21 @@ namespace Hcdz.ModulePcie.ViewModels
 		private readonly IUnityContainer _container;
 		private readonly IRegionManager _regionManager;
 		private readonly IServiceLocator _serviceLocator;
-        private DispatcherTimer dispatcherTimer;
+		private readonly IHcdzClient  _hcdzClient;
+		private DispatcherTimer dispatcherTimer;
         private ConcurrentQueue<byte[]> queue;
 		private bool IsCompleted=false;
         private bool IsStop = false;
         Int64 times;
         long total = 0;
         private FileStream Stream;
-		public MainViewModel(IUnityContainer container, IEventAggregator eventAggregator, IRegionManager regionManager, IServiceLocator serviceLocator)
+		public MainViewModel(IUnityContainer container, IEventAggregator eventAggregator, IRegionManager regionManager, IServiceLocator serviceLocator, IHcdzClient hcdzClient)
 		{
 			_container = container;
 			_eventAggregator = eventAggregator;
 			_regionManager = regionManager; 
 			_serviceLocator = serviceLocator;
+			_hcdzClient = hcdzClient;
 			 queue = new ConcurrentQueue<byte[]>();
             devicesItems = new ObservableCollection<PCIE_Device>();
             dispatcherTimer = new DispatcherTimer(DispatcherPriority.Background)
@@ -73,7 +75,7 @@ namespace Hcdz.ModulePcie.ViewModels
             _viewModel = new PcieViewModel();
              Initializer();
             Stream = new FileStream("D:\\test", FileMode.Append, FileAccess.Write);
-
+			_hcdzClient.Connect("dddd");
         }
 
         private void OnCloseReadDma(object obj)

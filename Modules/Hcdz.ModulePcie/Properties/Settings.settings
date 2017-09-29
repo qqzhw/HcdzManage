@@ -20,5 +20,8 @@
     <Setting Name="Bar5" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
+    <Setting Name="ServerUrl" Type="System.String" Scope="User">
+      <Value Profile="(Default)">http://localhost:8080/signalr</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

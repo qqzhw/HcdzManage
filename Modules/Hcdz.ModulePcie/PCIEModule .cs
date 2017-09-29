@@ -28,6 +28,7 @@ namespace Hcdz.ModulePcie
 
 		private void RegisterService()
 		{
+			_unityContainer.RegisterType<IHcdzClient,HcdzClient>(new ContainerControlledLifetimeManager());
 			_unityContainer.RegisterType<SettingsViewModel>(new ContainerControlledLifetimeManager());
 		}
 
