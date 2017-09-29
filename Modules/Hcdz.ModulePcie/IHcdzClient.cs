@@ -2,6 +2,7 @@
 using Microsoft.AspNet.SignalR.Client;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -30,7 +31,7 @@ namespace Hcdz.ModulePcie
 		Task SetTyping(string roomName);
 
 		Task<List<DirectoryInfoModel>> GetFileList(string path);
+        Task<DriveInfo[]> GetDrives();
 
-
-	}
+    }
 }

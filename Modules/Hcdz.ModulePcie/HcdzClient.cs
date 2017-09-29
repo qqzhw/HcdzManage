@@ -300,37 +300,45 @@ namespace Hcdz.ModulePcie
 			}
 			return null;
 		}
+        public async  Task<DriveInfo[]> GetDrives()
+        {
+            if (_connection.State == ConnectionState.Connected)
+            {
+                var items =await  _chat.Invoke<DriveInfo[]>("GetDrives");
+                return items;
+            }
+            return null;
+        }
 
 
 
+        //public async Task<IList<UserInfo>> GetUserByDeptID(int departmentId)
+        //{
+        //	if (_connection.State == ConnectionState.Connected)
+        //	{
+        //		var result = await _chat.Invoke<IList<UserInfo>>("GetUserByDeptId", departmentId);
+        //		return result;
+        //	}
+        //	else
+        //	{
+        //		return null;
+        //	}
+        //}
 
-		//public async Task<IList<UserInfo>> GetUserByDeptID(int departmentId)
-		//{
-		//	if (_connection.State == ConnectionState.Connected)
-		//	{
-		//		var result = await _chat.Invoke<IList<UserInfo>>("GetUserByDeptId", departmentId);
-		//		return result;
-		//	}
-		//	else
-		//	{
-		//		return null;
-		//	}
-		//}
+        //public async Task<IList<DepartmentInfo>> GetOnlineDepartment()
+        //{
+        //	if (_connection.State == ConnectionState.Connected)
+        //	{
+        //		var result = await _chat.Invoke<IList<DepartmentInfo>>("GetOnlineDepartments");
+        //		return result;
+        //	}
+        //	else
+        //	{
+        //		return null;
+        //	}
+        //}
 
-		//public async Task<IList<DepartmentInfo>> GetOnlineDepartment()
-		//{
-		//	if (_connection.State == ConnectionState.Connected)
-		//	{
-		//		var result = await _chat.Invoke<IList<DepartmentInfo>>("GetOnlineDepartments");
-		//		return result;
-		//	}
-		//	else
-		//	{
-		//		return null;
-		//	}
-		//}
-
-		public async Task<bool> SendMessage(object message)
+        public async Task<bool> SendMessage(object message)
 		{
 			try
 			{

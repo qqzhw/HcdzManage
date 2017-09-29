@@ -36,7 +36,13 @@ namespace Hcdz.WPFServer
 			return base.OnDisconnected(stopCalled);
 		}
 
-		public async Task<List<DirectoryInfoModel>> GetFileList(string path = "")
+        public DriveInfo[] GetDrives()
+        {
+            DriveInfo[] drives = DriveInfo.GetDrives();
+            return drives;
+        }
+
+        public async Task<List<DirectoryInfoModel>> GetFileList(string path = "")
 		{
 			DriveInfo[] drives = DriveInfo.GetDrives();
 			FileSystemInfo[] dirFileitems = null;

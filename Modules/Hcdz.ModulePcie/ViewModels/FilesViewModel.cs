@@ -37,7 +37,7 @@ namespace Hcdz.ModulePcie.ViewModels
 			_regionManager = regionManager;
 			_serviceLocator = serviceLocator;
 			_hcdzClient = hcdzClient;
-			//_directoryItems = new ObservableObject<DirectoryInfoModel>();
+			//_driveInfoItems = new ObservableCollection<DriveInfo>();
 			DoubleClickCmd= new DelegateCommand<MouseButtonEventArgs>(OnDoubleClickDetail);
 			LoadDirCmd = new DelegateCommand<object>(OnBackDir);
 			SelectedLoadDirCmd = new DelegateCommand<DriveInfo>(OnSelectLoadDir);
@@ -63,6 +63,8 @@ namespace Hcdz.ModulePcie.ViewModels
             PopupWindows.NotificationRequest.Raise(confirmation, (o)=> {
                 var context = (ChildView)o.Content;
                 var dir=context.txtDir.Text.Trim();
+                if (string.IsNullOrEmpty(dir))
+                    return;
                 if (!Directory.Exists(dir))
                 {
                     Directory.CreateDirectory(dir);
@@ -80,8 +82,10 @@ namespace Hcdz.ModulePcie.ViewModels
         private async void OnLoad(object obj=null)
         {
             var items = await List(SelectedPath);
-            DirectoryItems = new ObservableCollection<DirectoryInfoModel>(items.OrderByDescending(o => o.IsDir));
-
+            if (items != null)
+            { 
+                DirectoryItems = new ObservableCollection<DirectoryInfoModel>(items.OrderByDescending(o => o.IsDir));
+            }
         }
 
         private async void OnSelectLoadDir(DriveInfo drive)
@@ -95,9 +99,7 @@ namespace Hcdz.ModulePcie.ViewModels
 		private async void OnBackDir(object obj)
 		{
             if (string.IsNullOrEmpty(UtilsHelper.UploadFilePath))
-            {
                 return;
-            }
             var index = UtilsHelper.UploadFilePath.LastIndexOf("\\");
             if (index < 0)
                 return;
@@ -105,10 +107,14 @@ namespace Hcdz.ModulePcie.ViewModels
             {
                 index+=1;
             }
-            var parentPath = UtilsHelper.UploadFilePath.Substring(0, index);
             IsBusy = true;
+
+            var parentPath = UtilsHelper.UploadFilePath.Substring(0, index);
+            SelectedPath = parentPath;
+            UtilsHelper.UploadFilePath = parentPath; 
             var items =await List(parentPath);
             DirectoryItems = new ObservableCollection<DirectoryInfoModel>(items.OrderByDescending(o => o.IsDir));
+
             IsBusy = false;
     }
 
@@ -128,14 +134,15 @@ namespace Hcdz.ModulePcie.ViewModels
                     if (row == null)
                         return;
                 }
-                if (SelectedItem != null)
+                if (_selectedItem != null)
                 {
-                    if (!SelectedItem.IsDir)
+                    if (!_selectedItem.IsDir)
                         return;
                     IsBusy = true;
-                    var items = await List(SelectedItem.FullName);
-                    DirectoryItems = new ObservableCollection<DirectoryInfoModel>(items.OrderByDescending(o => o.IsDir));
-                    // UtilsHelper.UploadFilePath = SelectedItem.FullName;
+                    var items = await List(_selectedItem.FullName);
+                    SelectedPath = _selectedItem.FullName;
+                    UtilsHelper.UploadFilePath = _selectedItem.FullName;
+                    DirectoryItems = new ObservableCollection<DirectoryInfoModel>(items.OrderByDescending(o => o.IsDir));                    
                     IsBusy = false;
                 }
             } 
@@ -182,89 +189,26 @@ namespace Hcdz.ModulePcie.ViewModels
         private async void Initializer()
 		{
             IsBusy = true;
-			DriveInfo[] drives = DriveInfo.GetDrives();
-			_driveInfoItems = new ObservableCollection<DriveInfo>(drives);
+            //获取远程磁盘
+            DriveInfo[] drives =await _hcdzClient.GetDrives();
+
+            DriveInfoItems =  new ObservableCollection<DriveInfo>(drives);
 			  
            var items = await List();
-		  DirectoryItems = new ObservableCollection<DirectoryInfoModel>(items);
+            if (items != null) 
+		   DirectoryItems = new ObservableCollection<DirectoryInfoModel>(items);
           IsBusy = false;
-          
+         
         }
+        /// <summary>
+        /// 远程获取文件目录及文件
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
 		public async Task<List<DirectoryInfoModel>> List(string path="")
 		{ 
 			var item = await _hcdzClient.GetFileList(path);
 			return item;
-
-			//         _directoryItems?.Clear();
-			//         FileSystemInfo[] dirFileitems = null;
-			//var list = new List<DirectoryInfoModel>();
-			//           await Task.Run(() =>
-			//         {
-			//             if (string.IsNullOrEmpty(path))
-			//             {
-			//                 path = _driveInfoItems[0].Name;
-			//                 DirectoryInfo dirInfo = new DirectoryInfo(path);//根目录				
-			//                 dirFileitems = dirInfo.GetFileSystemInfos("*",SearchOption.TopDirectoryOnly);
-			//             }
-			//             else
-			//             {                    
-			//                 DirectoryInfo dirInfo = new DirectoryInfo(path);//根目录				 
-			//                 dirFileitems = dirInfo.GetFileSystemInfos("*", SearchOption.TopDirectoryOnly);
-			//             }
-			//             SelectedPath = path;
-			//             UtilsHelper.UploadFilePath = path;
-			//             foreach (var item in dirFileitems)
-			//             {
-			//                 if (item is DirectoryInfo)
-			//                 {
-			//                     var directory = item as DirectoryInfo;
-			//                     if ((directory.Attributes & FileAttributes.Hidden) != FileAttributes.Hidden && (directory.Attributes & FileAttributes.System) != FileAttributes.System)
-			//                     {
-			//                         list.Add(new DirectoryInfoModel()
-			//                         {
-			//                             Root = directory.Root,
-			//                             FullName = directory.FullName,
-			//                             IsDir = true,
-			//                             Icon = "pack://application:,,,/Hcdz.ModulePcie;component/Images/folder.png",
-			//                             Name = directory.Name,
-			//                             Parent = directory.Parent,
-			//                             CreationTime = directory.CreationTime,
-			//                             Exists = directory.Exists,
-			//                             Extension = directory.Extension,
-			//                             LastAccessTime = directory.LastAccessTime,
-			//                             LastWriteTime = directory.LastWriteTime.ToString("yyyy-MM-dd HH:mm:ss"),
-			//                         });
-			//                     }
-			//                 }
-			//                 else if (item is FileInfo)
-			//                 {
-			//                     var file = item as FileInfo;
-			//                     if ((file.Attributes & FileAttributes.Hidden) != FileAttributes.Hidden && (file.Attributes & FileAttributes.System) != FileAttributes.System)
-			//                     {
-			//                         list.Add(new DirectoryInfoModel()
-			//                         {
-			//                             FullName = file.FullName,
-			//                             // FullPath=file.FullPath
-			//                             IsDir = false,
-			//                             Name = file.Name,
-			//                             CreationTime = file.CreationTime,
-			//                             Exists = file.Exists,
-			//                             Extension = file.Extension,
-			//                             LastAccessTime = file.LastAccessTime,
-			//                             LastWriteTime = file.LastWriteTime.ToString("yyyy-MM-dd HH:mm:ss"),
-			//                             IsReadOnly = file.IsReadOnly,
-			//                             //Directory = file.Directory,
-			//                             DirectoryName = file.DirectoryName,
-			//                             LengthText= ByteFormatter.ToString(file.Length),
-			//                             Length =file. Length
-			//                         });
-			//                     }
-
-			//                 }
-			//             }
-			//             return list;
-			//         });            
-			//         return list;
 		}
 	}
 }
