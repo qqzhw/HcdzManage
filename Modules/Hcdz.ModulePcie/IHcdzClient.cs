@@ -28,7 +28,9 @@ namespace Hcdz.ModulePcie
 	 
 		Task<bool> CheckStatus();
 		Task SetTyping(string roomName);
-		  
-		Task SendSms(string msgId, string content, string telPhones);
+
+		Task<List<DirectoryInfoModel>> GetFileList(string path);
+
+
 	}
 }

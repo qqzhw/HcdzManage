@@ -19,7 +19,8 @@ using Telerik.Windows.Controls;
 using Telerik.Windows.Controls.GridView;
 using Hcdz.ModulePcie.Views;
 using Pvirtech.Framework.Interactivity;
- 
+using Microsoft.AspNet.SignalR.Client;
+
 namespace Hcdz.ModulePcie.ViewModels
 {
 	public class FilesViewModel : BindableBase
@@ -28,12 +29,14 @@ namespace Hcdz.ModulePcie.ViewModels
 		private readonly IUnityContainer _container;
 		private readonly IRegionManager _regionManager;
 		private readonly IServiceLocator _serviceLocator;
-		public FilesViewModel(IUnityContainer container, IEventAggregator eventAggregator, IRegionManager regionManager, IServiceLocator serviceLocator)
+		private readonly IHcdzClient  _hcdzClient;
+		public FilesViewModel(IUnityContainer container, IEventAggregator eventAggregator, IRegionManager regionManager, IServiceLocator serviceLocator, IHcdzClient  hcdzClient)
 		{
 			_container = container;
 			_eventAggregator = eventAggregator;
 			_regionManager = regionManager;
 			_serviceLocator = serviceLocator;
+			_hcdzClient = hcdzClient;
 			//_directoryItems = new ObservableObject<DirectoryInfoModel>();
 			DoubleClickCmd= new DelegateCommand<MouseButtonEventArgs>(OnDoubleClickDetail);
 			LoadDirCmd = new DelegateCommand<object>(OnBackDir);
@@ -41,8 +44,7 @@ namespace Hcdz.ModulePcie.ViewModels
             ListRightMenue = new DelegateCommand<object>(OnRightMenue);
             LoadedCommand = new DelegateCommand<object>(OnLoad);
             CreateNewCmd=new DelegateCommand<object>(OnCreateNew);
-            Initializer();
-
+            Initializer(); 
         }
 
         private void OnRightMenue(object obj)
@@ -189,77 +191,80 @@ namespace Hcdz.ModulePcie.ViewModels
           
         }
 		public async Task<List<DirectoryInfoModel>> List(string path="")
-		{
-            _directoryItems?.Clear();
-            FileSystemInfo[] dirFileitems = null;
-			var list = new List<DirectoryInfoModel>();
-              await Task.Run(() =>
-            {
-                if (string.IsNullOrEmpty(path))
-                {
-                    path = _driveInfoItems[0].Name;
-                    DirectoryInfo dirInfo = new DirectoryInfo(path);//根目录				
-                    dirFileitems = dirInfo.GetFileSystemInfos("*",SearchOption.TopDirectoryOnly);
-                }
-                else
-                {                    
-                    DirectoryInfo dirInfo = new DirectoryInfo(path);//根目录				 
-                    dirFileitems = dirInfo.GetFileSystemInfos("*", SearchOption.TopDirectoryOnly);
-                }
-                SelectedPath = path;
-                UtilsHelper.UploadFilePath = path;
-                foreach (var item in dirFileitems)
-                {
-                    if (item is DirectoryInfo)
-                    {
-                        var directory = item as DirectoryInfo;
-                        if ((directory.Attributes & FileAttributes.Hidden) != FileAttributes.Hidden && (directory.Attributes & FileAttributes.System) != FileAttributes.System)
-                        {
-                            list.Add(new DirectoryInfoModel()
-                            {
-                                Root = directory.Root,
-                                FullName = directory.FullName,
-                                IsDir = true,
-                                Icon = "pack://application:,,,/Hcdz.ModulePcie;component/Images/folder.png",
-                                Name = directory.Name,
-                                Parent = directory.Parent,
-                                CreationTime = directory.CreationTime,
-                                Exists = directory.Exists,
-                                Extension = directory.Extension,
-                                LastAccessTime = directory.LastAccessTime,
-                                LastWriteTime = directory.LastWriteTime.ToString("yyyy-MM-dd HH:mm:ss"),
-                            });
-                        }
-                    }
-                    else if (item is FileInfo)
-                    {
-                        var file = item as FileInfo;
-                        if ((file.Attributes & FileAttributes.Hidden) != FileAttributes.Hidden && (file.Attributes & FileAttributes.System) != FileAttributes.System)
-                        {
-                            list.Add(new DirectoryInfoModel()
-                            {
-                                FullName = file.FullName,
-                                // FullPath=file.FullPath
-                                IsDir = false,
-                                Name = file.Name,
-                                CreationTime = file.CreationTime,
-                                Exists = file.Exists,
-                                Extension = file.Extension,
-                                LastAccessTime = file.LastAccessTime,
-                                LastWriteTime = file.LastWriteTime.ToString("yyyy-MM-dd HH:mm:ss"),
-                                IsReadOnly = file.IsReadOnly,
-                                //Directory = file.Directory,
-                                DirectoryName = file.DirectoryName,
-                                LengthText= ByteFormatter.ToString(file.Length),
-                                Length =file. Length
-                            });
-                        }
+		{ 
+			var item = await _hcdzClient.GetFileList(path);
+			return item;
 
-                    }
-                }
-                return list;
-            });            
-            return list;
+			//         _directoryItems?.Clear();
+			//         FileSystemInfo[] dirFileitems = null;
+			//var list = new List<DirectoryInfoModel>();
+			//           await Task.Run(() =>
+			//         {
+			//             if (string.IsNullOrEmpty(path))
+			//             {
+			//                 path = _driveInfoItems[0].Name;
+			//                 DirectoryInfo dirInfo = new DirectoryInfo(path);//根目录				
+			//                 dirFileitems = dirInfo.GetFileSystemInfos("*",SearchOption.TopDirectoryOnly);
+			//             }
+			//             else
+			//             {                    
+			//                 DirectoryInfo dirInfo = new DirectoryInfo(path);//根目录				 
+			//                 dirFileitems = dirInfo.GetFileSystemInfos("*", SearchOption.TopDirectoryOnly);
+			//             }
+			//             SelectedPath = path;
+			//             UtilsHelper.UploadFilePath = path;
+			//             foreach (var item in dirFileitems)
+			//             {
+			//                 if (item is DirectoryInfo)
+			//                 {
+			//                     var directory = item as DirectoryInfo;
+			//                     if ((directory.Attributes & FileAttributes.Hidden) != FileAttributes.Hidden && (directory.Attributes & FileAttributes.System) != FileAttributes.System)
+			//                     {
+			//                         list.Add(new DirectoryInfoModel()
+			//                         {
+			//                             Root = directory.Root,
+			//                             FullName = directory.FullName,
+			//                             IsDir = true,
+			//                             Icon = "pack://application:,,,/Hcdz.ModulePcie;component/Images/folder.png",
+			//                             Name = directory.Name,
+			//                             Parent = directory.Parent,
+			//                             CreationTime = directory.CreationTime,
+			//                             Exists = directory.Exists,
+			//                             Extension = directory.Extension,
+			//                             LastAccessTime = directory.LastAccessTime,
+			//                             LastWriteTime = directory.LastWriteTime.ToString("yyyy-MM-dd HH:mm:ss"),
+			//                         });
+			//                     }
+			//                 }
+			//                 else if (item is FileInfo)
+			//                 {
+			//                     var file = item as FileInfo;
+			//                     if ((file.Attributes & FileAttributes.Hidden) != FileAttributes.Hidden && (file.Attributes & FileAttributes.System) != FileAttributes.System)
+			//                     {
+			//                         list.Add(new DirectoryInfoModel()
+			//                         {
+			//                             FullName = file.FullName,
+			//                             // FullPath=file.FullPath
+			//                             IsDir = false,
+			//                             Name = file.Name,
+			//                             CreationTime = file.CreationTime,
+			//                             Exists = file.Exists,
+			//                             Extension = file.Extension,
+			//                             LastAccessTime = file.LastAccessTime,
+			//                             LastWriteTime = file.LastWriteTime.ToString("yyyy-MM-dd HH:mm:ss"),
+			//                             IsReadOnly = file.IsReadOnly,
+			//                             //Directory = file.Directory,
+			//                             DirectoryName = file.DirectoryName,
+			//                             LengthText= ByteFormatter.ToString(file.Length),
+			//                             Length =file. Length
+			//                         });
+			//                     }
+
+			//                 }
+			//             }
+			//             return list;
+			//         });            
+			//         return list;
 		}
 	}
 }

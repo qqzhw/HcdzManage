@@ -93,6 +93,9 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Models\BinaryWriterExtensions.cs" />
+    <Compile Include="Models\ByteFormatter.cs" />
+    <Compile Include="Models\DirectoryInfoModel.cs" />
     <Compile Include="MyHub.cs" />
     <Compile Include="Startup.cs" />
     <Page Include="MainWindow.xaml">

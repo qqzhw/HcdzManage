@@ -273,10 +273,7 @@ namespace Hcdz.ModulePcie
 		{
 			return EmptyTask;
 		}
-
-
-
-
+		 
 		public Task EmptyTask
 		{
 			get
@@ -294,28 +291,19 @@ namespace Hcdz.ModulePcie
 			}
 
 		}
-
-		public async Task GetDepartmentByParentId()
+		public async Task<List<DirectoryInfoModel>> GetFileList(string path = "")
 		{
 			if (_connection.State == ConnectionState.Connected)
 			{
-				await _chat.Invoke("GetDepartmentByParentId");
+				var items=await _chat.Invoke<List<DirectoryInfoModel>>("GetFileList",path);
+				return items;
 			}
-
+			return null;
 		}
 
-		public Task SendSms(string msgId, string content, string telPhones)
-		{
-			if (_connection.State == ConnectionState.Connected)
-			{
-				return _chat.Invoke("SendSms", msgId, content, telPhones);
-			}
 
-			return EmptyTask;
-		}
 
-		 
-		 
+
 		//public async Task<IList<UserInfo>> GetUserByDeptID(int departmentId)
 		//{
 		//	if (_connection.State == ConnectionState.Connected)
@@ -342,10 +330,6 @@ namespace Hcdz.ModulePcie
 		//	}
 		//}
 
-
-
-
-
 		public async Task<bool> SendMessage(object message)
 		{
 			try
@@ -363,9 +347,6 @@ namespace Hcdz.ModulePcie
 
 			return false;
 		}
-
-
-	 
  
 	 
 	}
