@@ -39,9 +39,9 @@ namespace Hcdz.PcieLib
         public string Name { get; set; }
         #region " constructors " 
         /* constructors & destructors */
-        internal protected PCIE_Device(WD_PCI_SLOT slot) : this(0, 0, slot) { }
+       public PCIE_Device(WD_PCI_SLOT slot) : this(0, 0, slot) { }
 
-        internal protected PCIE_Device(DWORD dwVendorId, DWORD dwDeviceId,
+		public PCIE_Device(DWORD dwVendorId, DWORD dwDeviceId,
             WD_PCI_SLOT slot)
         {
             m_wdcDevice = new WDC_DEVICE();

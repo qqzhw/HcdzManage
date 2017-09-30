@@ -36,5 +36,9 @@ namespace Hcdz.ModulePcie
         Task<DriveInfo[]> GetDrives();
 
         Task<DWORD> InitializerDevice();
-    }
+
+		Task<bool> DeviceOpen(int iSelectedIndex); 
+		Task<bool> DeviceClose(int iSelectedIndex);
+		Task<string> InitDeviceInfo(int iSelectedIndex);
+	}
 }
