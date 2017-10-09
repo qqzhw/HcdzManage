@@ -11,6 +11,7 @@ namespace Hcdz.WPFServer.Models
     public class DeviceChannelModel: BindableBase
     {
         public int Id { get; set; }
+        public int DeviceNo { get; set; }
         public string VendorId { get; set; }
         public string DeviceId { get; set; }        
         public string Name { get; set; }

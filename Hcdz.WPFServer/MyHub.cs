@@ -12,13 +12,25 @@ using wdc_err = Jungo.wdapi_dotnet.WD_ERROR_CODES;
 using DWORD = System.UInt32;
 using Jungo.wdapi_dotnet;
 using Hcdz.WPFServer.Properties;
+using System.Threading;
+using System.Runtime.InteropServices;
+using System.Windows.Threading;
+using System.Collections.Concurrent;
 
 namespace Hcdz.WPFServer
 { 
 	public class MyHub : Hub
 	{
 		private readonly static Dictionary<PCIE_Device, List<DeviceChannelModel>> DeviceChannelList = new Dictionary<PCIE_Device, List<DeviceChannelModel>>();
-		public  MyHub()
+        private readonly static List<DeviceChannelModel> DeviceChannelModels = new  List<DeviceChannelModel>();
+        private DispatcherTimer dispatcherTimer;
+        private ConcurrentQueue<byte[]> queue;
+        private bool IsCompleted = false;
+        private bool IsStop = false;
+        Int64 times;
+        long total = 0;
+        private FileStream Stream;
+        public  MyHub()
         { 
         }
 		public void Send(string name, string message)
@@ -217,26 +229,29 @@ namespace Hcdz.WPFServer
 			{
 				case 0:
 					DeviceChannelModel channel0 = new DeviceChannelModel
-					{
+					{  
 						Id = 1,
 						Name = "通道1",
 						RegAddress = 0x30,
-						DiskPath = "Bar1"
-					};
+						DiskPath = "Bar1",
+                        DeviceNo = index
+                    };
 					DeviceChannelModel channel1 = new DeviceChannelModel
 					{
 						Id = 2,
 						Name = "通道2",
 						RegAddress = 0x34,
-						DiskPath = "Bar2"
-					};
+						DiskPath = "Bar2",
+                        DeviceNo = index,
+                    };
 					DeviceChannelModel channel2 = new DeviceChannelModel
 					{
 						Id = 3,
 						Name = "通道3",
 						RegAddress = 0x38,
-						DiskPath = "Bar3"
-					};
+						DiskPath = "Bar3",
+                        DeviceNo = index
+                    };
 					list.Add(channel0);
 					list.Add(channel1);
 					list.Add(channel2);
@@ -247,22 +262,25 @@ namespace Hcdz.WPFServer
 						Id = 4,
 						Name = "通道4",
 						RegAddress = 0x40,
-						DiskPath = "Bar4"
-					};
+						DiskPath = "Bar4",
+                        DeviceNo = index
+                    };
 					DeviceChannelModel channel4 = new DeviceChannelModel
 					{
 						Id = 5,
 						Name = "通道5",
 						RegAddress = 0x44,
-						DiskPath = "Bar5"
-					};
+						DiskPath = "Bar5",
+                        DeviceNo = index
+                    };
 					DeviceChannelModel channel5 = new DeviceChannelModel
 					{
 						Id = 6,
 						Name = "通道6",
 						RegAddress = 0x48,
-						DiskPath = "Bar6"
-					};
+						DiskPath = "Bar6",
+                        DeviceNo = index
+                    };
 					list.Add(channel3);
 					list.Add(channel4);
 					list.Add(channel5);
@@ -272,5 +290,124 @@ namespace Hcdz.WPFServer
 			}
 			return list;
 		}
-	}
+
+        public void OnReadDma()
+        {
+            PCIE_Device dev = PCIE_DeviceList.TheDeviceList().Get(0);
+            dev.FPGAReset(0);
+            if (dev.WDC_DMAContigBufLock() != 0)
+            {
+                MessageBox.Show(("分配报告内存失败"));
+                return;
+            }
+            DWORD wrDMASize = 16; //16kb
+            if (!dev.DMAWriteMenAlloc((uint)0, (uint)1, wrDMASize * 1024))
+            {
+                MessageBox.Show("内存分配失败!");
+                return;
+            }
+            var dt = DateTime.Now.ToString("yyyyMMddHHmmss");
+            foreach (var item in DeviceChannelList)
+            {
+                //var dir = Path.Combine(SelectedDsik, item.DiskPath);
+                //if (!Directory.Exists(dir))
+                //{
+                //    Directory.CreateDirectory(dir);
+                //}
+                //var filePath = Path.Combine(dir, dt);
+                ////File.Create(filePath);
+                //item.FilePath = filePath;
+                //if (item.IsOpen)
+                //{
+                //    item.Stream = new FileStream(filePath, FileMode.Append, FileAccess.Write);
+                //}
+
+            }
+            dev.StartWrDMA(0);
+            dispatcherTimer.Start();
+            //if (p->bWriteDisc[0])
+            //CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)savefile0, p, 0, NULL);
+            Thread nonParameterThread = new Thread(new ParameterizedThreadStart(p => NonParameterRun(dev)));
+
+            nonParameterThread.Start();
+        }
+
+        private void NonParameterRun(PCIE_Device dev)
+        {
+            dev.WriteBAR0(0, 0x60, 1);		//中断屏蔽
+            dev.WriteBAR0(0, 0x50, 1);		//dma 写报告使能
+
+            var dma = (WD_DMA)dev.m_dmaMarshaler.MarshalNativeToManaged(dev.pReportWrDMA);
+            var ppwDma = (WD_DMA)dev.m_dmaMarshaler.MarshalNativeToManaged(dev.ppwDma);
+
+            dev.WriteBAR0(0, 0x58, (uint)dma.Page[0].pPhysicalAddr);		//dma 写报告地址
+            //设置初始DMA写地址,长度等
+            dev.WriteBAR0(0, 0x4, (uint)ppwDma.Page[0].pPhysicalAddr);		//wr_addr low
+            dev.WriteBAR0(0, 0x8, (uint)(ppwDma.Page[0].pPhysicalAddr >> 32));	//wr_addr high
+            dev.WriteBAR0(0, 0xC, 16 * 1024);           //dma wr size
+
+            //dev.WriteBAR0(0, 56, 1);
+            //dev.WriteBAR0(0, 48, 1);
+            //dev.WriteBAR0(0, 0x34, 1);
+            foreach (var item in DeviceChannelModels)
+            {
+                dev.WriteBAR0(0, item.RegAddress, item.IsOpen == true ? (UInt32)1 : 0);
+            }
+            //启动DMA
+            dev.WriteBAR0(0, 0x10, 1);			//dma wr 使能
+            var startTime = DateTime.Now.Ticks;
+
+            while (!IsStop)
+            {
+
+                byte[] tmpResult = new Byte[16 * 1024];
+                Marshal.Copy(dev.pWbuffer, tmpResult, 0, tmpResult.Length);
+                Stream.Write(tmpResult, 0, tmpResult.Length);
+                var bytes = tmpResult.Length / 16;
+                for (int i = 0; i < bytes; i++)
+                {
+                    var index = i * 16;
+                    byte[] result = new byte[16];
+                    for (int j = 0; j < 16; j++)
+                    {
+                        result[j] = tmpResult[index + j];
+                    }
+                    var barValue = Convert.ToInt32(result[15]);
+                    if (barValue == 1)
+                    {
+                        WriteFile(result);
+                    }
+                }
+                //  queue.Enqueue(tmpResult);
+                //tranIndex++;
+                total += 16 * 1024;
+                foreach (var item in DeviceChannelModels)
+                {
+                    dev.WriteBAR0(0, item.RegAddress, item.IsOpen == true ? (UInt32)1 : 0);
+                }
+                dev.WriteBAR0(0, 0x10, 1);//执行下次读取
+                var end = DateTime.Now.Ticks - startTime;
+                times = TimeSpan.FromTicks(end).Ticks;
+            }
+            dev.WriteBAR0(0, 0x10, 0);
+        }
+        private void WriteFile(byte[] result)
+        {
+            var channelNo = Convert.ToInt32(result[8]);
+            var item = DeviceChannelModels.FirstOrDefault(o => o.Id == channelNo);
+            if (item == null)
+                return;
+            byte[] trueValue = new byte[16];
+            for (int i = 0; i < 8; i++)
+            {
+                trueValue[i] = result[i];
+            }
+            //using (var stream= new FileStream(item.FilePath, FileMode.Append, FileAccess.Write))
+            //{
+            //    stream.Write(trueValue, 0, 16);
+            //}
+            item.Stream.Write(trueValue, 0, 16);
+        }
+
+    }
 }

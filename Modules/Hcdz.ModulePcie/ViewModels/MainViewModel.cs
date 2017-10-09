@@ -109,13 +109,13 @@ namespace Hcdz.ModulePcie.ViewModels
             dispatcherTimer.Stop();
         }
 
-        private void OnLoadSelectDir(object obj)
+        private  async void OnLoadSelectDir(object obj)
         {
             if (obj==null)
             {
                 return;
             }
-            DriveInfo[] drives =DriveInfo.GetDrives();
+            DriveInfo[] drives = await _hcdzClient.GetDrives();
             foreach (var drive in drives)
             {
                 if (drive.Name.Contains(obj.ToString()))
@@ -550,6 +550,7 @@ namespace Hcdz.ModulePcie.ViewModels
                 }); 
                 return;
             }
+
             //  queue1 = new ConcurrentQueue<byte[]>();
             Thread readThread = new Thread(new ThreadStart(ReadDMA));
             readThread.IsBackground = true;
@@ -577,10 +578,10 @@ namespace Hcdz.ModulePcie.ViewModels
 
                 //foreach (PCIE_Device dev in pciDevList)
                 //    devicesItems.Add(dev);
-                if (devicesItems.Count > 0)
-                {
-                    ViewModel.ShortDesc = devicesItems[0].Name;
-                }
+                //if (devicesItems.Count > 0)
+                //{
+                //    ViewModel.ShortDesc = devicesItems[0].Name;
+                //}
            // }
             //catch (Exception)
             //{
@@ -597,42 +598,48 @@ namespace Hcdz.ModulePcie.ViewModels
                 Id = 1,
                 Name = "通道1",
                 RegAddress = 0x30,
-                DiskPath="Bar1"
+                DiskPath="Bar1",
+                DeviceNo = 0,
             };
             DeviceChannelModel channel1 = new DeviceChannelModel
             {
                 Id = 2,
                 Name = "通道2",
                 RegAddress = 0x34,
-                DiskPath = "Bar2"
+                DiskPath = "Bar2",
+                DeviceNo = 0,
             };
             DeviceChannelModel channel2 = new DeviceChannelModel
             {
                 Id = 3,
                 Name = "通道3",
                 RegAddress = 0x38,
-                DiskPath = "Bar3"
+                DiskPath = "Bar3",
+                DeviceNo = 0,
             };
             DeviceChannelModel channel3 = new DeviceChannelModel
             {
                 Id = 4,
                 Name = "通道4",
                 RegAddress = 0x40,
-                DiskPath = "Bar4"
+                DiskPath = "Bar4",
+                DeviceNo = 1,
             };
             DeviceChannelModel channel4 = new DeviceChannelModel
             {
                 Id = 5,
                 Name = "通道5",
                 RegAddress = 0x44,
-                DiskPath = "Bar5"
+                DiskPath = "Bar5",
+                DeviceNo = 1,
             };
             DeviceChannelModel channel5 = new DeviceChannelModel
             {
                 Id = 6,
                 Name = "通道6",
                 RegAddress = 0x48,
-                DiskPath = "Bar6"
+                DiskPath = "Bar6",
+                DeviceNo = 1,
             };
             _deviceChannelModels.Add(channel0);
             _deviceChannelModels.Add(channel1);
@@ -641,20 +648,7 @@ namespace Hcdz.ModulePcie.ViewModels
             _deviceChannel2.Add(channel4);
             _deviceChannel2.Add(channel5);
         }
-
-      
-
-        private List<int> s1 = new List<int>();
-		private List<int> s2 = new List<int>();
-		private void WriteDMA()
-		{
-			for (int i = 0; i < 10000; i++)
-			{
-				//queue.Enqueue(Convert.ToByte(i));
-			}
-			
-		}
-        
+         
         private void ReadDMA()
 		{
 			while (!IsCompleted)
