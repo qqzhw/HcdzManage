@@ -397,5 +397,14 @@ namespace Hcdz.ModulePcie
 			}
 			return string.Empty; 
 		}
-	}
+
+        public async Task<bool> FormatDrive(string driveName)
+        {
+            if (_connection.State == ConnectionState.Connected)
+            {
+                return await _chat.Invoke<bool>("FormatDrive", driveName);
+            }
+            return false;
+        }
+    }
 }

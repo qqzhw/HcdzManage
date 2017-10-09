@@ -14,7 +14,7 @@ namespace Hcdz.PcieLib
 {
     public class PCIE_DeviceList : ArrayList
     {
-        private string   PCIE_DEFAULT_LICENSE_STRING = "12345abcde12345.abcde";
+        public string   PCIE_DEFAULT_LICENSE_STRING { get; set; }
         // TODO: If you have renamed the WinDriver kernel module (windrvr6.sys),
         //  change the driver name below accordingly
         private string PCIE_DEFAULT_DRIVER_NAME = "windrvr6";
@@ -34,8 +34,10 @@ namespace Hcdz.PcieLib
 
         private PCIE_DeviceList() { }
 
-        public DWORD Init()
+        public DWORD Init(string  license)
         {
+            PCIE_DEFAULT_LICENSE_STRING = license;
+            // "6C3CC2CFE89E7AD0424A070D434A6F6DC4954C87.qqzhw";
             if (windrvr_decl.WD_DriverName(PCIE_DEFAULT_DRIVER_NAME) == null)
             {
                 Log.ErrLog("NEWAMD86_DeviceList.Init: Failed to set driver name for the " +

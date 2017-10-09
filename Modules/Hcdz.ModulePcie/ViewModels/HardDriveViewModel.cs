@@ -66,7 +66,7 @@ namespace Hcdz.ModulePcie.ViewModels
                 drive.NameDesc = drive.VolumeLabel + string.Format("({0}:)", item.ToString().Replace(":", "").Replace("\\", ""));
                 models.Add(drive);
             }
-            driveInfoItems = models;
+            DriveInfoItems = models;
         }
     }
 }

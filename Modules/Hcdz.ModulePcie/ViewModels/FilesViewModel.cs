@@ -65,9 +65,10 @@ namespace Hcdz.ModulePcie.ViewModels
                 var dir=context.txtDir.Text.Trim();
                 if (string.IsNullOrEmpty(dir))
                     return;
-                if (!Directory.Exists(dir))
+                string filePath = System.IO.Path.Combine(SelectedPath, dir);
+                if (!Directory.Exists(filePath))
                 {
-                    Directory.CreateDirectory(dir);
+                    Directory.CreateDirectory(filePath);
                     OnLoad();
                 }
                 else

@@ -43,7 +43,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Class1.cs" />
     <Compile Include="Log.cs" />
     <Compile Include="PCIE_Device.cs" />
     <Compile Include="PCIE_DeviceList.cs" />

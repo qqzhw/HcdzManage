@@ -1,7 +1,9 @@
 ﻿<?xml version='1.0' encoding='utf-8'?>
-<SettingsFile xmlns="uri:settings" CurrentProfile="(Default)">
-  <Profiles>
-    <Profile Name="(Default)" />
-  </Profiles>
-  <Settings />
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="Hcdz.WPFServer.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="License" Type="System.String" Scope="User">
+      <Value Profile="(Default)">6C3CC2CFE89E7AD0424A070D434A6F6DC4954C87.qqzhw</Value>
+    </Setting>
+  </Settings>
 </SettingsFile>

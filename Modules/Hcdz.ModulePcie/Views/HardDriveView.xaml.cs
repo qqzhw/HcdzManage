@@ -1,4 +1,5 @@
 ﻿using Hcdz.ModulePcie.Models;
+using Microsoft.Practices.ServiceLocation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,12 +27,21 @@ namespace Hcdz.ModulePcie.Views
             InitializeComponent();
         }
 
-		private void MenuItem_Click(object sender, RoutedEventArgs e)
+		private async void MenuItem_Click(object sender, RoutedEventArgs e)
 		{
 			var menuItem = (sender as MenuItem).DataContext as DriveInfoModel;
 			if (menuItem == null)
 				return;
-			 
-		}
-	}
+            var hcdzClient = ServiceLocator.Current.GetInstance<IHcdzClient>();
+           var result=await hcdzClient.FormatDrive(menuItem.DriveLetter);
+            if (result)
+            {
+                MessageBox.Show("格式化成功!");
+            }
+            else
+            {
+                MessageBox.Show("格式化失败!");
+            }
+        }
+    }
 }

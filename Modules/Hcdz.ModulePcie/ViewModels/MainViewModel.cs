@@ -528,10 +528,29 @@ namespace Hcdz.ModulePcie.ViewModels
 
 
         private async void Initializer()
-		{ 
-            var result =await _hcdzClient.InitializerDevice();
-           
-          //  queue1 = new ConcurrentQueue<byte[]>();
+		{
+            var result =  await _hcdzClient.InitializerDevice();
+            if (result>0)
+            {
+               
+              string content = "加载设备失败!";
+                if (result == 536870921)
+                {
+                    content = "License无效!";
+                }
+                Application.Current.Dispatcher.Invoke(delegate {
+                    RadWindow.Alert(new DialogParameters
+                    {
+                        Content = content,
+                        DefaultPromptResultValue = "default name",
+                        Theme = new Windows8TouchTheme(),
+                        Header = "提示",
+                        TopOffset = 30,
+                    });
+                }); 
+                return;
+            }
+            //  queue1 = new ConcurrentQueue<byte[]>();
             Thread readThread = new Thread(new ThreadStart(ReadDMA));
             readThread.IsBackground = true;
             readThread.Start();

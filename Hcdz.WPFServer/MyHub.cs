@@ -11,6 +11,7 @@ using System.Windows;
 using wdc_err = Jungo.wdapi_dotnet.WD_ERROR_CODES;
 using DWORD = System.UInt32;
 using Jungo.wdapi_dotnet;
+using Hcdz.WPFServer.Properties;
 
 namespace Hcdz.WPFServer
 { 
@@ -49,7 +50,10 @@ namespace Hcdz.WPFServer
             DriveInfo[] drives = DriveInfo.GetDrives();
             return drives;
         }
-
+        public bool FormatDrive(string driveName)
+        {
+            return CommonHelper.FormatDrive(driveName);
+        }
         public async Task<List<DirectoryInfoModel>> GetFileList(string path = "")
 		{
 			DriveInfo[] drives = DriveInfo.GetDrives();
@@ -124,19 +128,19 @@ namespace Hcdz.WPFServer
 
         public   DWORD InitLoad()
         {
-			PCIE_DeviceList.TheDeviceList().Add(new PCIE_Device(new WD_PCI_SLOT() { dwSlot=3}));
-			PCIE_DeviceList.TheDeviceList().Add(new PCIE_Device(new WD_PCI_SLOT() { dwSlot = 5 }));
-			var pciDevList = PCIE_DeviceList.TheDeviceList();
+			//PCIE_DeviceList.TheDeviceList().Add(new PCIE_Device(new WD_PCI_SLOT() { dwSlot=3}));
+			//PCIE_DeviceList.TheDeviceList().Add(new PCIE_Device(new WD_PCI_SLOT() { dwSlot = 5 }));
+		 var pciDevList = PCIE_DeviceList.TheDeviceList();
             //GlobalHost.DependencyResolver.Register(typeof(PCIE_DeviceList), () => pciDevList);
             try
             {
-              
-                     //DWORD dwStatus = pciDevList.Init();
-                     //if (dwStatus != (DWORD)wdc_err.WD_STATUS_SUCCESS)
-                     //{
-                     //    return dwStatus;
-                     //}
-                     return (DWORD)1000;
+
+                DWORD dwStatus = pciDevList.Init(Settings.Default.License);
+                if (dwStatus != (DWORD)wdc_err.WD_STATUS_SUCCESS)
+                {
+                    return dwStatus;
+                }
+                return dwStatus;
               
             }
             catch (Exception)

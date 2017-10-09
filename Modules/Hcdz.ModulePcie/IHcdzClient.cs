@@ -40,5 +40,8 @@ namespace Hcdz.ModulePcie
 		Task<bool> DeviceOpen(int iSelectedIndex); 
 		Task<bool> DeviceClose(int iSelectedIndex);
 		Task<string> InitDeviceInfo(int iSelectedIndex);
-	}
+
+        Task<bool> FormatDrive(string driveName);
+
+    }
 }
