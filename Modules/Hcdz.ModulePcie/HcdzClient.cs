@@ -370,5 +370,32 @@ namespace Hcdz.ModulePcie
             }
             return 1000;
         }
-    }
+
+		public async Task<bool> DeviceOpen(int iSelectedIndex)
+		{
+			if (_connection.State == ConnectionState.Connected)
+			{
+				return await _chat.Invoke<bool>("DeviceOpen",iSelectedIndex);
+			}
+			return false;
+		}
+
+		public async Task<bool> DeviceClose(int iSelectedIndex)
+		{
+			if (_connection.State == ConnectionState.Connected)
+			{
+				return await _chat.Invoke<bool>("DeviceClose",iSelectedIndex);
+			}
+			return false;
+		}
+
+		public async Task<string> InitDeviceInfo(int iSelectedIndex)
+		{
+			if (_connection.State == ConnectionState.Connected)
+			{
+				return await _chat.Invoke<string>("InitDeviceInfo", iSelectedIndex);
+			}
+			return string.Empty; 
+		}
+	}
 }

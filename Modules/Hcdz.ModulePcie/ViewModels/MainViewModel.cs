@@ -79,10 +79,18 @@ namespace Hcdz.ModulePcie.ViewModels
             _hcdzClient.Connected +=ClientConnected;
 			_hcdzClient.Connect("dddd");
 
-            
+			LoadData();//加载基本信息
         }
 
-        private void ClientConnected(bool result)
+		private void LoadData()
+		{
+			DriveInfo[] drives = DriveInfo.GetDrives();
+			_driveInfoItems = new ObservableCollection<DriveInfo>(drives);
+
+			LoadDeviceChannel();
+		}
+
+		private void ClientConnected(bool result)
         {
             if (result)
             {
@@ -316,13 +324,14 @@ namespace Hcdz.ModulePcie.ViewModels
             dev.WriteBAR0(0, 0x10, 0);
         }
 
-        private void OnOpenDevice(object obj)
+        private async void OnOpenDevice(object obj)
         {
             int index = 0;
             int.TryParse(obj.ToString(), out index);
             if (!IsOpen)
             {
-                if (DeviceOpen(index) == true)
+				var result =await _hcdzClient.DeviceOpen(index);
+                if (result)
                 {
                     if (index == 1)
                     {
@@ -334,33 +343,33 @@ namespace Hcdz.ModulePcie.ViewModels
                         OpenDeviceText = "关闭设备";
                         IsOpen = true;
                     }
-                    var device = pciDevList.Get(index);
-                    DWORD outData=0;
-                    device.ReadBAR0(0, 0x00, ref outData);
-                    if ((outData & 0x10) == 0x10)
-                        DeviceDesc += "链路速率：2.5Gb/s\r\n";
-                    else if ((outData & 0x20) == 0x20)
-                        DeviceDesc += "链路速率：5.0Gb/s\r\n";
-                    else
-                        DeviceDesc += "speed judge error/s\r\n";
+                    //var device = pciDevList.Get(index);
+                    //DWORD outData=0;
+                    //device.ReadBAR0(0, 0x00, ref outData);
+                    //if ((outData & 0x10) == 0x10)
+                    //    DeviceDesc += "链路速率：2.5Gb/s\r\n";
+                    //else if ((outData & 0x20) == 0x20)
+                    //    DeviceDesc += "链路速率：5.0Gb/s\r\n";
+                    //else
+                    //    DeviceDesc += "speed judge error/s\r\n";
 
-                    outData = (outData & 0xF);
-                    if (outData == 1)
-                        DeviceDesc += "链路宽度：x1";
-                    else if (outData == 2)
-                        DeviceDesc += "链路宽度：x2";
-                    else if (outData == 4)
-                        DeviceDesc += "链路宽度：x4";
-                    else if (outData == 8)
-                        DeviceDesc += "链路宽度：x8";
-                    else
-                        DeviceDesc += "width judge error/s\r\n";                    
+                    //outData = (outData & 0xF);
+                    //if (outData == 1)
+                    //    DeviceDesc += "链路宽度：x1";
+                    //else if (outData == 2)
+                    //    DeviceDesc += "链路宽度：x2";
+                    //else if (outData == 4)
+                    //    DeviceDesc += "链路宽度：x4";
+                    //else if (outData == 8)
+                    //    DeviceDesc += "链路宽度：x8";
+                    //else
+                    //    DeviceDesc += "width judge error/s\r\n";                    
                 }
             }
             else
             {
                 PCIE_Device dev = pciDevList.Get(0);
-                DeviceClose(0);
+               //    DeviceClose(0);
                 OpenDeviceText = "连接设备";
                 IsOpen = false;
             }
@@ -519,13 +528,9 @@ namespace Hcdz.ModulePcie.ViewModels
 
 
         private async void Initializer()
-		{
-            //DriveInfo[] drives = DriveInfo.GetDrives();
-            //_driveInfoItems = new ObservableCollection<DriveInfo>(drives);
-
-            //LoadDeviceChannel();
+		{ 
             var result =await _hcdzClient.InitializerDevice();
-            pciDevList = PCIE_DeviceList.TheDeviceList();
+           
           //  queue1 = new ConcurrentQueue<byte[]>();
             Thread readThread = new Thread(new ThreadStart(ReadDMA));
             readThread.IsBackground = true;
@@ -551,8 +556,8 @@ namespace Hcdz.ModulePcie.ViewModels
             //        return;
             //    }
 
-                foreach (PCIE_Device dev in pciDevList)
-                    devicesItems.Add(dev);
+                //foreach (PCIE_Device dev in pciDevList)
+                //    devicesItems.Add(dev);
                 if (devicesItems.Count > 0)
                 {
                     ViewModel.ShortDesc = devicesItems[0].Name;
@@ -618,41 +623,7 @@ namespace Hcdz.ModulePcie.ViewModels
             _deviceChannel2.Add(channel5);
         }
 
-        /* Open a handle to a device */
-        private bool DeviceOpen(int iSelectedIndex)
-        {
-            DWORD dwStatus;
-           PCIE_Device device = pciDevList.Get(iSelectedIndex);
-
-            /* Open a handle to the device */
-            dwStatus = device.Open();
-            if (dwStatus != (DWORD)wdc_err.WD_STATUS_SUCCESS)
-            {
-                Log.ErrLog("NEWAMD86_diag.DeviceOpen: Failed opening a " +
-                    "handle to the device (" + device.ToString(false) + ")");
-                return false;
-            }
-            Log.TraceLog("NEWAMD86_diag.DeviceOpen: The device was successfully open." +
-                "You can now activate the device through the enabled menu above");
-            return true;
-        }
-
-        /* Close handle to a NEWAMD86 device */
-        private BOOL DeviceClose(int iSelectedIndex)
-        {
-            PCIE_Device device = pciDevList.Get(iSelectedIndex);
-            BOOL bStatus = false;
-
-            if (device.Handle != IntPtr.Zero && !(bStatus = device.Close()))
-            {
-                Log.ErrLog("NEWAMD86_diag.DeviceClose: Failed closing NEWAMD86 "
-                    + "device (" + device.ToString(false) + ")");
-            }
-            else
-                device.Handle = IntPtr.Zero;
-            return bStatus;
-        }
-
+      
 
         private List<int> s1 = new List<int>();
 		private List<int> s2 = new List<int>();
@@ -664,7 +635,7 @@ namespace Hcdz.ModulePcie.ViewModels
 			}
 			
 		}
-        Task task;
+        
         private void ReadDMA()
 		{
 			while (!IsCompleted)
@@ -729,36 +700,6 @@ namespace Hcdz.ModulePcie.ViewModels
             //}
            item.Stream.Write(trueValue, 0, 16);
         }
-        public string ByteToString(byte[] InBytes, int len)
-        {
-            string StringOut = "";
-            for (int i = 0; i < len; i++)
-            {
-                StringOut = StringOut + String.Format("{0:X2} ", InBytes[i]);
-            }
-            return StringOut;
-        }
-        public static string ByteToString(byte[] InBytes)
-        {
-            string StringOut = "";
-            foreach (byte InByte in InBytes)
-            {
-                StringOut = StringOut + String.Format("{0:X2} ", InByte);
-            }
-            return StringOut;
-        }
-        public static byte[] StringToByte(string InString)
-        {
-            string[] ByteStrings;
-            ByteStrings = InString.Split(" ".ToCharArray());
-            byte[] ByteOut;
-            ByteOut = new byte[ByteStrings.Length - 1];
-            for (int i = 0; i == ByteStrings.Length - 1; i++)
-            {
-                ByteOut[i] = Convert.ToByte(("0x" + ByteStrings[i]));
-            }
-            return ByteOut;
-        }
-
+     
     }
 }
