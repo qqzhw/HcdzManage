@@ -16,7 +16,7 @@ namespace Hcdz.WPFServer
 	{
         public  MyHub()
         {
-           InitLoad();
+          
         }
 		public void Send(string name, string message)
 		{

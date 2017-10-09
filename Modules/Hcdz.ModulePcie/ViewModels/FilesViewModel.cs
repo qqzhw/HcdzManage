@@ -191,10 +191,12 @@ namespace Hcdz.ModulePcie.ViewModels
             IsBusy = true;
             //获取远程磁盘
             DriveInfo[] drives =await _hcdzClient.GetDrives();
+            if (drives!=null)
+            {
+                DriveInfoItems = new ObservableCollection<DriveInfo>(drives);
+            }
 
-            DriveInfoItems =  new ObservableCollection<DriveInfo>(drives);
-			  
-           var items = await List();
+            var items = await List();
             if (items != null) 
 		   DirectoryItems = new ObservableCollection<DirectoryInfoModel>(items);
           IsBusy = false;

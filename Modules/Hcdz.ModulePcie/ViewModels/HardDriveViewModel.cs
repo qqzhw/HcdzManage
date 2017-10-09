@@ -16,11 +16,12 @@ namespace Hcdz.ModulePcie.ViewModels
 {
     public class HardDriveViewModel: BindableBase
     {
-        public HardDriveViewModel()
+        private readonly IHcdzClient _hcdzClient;
+        public HardDriveViewModel(IHcdzClient  hcdzClient)
         {
             driveInfoItems = new ObservableCollection<DriveInfoModel>();
 			FormatCmd= new DelegateCommand<object>(OnFormatDisk);
-
+            _hcdzClient = hcdzClient;
 			Init();
         }
 
@@ -37,10 +38,13 @@ namespace Hcdz.ModulePcie.ViewModels
         }
          public ICommand FormatCmd { get; private set; }
 
-		private  void Init()
+		private async  void Init()
         {
             var models = new ObservableCollection<DriveInfoModel>();
-            DriveInfo[] drives = DriveInfo.GetDrives();
+            
+            DriveInfo[] drives = await _hcdzClient.GetDrives();
+            if (drives == null)
+                return;
             foreach (var item in drives)
             {
                 var drive = new DriveInfoModel()
