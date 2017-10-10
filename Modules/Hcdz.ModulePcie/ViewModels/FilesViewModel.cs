@@ -20,6 +20,8 @@ using Telerik.Windows.Controls.GridView;
 using Hcdz.ModulePcie.Views;
 using Pvirtech.Framework.Interactivity;
 using Microsoft.AspNet.SignalR.Client;
+using System.Windows.Controls;
+using System.Threading;
 
 namespace Hcdz.ModulePcie.ViewModels
 {
@@ -44,13 +46,110 @@ namespace Hcdz.ModulePcie.ViewModels
             ListRightMenue = new DelegateCommand<object>(OnRightMenue);
             LoadedCommand = new DelegateCommand<object>(OnLoad);
             CreateNewCmd=new DelegateCommand<object>(OnCreateNew);
-            Initializer(); 
+			CopyNewCmd= new DelegateCommand<object>(OnCopyNew);
+			FileCopyCmd = new DelegateCommand<MouseButtonEventArgs>(OnFileCopy);
+			Menu = new ObservableCollection<MenuItem>();
+			Initializer();
+			_hcdzClient.ProgressChanged += FileCopyProgressChanged;
         }
 
-        private void OnRightMenue(object obj)
-        {
-            
-        }
+		private void FileCopyProgressChanged(string source, string destination, long totalFileSize, long totalBytesTransferred)
+		{
+			double dProgress = (totalBytesTransferred / (double)totalFileSize) * 100.0;
+			//progressBar1.Value = (int)dProgress;
+			ProgressValue = (int)dProgress;
+			ProgressText = string.Format("{0}%", ProgressValue);
+			if (ProgressValue==100)
+			{
+				Thread.Sleep(2000);
+				ProgressShow = false;
+				ProgressValue = 0;
+				ProgressText = string.Empty;
+			}
+		}
+
+		private void OnCopyNew(object obj)
+		{
+			string fileName = "testdb.bak";
+			String sourceFullPath = Path.Combine("D:\\", fileName);
+			 
+
+			String targetFullPath = Path.Combine("F:\\5555\\", fileName);
+
+
+			//FileUtilities.CreateDirectoryIfNotExist(Path.GetDirectoryName(targetFullPath));
+			ProgressShow = true;
+			//FileUtilities.CopyFileEx(sourceFullPath, targetFullPath, token);
+			_hcdzClient.CopyFileEx(sourceFullPath, targetFullPath);
+		}
+
+		private void InitMenu()
+		{
+		
+			MenuItem mi = new MenuItem()
+			{
+				Header = "复制",
+				Command =FileCopyCmd
+			};
+			Menu.Add(mi);
+
+			//mi = new MenuItem()
+			//{
+			//	Header = "粘贴",
+			//	Command = FileZtCmd
+			//};
+			//Menu.Add(mi);
+
+			mi = new MenuItem()
+			{
+				Header = "剪切",
+				Command = FileCutCmd
+			};
+			Menu.Add(mi);
+
+			mi = new MenuItem()
+			{
+				Header = "删除",
+				Command = DeleteCmd
+			};
+			Menu.Add(mi);
+			
+
+		}
+
+		private void OnFileCopy(MouseButtonEventArgs item)
+		{
+			if (item != null)
+			{
+				FrameworkElement originalSender = item.OriginalSource as FrameworkElement;
+				if (originalSender != null)
+				{
+					var row = originalSender.ParentOfType<GridViewRow>();
+					if (row == null)
+						return;
+				}
+			}
+		}
+
+		private void OnRightMenue(object obj)
+		{
+			Menu.Clear();
+			var clickedItem = (obj as MouseButtonEventArgs).OriginalSource as FrameworkElement;
+			if (clickedItem != null)
+			{
+				var parentRow = clickedItem.ParentOfType<GridViewRow>();
+				if (parentRow != null)
+				{
+					parentRow.IsSelected = true;
+					var model = parentRow.DataContext as DirectoryInfoModel;
+				}
+				else
+				{
+					return;
+				}
+				InitMenu();
+			}
+		}
 
         private void OnCreateNew(object obj)
         {
@@ -155,8 +254,31 @@ namespace Hcdz.ModulePcie.ViewModels
             get { return _selectedPath; }
             set { SetProperty(ref _selectedPath, value); }
         }
-        
-        private bool _isBusy=false;
+		private int _progressValue;
+		public int ProgressValue
+		{
+			get { return _progressValue; }
+			set { SetProperty(ref _progressValue, value); }
+		}
+		private string _progresstext;
+		public string ProgressText
+		{
+			get { return _progresstext; }
+			set { SetProperty(ref _progresstext, value); }
+		}
+		private bool _progressShow = false;
+		public bool ProgressShow
+		{
+			get { return _progressShow; }
+			set { SetProperty(ref _progressShow, value); }
+		}
+		private bool _canCopy = false;
+		public bool CanCopy
+		{
+			get { return _canCopy; }
+			set { SetProperty(ref _canCopy, value); }
+		}
+		private bool _isBusy=false;
         public bool IsBusy {
             get { return _isBusy; }
             set { SetProperty(ref _isBusy, value); }
@@ -178,16 +300,23 @@ namespace Hcdz.ModulePcie.ViewModels
 		{
 			get { return _selectedItem; }
 			set { SetProperty(ref _selectedItem, value); }
-		}
+		} 
+		public ObservableCollection<MenuItem> Menu { get; set; }
+	 
 		public ICommand DoubleClickCmd { get; private set; }
 	    public ICommand LoadDirCmd { get; private set; }
 		public ICommand SelectedLoadDirCmd { get; private set; }
         public ICommand ListRightMenue { get; private set; }
         public ICommand LoadedCommand { get; private set; }
         public ICommand CreateNewCmd { get; private set; }
-        #endregion
+		public ICommand FileCopyCmd { get; private set; }
+		public ICommand FileZtCmd { get; private set; }
+		public ICommand DeleteCmd { get; private set; }
+		public ICommand FileCutCmd { get; private set; }
+		public ICommand CopyNewCmd { get; private set; }
+		#endregion
 
-        private async void Initializer()
+		private async void Initializer()
 		{
             IsBusy = true;
             //获取远程磁盘

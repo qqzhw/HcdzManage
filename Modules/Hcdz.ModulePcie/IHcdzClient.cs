@@ -16,7 +16,9 @@ namespace Hcdz.ModulePcie
 		event Action<string, string, string> AddMessageContent;  
 		event Action Disconnected;
         event Action<bool> Connected;
-        event Action<ClientMessage> OnGetMessage;
+		event Action<string, string, long, long> ProgressChanged;
+
+		event Action<ClientMessage> OnGetMessage;
 	   
         bool IsConnected { get; set; }
 		string SourceUrl { get; }
@@ -42,6 +44,8 @@ namespace Hcdz.ModulePcie
 		Task<string> InitDeviceInfo(int iSelectedIndex);
 
         Task<bool> FormatDrive(string driveName);
+		Task CopyFileEx(string sourceFullPath, string targetFullPath);
 
-    }
+
+	}
 }

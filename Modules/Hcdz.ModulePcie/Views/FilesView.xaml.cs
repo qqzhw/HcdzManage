@@ -36,5 +36,20 @@ namespace Hcdz.ModulePcie.Views
             concurrentQueue.Enqueue(new byte[16]);
             
         }
-    }
+
+		private void GridContextMenu_ContextMenuOpening(object sender, ContextMenuEventArgs e)
+		{
+			var menu = sender as ContextMenu;
+			MenuItem item = new MenuItem();
+			item.Header = "复制";
+			menu.Items.Add(item);
+				//< MenuItem Header = "新建"  Command = "{Binding ListRightMenue}" CommandParameter = "{Binding}" />
+	 
+			 //	 < MenuItem Header = "编辑" />
+	  
+			 //	  < MenuItem    Header = "删除" telerik: StyleManager.Theme = "Windows8" />
+
+
+		}
+	}
 }

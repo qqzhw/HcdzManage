@@ -78,7 +78,7 @@ namespace Hcdz.ModulePcie.ViewModels
 			_hcdzClient.MessageReceived += _hcdzClient_MessageReceived;
             _hcdzClient.Connected +=ClientConnected;
 			_hcdzClient.Connect("dddd");
-
+			
 			LoadData();//加载基本信息
         }
 
@@ -94,7 +94,10 @@ namespace Hcdz.ModulePcie.ViewModels
         {
             if (result)
             {
-                Initializer();
+				 
+			   OnLoadSelectDir(_selectedDsik);
+			 
+				Initializer();
             }
         }
 
@@ -109,16 +112,18 @@ namespace Hcdz.ModulePcie.ViewModels
             dispatcherTimer.Stop();
         }
 
-        private  async void OnLoadSelectDir(object obj)
+        private  async void OnLoadSelectDir(object dirPath)
         {
-            if (obj==null)
+            if (dirPath==null)
             {
                 return;
             }
             DriveInfo[] drives = await _hcdzClient.GetDrives();
+			if (drives == null)
+				return;
             foreach (var drive in drives)
             {
-                if (drive.Name.Contains(obj.ToString()))
+                if (drive.Name.Contains(dirPath.ToString()))
                 {
                     DiskVal = ByteFormatter.ToString(drive.AvailableFreeSpace) + " 可用";
                     DiskPercent = 100.0 - (int)(drive.AvailableFreeSpace * 100.0 / drive.TotalSize); 
@@ -368,7 +373,7 @@ namespace Hcdz.ModulePcie.ViewModels
             }
             else
             {
-                PCIE_Device dev = pciDevList.Get(0);
+              //  PCIE_Device dev = pciDevList.Get(0);
                //    DeviceClose(0);
                 OpenDeviceText = "连接设备";
                 IsOpen = false;
@@ -426,11 +431,7 @@ namespace Hcdz.ModulePcie.ViewModels
         public string SelectedDsik
         {
             get
-            {
-                if (string.IsNullOrEmpty(_selectedDsik))
-                {
-                    OnLoadSelectDir("D:\\");
-                }
+            { 
                 return _selectedDsik;
             }
             set
@@ -541,12 +542,13 @@ namespace Hcdz.ModulePcie.ViewModels
                 Application.Current.Dispatcher.Invoke(delegate {
                     RadWindow.Alert(new DialogParameters
                     {
-                        Content = content,
-                        DefaultPromptResultValue = "default name",
+                        Content = content, 
                         Theme = new Windows8TouchTheme(),
                         Header = "提示",
-                        TopOffset = 30,
-                    });
+                         DialogStartupLocation=WindowStartupLocation.CenterOwner,
+						 OkButtonContent="关闭",
+						 Owner = Application.Current.MainWindow,
+					});
                 }); 
                 return;
             }

@@ -150,6 +150,10 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Hcdz.Framework\Hcdz.Framework.csproj">
+      <Project>{0ED0A62F-34E7-45A8-9AAF-F307ECFCE255}</Project>
+      <Name>Hcdz.Framework</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Hcdz.PcieLib\Hcdz.PcieLib.csproj">
       <Project>{bfaf95f6-c68f-4cbf-bb2e-06bbf625e907}</Project>
       <Name>Hcdz.PcieLib</Name>

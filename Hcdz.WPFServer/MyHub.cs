@@ -16,6 +16,7 @@ using System.Threading;
 using System.Runtime.InteropServices;
 using System.Windows.Threading;
 using System.Collections.Concurrent;
+using Hcdz.Framework.Common;
 
 namespace Hcdz.WPFServer
 { 
@@ -66,7 +67,18 @@ namespace Hcdz.WPFServer
         {
             return CommonHelper.FormatDrive(driveName);
         }
-        public async Task<List<DirectoryInfoModel>> GetFileList(string path = "")
+		public void CopyFileEx(string sourceFullPath,string targetFullPath)
+		{
+			FileUtilities.CreateDirectoryIfNotExist(Path.GetDirectoryName(targetFullPath));
+			FileUtilities.CopyFileEx(sourceFullPath, targetFullPath, token);
+		}
+
+		private void token(string source, string destination, long totalFileSize, long totalBytesTransferred)
+		{
+			Clients.Client(Context.ConnectionId).FileProgress(source, destination, totalFileSize, totalBytesTransferred);
+		}
+
+		public async Task<List<DirectoryInfoModel>> GetFileList(string path = "")
 		{
 			DriveInfo[] drives = DriveInfo.GetDrives();
 			FileSystemInfo[] dirFileitems = null;

@@ -36,7 +36,7 @@ namespace Hcdz.ModulePcie
 
 		public event Action<string> MessageReceived;
 		public event Action<IEnumerable<string>> LoggedOut; 
-		public event Action<string, string, string> TopicChanged; 
+		public event Action<string, string, long,long> ProgressChanged; 
 		public event Action<string, string, string> AddMessageContent;
 		  
 		// Global  
@@ -44,7 +44,7 @@ namespace Hcdz.ModulePcie
         public event Action<bool> Connected;
        
         public string SourceUrl { get; private set; }
-		public bool AutoReconnect { get; set; }
+		public bool AutoReconnect { get; set; } = true;
 		public TextWriter TraceWriter { get; set; }
 		public TraceLevels TraceLevel { get; set; }
 		 
@@ -220,9 +220,9 @@ namespace Hcdz.ModulePcie
 				Execute(LoggedOut, loggedOut => loggedOut(rooms));
 			});
 			  
-			_chat.On<string, string, string>(ClientEvents.TopicChanged, (roomName, topic, who) =>
+			_chat.On<string, string, long,long>(ClientEvents.FileProgress, (source, destination, totalFileSize, totalBytesTransferred) =>
 			{
-				Execute(TopicChanged, topicChanged => topicChanged(roomName, topic, who));
+				Execute(ProgressChanged , fileChanged =>fileChanged(source, destination, totalFileSize, totalBytesTransferred));
 			}); 
 
 			_chat.On<string, string, string>(ClientEvents.AddMessageContent, (messageId, extractedContent, roomName) =>
@@ -406,5 +406,13 @@ namespace Hcdz.ModulePcie
             }
             return false;
         }
-    }
+
+		public async Task CopyFileEx(string sourceFullPath, string targetFullPath)
+		{
+			if (_connection.State == ConnectionState.Connected)
+			{
+				await _chat.Invoke("CopyFileEx", sourceFullPath, targetFullPath);
+			}
+		}
+	}
 }
