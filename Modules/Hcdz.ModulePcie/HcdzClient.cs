@@ -11,6 +11,7 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Hcdz.ModulePcie.ViewModels;
 
 namespace Hcdz.ModulePcie
 { 
@@ -414,5 +415,21 @@ namespace Hcdz.ModulePcie
 				await _chat.Invoke("CopyFileEx", sourceFullPath, targetFullPath);
 			}
 		}
-	}
+
+        public async Task OnReadDma(string driveName, int dataSize, int deviceIndex)
+        {
+            if (_connection.State == ConnectionState.Connected)
+            {
+                await _chat.Invoke("OnReadDma", driveName, dataSize,deviceIndex);
+            }
+        }
+         
+        public async Task OpenOrCloseChannel(DeviceChannelModel model)
+        {
+            if (_connection.State == ConnectionState.Connected)
+            {
+                await _chat.Invoke("OpenOrCloseChannel", model);
+            }
+        }
+    }
 }

@@ -131,22 +131,24 @@ namespace Hcdz.ModulePcie.ViewModels
             }
         }
 
-        private void OnCloseChannel(DeviceChannelModel model)
+        private async void OnCloseChannel(DeviceChannelModel model)
         {
             //var device = model.Device;
             // var device = pciDevList.Get(0);
             //device.WriteBAR0(0, 0x28, 1);
             //   device.WriteBAR0(0, model.RegAddress, 0);
             model.IsOpen = false;
+           await _hcdzClient.OpenOrCloseChannel(model);
         }
 
-        private void OnOpenChannel(DeviceChannelModel model)
+        private async void OnOpenChannel(DeviceChannelModel model)
         {
             //var device = model.Device;
            // var device = pciDevList.Get(0);
             //device.WriteBAR0(0, 0x28, 1);
           //  device.WriteBAR0(0, 0x34, 1);
             model.IsOpen = true;
+            await _hcdzClient.OpenOrCloseChannel(model);
         }
 
         private void OnScanDevice(object obj)
@@ -173,43 +175,44 @@ namespace Hcdz.ModulePcie.ViewModels
                 MessageBox.Show("请打开相关通道！");
                 return;
             }
-            PCIE_Device dev =pciDevList.Get(0);
-            dev.FPGAReset(0);
-            if (dev.WDC_DMAContigBufLock() != 0)
-            {
-                MessageBox.Show(("分配报告内存失败"));
-                return;
-            }
-            DWORD wrDMASize = 16; //16kb
-            if (!dev.DMAWriteMenAlloc((uint)0, (uint)1, wrDMASize * 1024))
-            {
-                MessageBox.Show("内存分配失败!");
-                return;
-            }
-            var dt = DateTime.Now.ToString("yyyyMMddHHmmss");
-            foreach (var item in _deviceChannelModels)
-            {
-                var dir = Path.Combine(SelectedDsik, item.DiskPath);
-                if (!Directory.Exists(dir))
-                {
-                    Directory.CreateDirectory(dir);
-                }
-                var filePath = Path.Combine(dir, dt);
-                //File.Create(filePath);
-                item.FilePath = filePath;
-                if (item.IsOpen)
-                {
-                  item.Stream = new FileStream(filePath, FileMode.Append, FileAccess.Write);
-                }
+            _hcdzClient.OnReadDma("D:\\", 16, 0);
+            //PCIE_Device dev =pciDevList.Get(0);
+            //dev.FPGAReset(0);
+            //if (dev.WDC_DMAContigBufLock() != 0)
+            //{
+            //    MessageBox.Show(("分配报告内存失败"));
+            //    return;
+            //}
+            //DWORD wrDMASize = 16; //16kb
+            //if (!dev.DMAWriteMenAlloc((uint)0, (uint)1, wrDMASize * 1024))
+            //{
+            //    MessageBox.Show("内存分配失败!");
+            //    return;
+            //}
+            //var dt = DateTime.Now.ToString("yyyyMMddHHmmss");
+            //foreach (var item in _deviceChannelModels)
+            //{
+            //    var dir = Path.Combine(SelectedDsik, item.DiskPath);
+            //    if (!Directory.Exists(dir))
+            //    {
+            //        Directory.CreateDirectory(dir);
+            //    }
+            //    var filePath = Path.Combine(dir, dt);
+            //    //File.Create(filePath);
+            //    item.FilePath = filePath;
+            //    if (item.IsOpen)
+            //    {
+            //      item.Stream = new FileStream(filePath, FileMode.Append, FileAccess.Write);
+            //    }
 
-            }
-            dev.StartWrDMA(0);
-            dispatcherTimer.Start();
-            //if (p->bWriteDisc[0])
-            //CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)savefile0, p, 0, NULL);
-            Thread nonParameterThread = new Thread(new ParameterizedThreadStart(p => NonParameterRun(dev)));
+            //}
+            //dev.StartWrDMA(0);
+            //dispatcherTimer.Start();
+            ////if (p->bWriteDisc[0])
+            ////CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)savefile0, p, 0, NULL);
+            //Thread nonParameterThread = new Thread(new ParameterizedThreadStart(p => NonParameterRun(dev)));
 
-            nonParameterThread.Start();
+            //nonParameterThread.Start();
 
 
 
@@ -347,6 +350,7 @@ namespace Hcdz.ModulePcie.ViewModels
                     {
                         OpenDeviceText = "关闭设备";
                         IsOpen = true;
+                        DeviceDesc= await _hcdzClient.InitDeviceInfo(index);
                     }
                     //var device = pciDevList.Get(index);
                     //DWORD outData=0;

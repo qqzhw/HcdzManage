@@ -1,4 +1,5 @@
 ﻿using Hcdz.ModulePcie.Models;
+using Hcdz.ModulePcie.ViewModels;
 using Microsoft.AspNet.SignalR.Client;
 using System;
 using System.Collections.Generic;
@@ -46,6 +47,8 @@ namespace Hcdz.ModulePcie
         Task<bool> FormatDrive(string driveName);
 		Task CopyFileEx(string sourceFullPath, string targetFullPath);
 
-
-	}
+        Task OnReadDma(string driveName,int dataSize,int deviceIndex);
+         
+        Task OpenOrCloseChannel(DeviceChannelModel model);
+    }
 }

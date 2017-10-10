@@ -16,7 +16,7 @@ using System.Threading;
 using System.Runtime.InteropServices;
 using System.Windows.Threading;
 using System.Collections.Concurrent;
-using Hcdz.Framework.Common;
+using Hcdz.Framework.Common; 
 
 namespace Hcdz.WPFServer
 { 
@@ -24,13 +24,13 @@ namespace Hcdz.WPFServer
 	{
 		private readonly static Dictionary<PCIE_Device, List<DeviceChannelModel>> DeviceChannelList = new Dictionary<PCIE_Device, List<DeviceChannelModel>>();
         private readonly static List<DeviceChannelModel> DeviceChannelModels = new  List<DeviceChannelModel>();
-        private DispatcherTimer dispatcherTimer;
+        private static DispatcherTimer dispatcherTimer = new DispatcherTimer();
         private ConcurrentQueue<byte[]> queue;
         private bool IsCompleted = false;
         private bool IsStop = false;
         Int64 times;
         long total = 0;
-        private FileStream Stream;
+        //private static FileStream   Stream = new FileStream("D:\\test", FileMode.Append, FileAccess.Write);
         public  MyHub()
         { 
         }
@@ -179,15 +179,15 @@ namespace Hcdz.WPFServer
 			DWORD dwStatus;
 			PCIE_Device device = PCIE_DeviceList.TheDeviceList().Get(iSelectedIndex);
 
-			/* Open a handle to the device */
-			//dwStatus = device.Open();
-			//if (dwStatus != (DWORD)wdc_err.WD_STATUS_SUCCESS)
-			//{
-			//	Log.ErrLog("NEWAMD86_diag.DeviceOpen: Failed opening a " +
-			//		"handle to the device (" + device.ToString(false) + ")");
-			//	return false;
-			//} 
-			return true;
+            /* Open a handle to the device */
+            dwStatus = device.Open();
+            if (dwStatus != (DWORD)wdc_err.WD_STATUS_SUCCESS)
+            {
+                Log.ErrLog("NEWAMD86_diag.DeviceOpen: Failed opening a " +
+                    "handle to the device (" + device.ToString(false) + ")");
+                return false;
+            }
+            return true;
 		}
 
 		/* Close handle to a NEWAMD86 device */
@@ -196,14 +196,14 @@ namespace Hcdz.WPFServer
 			PCIE_Device device = PCIE_DeviceList.TheDeviceList().Get(iSelectedIndex);
 			bool bStatus = false;
 
-			//if (device.Handle != IntPtr.Zero && !(bStatus = device.Close()))
-			//{
-			//	Log.ErrLog("NEWAMD86_diag.DeviceClose: Failed closing NEWAMD86 "
-			//		+ "device (" + device.ToString(false) + ")");
-			//}
-			//else
-			//	device.Handle = IntPtr.Zero;
-			return bStatus;
+            if (device.Handle != IntPtr.Zero && !(bStatus = device.Close()))
+            {
+                Log.ErrLog("DeviceClose: Failed closing "
+                    + "device (" + device.ToString(false) + ")");
+            }
+            else
+                device.Handle = IntPtr.Zero;
+            return bStatus;
 		}
 
 		public string InitDeviceInfo(int index)
@@ -234,7 +234,21 @@ namespace Hcdz.WPFServer
 			return desc;
 		}
 
-		private List<DeviceChannelModel> AddChannel(int index)
+        public void OpenOrCloseChannel(DeviceChannelModel model)
+        {
+            foreach (var item in DeviceChannelList)
+            {
+                foreach (var childitem in item.Value)
+                {
+                    if (childitem.Id==model.Id)
+                    {
+                        childitem.IsOpen = model.IsOpen;
+                    }
+                } 
+            }
+        }
+         
+        private List<DeviceChannelModel> AddChannel(int index)
 		{
 			List<DeviceChannelModel> list = new List<DeviceChannelModel>();
 			switch (index)
@@ -303,9 +317,9 @@ namespace Hcdz.WPFServer
 			return list;
 		}
 
-        public void OnReadDma()
+        public void OnReadDma(string dvireName,int dataSize, int deviceIndex)
         {
-            PCIE_Device dev = PCIE_DeviceList.TheDeviceList().Get(0);
+            PCIE_Device dev = PCIE_DeviceList.TheDeviceList().Get(deviceIndex);
             dev.FPGAReset(0);
             if (dev.WDC_DMAContigBufLock() != 0)
             {
@@ -319,32 +333,33 @@ namespace Hcdz.WPFServer
                 return;
             }
             var dt = DateTime.Now.ToString("yyyyMMddHHmmss");
-            foreach (var item in DeviceChannelList)
+            var list = DeviceChannelList[dev];
+            foreach (var item in list)
             {
-                //var dir = Path.Combine(SelectedDsik, item.DiskPath);
-                //if (!Directory.Exists(dir))
-                //{
-                //    Directory.CreateDirectory(dir);
-                //}
-                //var filePath = Path.Combine(dir, dt);
-                ////File.Create(filePath);
-                //item.FilePath = filePath;
-                //if (item.IsOpen)
-                //{
-                //    item.Stream = new FileStream(filePath, FileMode.Append, FileAccess.Write);
-                //}
+                var dir = Path.Combine(dvireName, item.DiskPath);
+                if (!Directory.Exists(dir))
+                {
+                    Directory.CreateDirectory(dir);
+                }
+                var filePath = Path.Combine(dir, dt);
+                //File.Create(filePath);
+                item.FilePath = filePath;
+                if (item.IsOpen)
+                {
+                    item.Stream = new FileStream(filePath, FileMode.Append, FileAccess.Write);
+                }
 
             }
             dev.StartWrDMA(0);
             dispatcherTimer.Start();
             //if (p->bWriteDisc[0])
             //CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)savefile0, p, 0, NULL);
-            Thread nonParameterThread = new Thread(new ParameterizedThreadStart(p => NonParameterRun(dev)));
+            Thread nonParameterThread = new Thread(new ParameterizedThreadStart(p => NonParameterRun(dev,dvireName,dataSize,deviceIndex)));
 
             nonParameterThread.Start();
         }
 
-        private void NonParameterRun(PCIE_Device dev)
+        private void NonParameterRun(PCIE_Device dev,string dvireName,int dataSize,int deviceIndex)
         {
             dev.WriteBAR0(0, 0x60, 1);		//中断屏蔽
             dev.WriteBAR0(0, 0x50, 1);		//dma 写报告使能
@@ -361,7 +376,8 @@ namespace Hcdz.WPFServer
             //dev.WriteBAR0(0, 56, 1);
             //dev.WriteBAR0(0, 48, 1);
             //dev.WriteBAR0(0, 0x34, 1);
-            foreach (var item in DeviceChannelModels)
+            var list = DeviceChannelList[dev];
+            foreach (var item in list)
             {
                 dev.WriteBAR0(0, item.RegAddress, item.IsOpen == true ? (UInt32)1 : 0);
             }
@@ -374,7 +390,7 @@ namespace Hcdz.WPFServer
 
                 byte[] tmpResult = new Byte[16 * 1024];
                 Marshal.Copy(dev.pWbuffer, tmpResult, 0, tmpResult.Length);
-                Stream.Write(tmpResult, 0, tmpResult.Length);
+               // Stream.Write(tmpResult, 0, tmpResult.Length);
                 var bytes = tmpResult.Length / 16;
                 for (int i = 0; i < bytes; i++)
                 {
@@ -387,7 +403,7 @@ namespace Hcdz.WPFServer
                     var barValue = Convert.ToInt32(result[15]);
                     if (barValue == 1)
                     {
-                        WriteFile(result);
+                        WriteFile(result,list);
                     }
                 }
                 //  queue.Enqueue(tmpResult);
@@ -403,10 +419,10 @@ namespace Hcdz.WPFServer
             }
             dev.WriteBAR0(0, 0x10, 0);
         }
-        private void WriteFile(byte[] result)
+        private void WriteFile(byte[] result,List<DeviceChannelModel> channelModels)
         {
             var channelNo = Convert.ToInt32(result[8]);
-            var item = DeviceChannelModels.FirstOrDefault(o => o.Id == channelNo);
+            var item = channelModels.FirstOrDefault(o => o.Id == channelNo);
             if (item == null)
                 return;
             byte[] trueValue = new byte[16];
