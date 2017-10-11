@@ -41,17 +41,19 @@ namespace Hcdz.WPFServer
 			//app.MapSignalR();
 			SetupWebApi(app); 
 			SetupFileUpload(app);
-            // Initializer();
+             Initializer();
         }
 
         private void Initializer()
         {
-           var pciDevList = PCIE_DeviceList.TheDeviceList();
-           GlobalHost.DependencyResolver.Register(typeof(PCIE_DeviceList),() =>pciDevList);
-             
-        }
+           //var pciDevList = PCIE_DeviceList.TheDeviceList();
+           //GlobalHost.DependencyResolver.Register(typeof(PCIE_DeviceList),() =>pciDevList);
+		 
+		 	GlobalHost.DependencyResolver.Register(typeof(MyHub), () => new MyHub());		 
 
-        private void SetupWebApi(IAppBuilder app)
+		}
+
+		private void SetupWebApi(IAppBuilder app)
 		{
 			var httpConfiguration = new HttpConfiguration();
 
@@ -66,7 +68,7 @@ namespace Hcdz.WPFServer
 
 			httpConfiguration.Routes.MapHttpRoute(
 				name: "DefaultApi",
-				routeTemplate: "api/{controller}/{id}",
+				routeTemplate: "api/{controller}/{action}/{id}",
 				defaults: new { id = RouteParameter.Optional });
 
 			app.UseWebApi(httpConfiguration);
@@ -94,6 +96,7 @@ namespace Hcdz.WPFServer
 						string fileName = form["filename"];
 						string contentType = form["type"];
 
+					 
 						//    BinaryBlob binaryBlob = BinaryBlob.Parse(file);
 
 						//    if (String.IsNullOrEmpty(contentType))

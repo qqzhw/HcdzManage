@@ -22,6 +22,7 @@ using Pvirtech.Framework.Interactivity;
 using Microsoft.AspNet.SignalR.Client;
 using System.Windows.Controls;
 using System.Threading;
+using System.Net;
 
 namespace Hcdz.ModulePcie.ViewModels
 {
