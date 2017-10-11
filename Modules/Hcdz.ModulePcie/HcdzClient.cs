@@ -39,9 +39,9 @@ namespace Hcdz.ModulePcie
 		public event Action<IEnumerable<string>> LoggedOut; 
 		public event Action<string, string, long,long> ProgressChanged; 
 		public event Action<string, string, string> AddMessageContent;
-		  
-		// Global  
-		public event Action<ClientMessage> OnGetMessage;
+
+        // Global  
+       public  event Action<long> NotifyTotal;
         public event Action<bool> Connected;
        
         public string SourceUrl { get; private set; }
@@ -229,9 +229,12 @@ namespace Hcdz.ModulePcie
 			_chat.On<string, string, string>(ClientEvents.AddMessageContent, (messageId, extractedContent, roomName) =>
 			{
 				Execute(AddMessageContent, addMessageContent => addMessageContent(messageId, extractedContent, roomName));
-			});    
-
-		}
+			});
+            _chat.On<long>(ClientEvents.NotifyTotalSize, (totalSize) =>
+            {
+                Execute(NotifyTotal, total => total(totalSize));
+            });
+        }
 
 		private async void OnDisconnected()
 		{
@@ -416,12 +419,13 @@ namespace Hcdz.ModulePcie
 			}
 		}
 
-        public async Task OnReadDma(string driveName, int dataSize, int deviceIndex)
+        public async Task<string> OnReadDma(string driveName, int dataSize, int deviceIndex)
         {
             if (_connection.State == ConnectionState.Connected)
             {
-                await _chat.Invoke("OnReadDma", driveName, dataSize,deviceIndex);
+               return  await _chat.Invoke<string>("OnReadDma", driveName, dataSize,deviceIndex);
             }
+            return "位置错误";
         }
          
         public async Task OpenOrCloseChannel(DeviceChannelModel model)
@@ -429,6 +433,14 @@ namespace Hcdz.ModulePcie
             if (_connection.State == ConnectionState.Connected)
             {
                 await _chat.Invoke("OpenOrCloseChannel", model);
+            }
+        }
+
+        public async Task CloseDma()
+        {
+            if (_connection.State == ConnectionState.Connected)
+            {
+                await _chat.Invoke("CloseDma");
             }
         }
     }

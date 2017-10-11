@@ -12,16 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.IO;
 using Hcdz.PcieLib;
-using wdc_err = Jungo.wdapi_dotnet.WD_ERROR_CODES;
-using DWORD = System.UInt32;
-using WORD = System.UInt16;
-using BYTE = System.Byte;
-using BOOL = System.Boolean;
-using UINT32 = System.UInt32;
-using UINT64 = System.UInt64;
-using WDC_DEVICE_HANDLE = System.IntPtr;
-using WDC_ADDR_SIZE = System.UInt32;
-using HANDLE = System.IntPtr;
+
 using System.Collections.ObjectModel;
 using Telerik.Windows.Controls;
 using System.Windows.Threading;
@@ -31,6 +22,7 @@ using System.Windows;
 using Jungo.wdapi_dotnet;
 using System.Runtime.InteropServices;
 using Pvirtech.Framework.Common;
+using System.Windows.Controls;
 
 namespace Hcdz.ModulePcie.ViewModels
 {
@@ -110,6 +102,7 @@ namespace Hcdz.ModulePcie.ViewModels
         {
             IsStop = true;
             dispatcherTimer.Stop();
+            _hcdzClient.CloseDma();
         }
 
         private  async void OnLoadSelectDir(object dirPath)
@@ -152,15 +145,10 @@ namespace Hcdz.ModulePcie.ViewModels
         }
 
         private void OnScanDevice(object obj)
-        {
-            if (pciDevList.Count==0)
-            {
-                MessageBox.Show("未发现设备!");
-            }
-            var device = pciDevList.Get(0);
+        { 
             //device.WriteBAR0(0, 0x28, 1);
-            DWORD outData = 0;
-            device.WriteBAR0(0, 0x28, 1);
+         //   DWORD outData = 0;
+          //  device.WriteBAR0(0, 0x28, 1);
            //if ()
            // {
            //     MessageBox.Show("自检失败!");
@@ -175,7 +163,14 @@ namespace Hcdz.ModulePcie.ViewModels
                 MessageBox.Show("请打开相关通道！");
                 return;
             }
-            _hcdzClient.OnReadDma("D:\\", 16, 0);
+            _hcdzClient.NotifyTotal += _hcdzClient_NotifyTotal;
+            dispatcherTimer.Start();
+            int dma = 16;
+            var dmaSize = SelectedDMA.Content.ToString();
+            int.TryParse(dmaSize.TrimEnd('K'), out dma);
+          
+            _hcdzClient.OnReadDma(SelectedDsik, dma, 0);
+            _hcdzClient.OnReadDma(SelectedDsik, dma, 1);
             //PCIE_Device dev =pciDevList.Get(0);
             //dev.FPGAReset(0);
             //if (dev.WDC_DMAContigBufLock() != 0)
@@ -272,66 +267,12 @@ namespace Hcdz.ModulePcie.ViewModels
 
         }
 
-        private void NonParameterRun(PCIE_Device dev)
+        private void _hcdzClient_NotifyTotal(long obj)
         {
-            dev.WriteBAR0(0, 0x60, 1);		//中断屏蔽
-            dev.WriteBAR0(0, 0x50, 1);		//dma 写报告使能
-
-            var dma = (WD_DMA)dev.m_dmaMarshaler.MarshalNativeToManaged(dev.pReportWrDMA);
-            var ppwDma = (WD_DMA)dev.m_dmaMarshaler.MarshalNativeToManaged(dev.ppwDma);
-
-            dev.WriteBAR0(0, 0x58, (uint)dma.Page[0].pPhysicalAddr);		//dma 写报告地址
-            //设置初始DMA写地址,长度等
-            dev.WriteBAR0(0, 0x4, (uint)ppwDma.Page[0].pPhysicalAddr);		//wr_addr low
-            dev.WriteBAR0(0, 0x8, (uint)(ppwDma.Page[0].pPhysicalAddr >> 32));	//wr_addr high
-            dev.WriteBAR0(0, 0xC, 16 * 1024);			//dma wr size
-           
-            //dev.WriteBAR0(0, 56, 1);
-            //dev.WriteBAR0(0, 48, 1);
-            //dev.WriteBAR0(0, 0x34, 1);
-            foreach (var item in _deviceChannelModels)
-            { 
-             dev.WriteBAR0(0, item.RegAddress, item.IsOpen==true?(UINT32)1:0);
-            }
-            //启动DMA
-            dev.WriteBAR0(0, 0x10, 1);			//dma wr 使能
-            var startTime = DateTime.Now.Ticks;
-            
-            while (!IsStop)
-            {
-              
-                byte[]  tmpResult = new Byte[16 * 1024];
-                Marshal.Copy(dev.pWbuffer, tmpResult, 0, tmpResult.Length);
-                Stream.Write(tmpResult, 0, tmpResult.Length);
-                var bytes = tmpResult.Length / 16;
-                for (int i = 0; i < bytes; i++)
-                {
-                    var index = i * 16;
-                    byte[] result = new byte[16];
-                    for (int j = 0; j < 16; j++)
-                    {
-                        result[j] = tmpResult[index + j];
-                    }
-                    var barValue = Convert.ToInt32(result[15]);
-                    if (barValue == 1)
-                    {
-                        WriteFile(result);
-                    }
-                }
-                //  queue.Enqueue(tmpResult);
-                //tranIndex++;
-                total += 16 * 1024;
-                foreach (var item in _deviceChannelModels)
-                {
-                    dev.WriteBAR0(0, item.RegAddress, item.IsOpen == true ? (UINT32)1 : 0);
-                }
-                dev.WriteBAR0(0, 0x10, 1);//执行下次读取
-                var end = DateTime.Now.Ticks - startTime;
-                times = TimeSpan.FromTicks(end).Ticks;              
-            }
-            dev.WriteBAR0(0, 0x10, 0);
+            total += obj;
         }
 
+      
         private async void OnOpenDevice(object obj)
         {
             int index = 0;
@@ -381,7 +322,7 @@ namespace Hcdz.ModulePcie.ViewModels
                //    DeviceClose(0);
                 OpenDeviceText = "连接设备";
                 IsOpen = false;
-            }
+            } 
         }
 
         private void DispatcherTimer_Tick(object sender, EventArgs e)
@@ -395,9 +336,7 @@ namespace Hcdz.ModulePcie.ViewModels
 
         #region 属性
         
-        ConcurrentQueue<byte[]> queue1;
-        private PCIE_DeviceList pciDevList;
-        private Log log;
+       
 
         private PcieViewModel _viewModel;
         public PcieViewModel ViewModel
@@ -446,8 +385,8 @@ namespace Hcdz.ModulePcie.ViewModels
         /// <summary>
         /// DMA读取数据大小
         /// </summary>
-        private string  _selectedDMA;
-        public string SelectedDMA
+        private ComboBoxItem  _selectedDMA;
+        public ComboBoxItem SelectedDMA
         {
             get
             {
@@ -528,7 +467,7 @@ namespace Hcdz.ModulePcie.ViewModels
         public ICommand OpenChannel { get; private set; }
         public ICommand CloseChannel { get; private set; }
         public ICommand SelectedDirCmd { get; private set; }
-        public DelegateCommand<object> CloseDmaCmd { get; private set; }
+        public ICommand CloseDmaCmd { get; private set; }
         #endregion
 
 
@@ -558,9 +497,9 @@ namespace Hcdz.ModulePcie.ViewModels
             }
 
             //  queue1 = new ConcurrentQueue<byte[]>();
-            Thread readThread = new Thread(new ThreadStart(ReadDMA));
-            readThread.IsBackground = true;
-            readThread.Start();
+            //Thread readThread = new Thread(new ThreadStart(ReadDMA));
+            //readThread.IsBackground = true;
+            //readThread.Start();
             //Thread writeThread = new Thread(new ThreadStart(WriteDMA));
             //writeThread.IsBackground = true;
             //writeThread.Start();
@@ -702,23 +641,23 @@ namespace Hcdz.ModulePcie.ViewModels
 			}
 		}
 
-        private void WriteFile(BYTE[] result)
-        {
-            var channelNo = Convert.ToInt32(result[8]);
-            var item = _deviceChannelModels.FirstOrDefault(o => o.Id == channelNo);
-            if (item == null)
-                return;
-            byte[] trueValue = new byte[16];
-            for (int i = 0; i < 8; i++)
-            {
-                trueValue[i] = result[i];
-            }
-            //using (var stream= new FileStream(item.FilePath, FileMode.Append, FileAccess.Write))
-            //{
-            //    stream.Write(trueValue, 0, 16);
-            //}
-           item.Stream.Write(trueValue, 0, 16);
-        }
+        //private void WriteFile(BYTE[] result)
+        //{
+        //    var channelNo = Convert.ToInt32(result[8]);
+        //    var item = _deviceChannelModels.FirstOrDefault(o => o.Id == channelNo);
+        //    if (item == null)
+        //        return;
+        //    byte[] trueValue = new byte[16];
+        //    for (int i = 0; i < 8; i++)
+        //    {
+        //        trueValue[i] = result[i];
+        //    }
+        //    //using (var stream= new FileStream(item.FilePath, FileMode.Append, FileAccess.Write))
+        //    //{
+        //    //    stream.Write(trueValue, 0, 16);
+        //    //}
+        //   item.Stream.Write(trueValue, 0, 16);
+        //}
      
     }
 }

@@ -18,9 +18,9 @@ namespace Hcdz.ModulePcie
 		event Action Disconnected;
         event Action<bool> Connected;
 		event Action<string, string, long, long> ProgressChanged;
+        event Action<long> NotifyTotal;
 
-		event Action<ClientMessage> OnGetMessage;
-	   
+     
         bool IsConnected { get; set; }
 		string SourceUrl { get; }
 		bool AutoReconnect { get; set; } 
@@ -47,8 +47,9 @@ namespace Hcdz.ModulePcie
         Task<bool> FormatDrive(string driveName);
 		Task CopyFileEx(string sourceFullPath, string targetFullPath);
 
-        Task OnReadDma(string driveName,int dataSize,int deviceIndex);
-         
+        Task<string> OnReadDma(string driveName,int dataSize,int deviceIndex);
+        Task CloseDma();
         Task OpenOrCloseChannel(DeviceChannelModel model);
+
     }
 }

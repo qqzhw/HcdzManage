@@ -25,15 +25,16 @@ namespace Hcdz.ModulePcie.Views
         public MainView( )
 		{
 			InitializeComponent();
-            dispatcherTimer = new DispatcherTimer(DispatcherPriority.Background);
-            dispatcherTimer.Interval = TimeSpan.FromSeconds(10);
-            dispatcherTimer.Tick += DispatcherTimer_Tick;
-            dispatcherTimer.Start();
+            //dispatcherTimer = new DispatcherTimer(DispatcherPriority.Background);
+            //dispatcherTimer.Interval = TimeSpan.FromSeconds(10);
+            //dispatcherTimer.Tick += DispatcherTimer_Tick;
+            //dispatcherTimer.Start();
 		}
 
         private void DispatcherTimer_Tick(object sender, EventArgs e)
         {
-            int s = 8;
+            ComboBoxItem item = new ComboBoxItem();
+           
         }
     }
 }

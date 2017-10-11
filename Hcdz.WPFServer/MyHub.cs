@@ -25,11 +25,11 @@ namespace Hcdz.WPFServer
 		private readonly static Dictionary<PCIE_Device, List<DeviceChannelModel>> DeviceChannelList = new Dictionary<PCIE_Device, List<DeviceChannelModel>>();
         private readonly static List<DeviceChannelModel> DeviceChannelModels = new  List<DeviceChannelModel>();
         private static DispatcherTimer dispatcherTimer = new DispatcherTimer();
-        private ConcurrentQueue<byte[]> queue;
+        
         private bool IsCompleted = false;
-        private bool IsStop = false;
-        Int64 times;
-        long total = 0;
+        private static bool IsStop = false;
+       
+         static long ReadTotalSize = 0;
         //private static FileStream   Stream = new FileStream("D:\\test", FileMode.Append, FileAccess.Write);
         public  MyHub()
         { 
@@ -317,20 +317,31 @@ namespace Hcdz.WPFServer
 			return list;
 		}
 
-        public void OnReadDma(string dvireName,int dataSize, int deviceIndex)
+        public bool ScanDevice()
+        {
+            return true;
+        }
+
+        public string OnReadDma(string dvireName,int dataSize, int deviceIndex)
         {
             PCIE_Device dev = PCIE_DeviceList.TheDeviceList().Get(deviceIndex);
+            if (dev==null)
+            {
+                return "连接设备异常,请重试";
+            }
+            if (dev.Status == 1)
+                return "正在读取数据...";
             dev.FPGAReset(0);
             if (dev.WDC_DMAContigBufLock() != 0)
             {
-                MessageBox.Show(("分配报告内存失败"));
-                return;
+                //MessageBox.Show(("分配报告内存失败"));
+                return "锁定内存空间失败";
             }
-            DWORD wrDMASize = 16; //16kb
-            if (!dev.DMAWriteMenAlloc((uint)0, (uint)1, wrDMASize * 1024))
+            //DWORD wrDMASize = dataSize; //16kb
+            if (!dev.DMAWriteMenAlloc((uint)0, (uint)1, (UInt32)dataSize * 1024))
             {
-                MessageBox.Show("内存分配失败!");
-                return;
+                //MessageBox.Show("内存分配失败!");
+                return "内存分配失败";
             }
             var dt = DateTime.Now.ToString("yyyyMMddHHmmss");
             var list = DeviceChannelList[dev];
@@ -350,13 +361,10 @@ namespace Hcdz.WPFServer
                 }
 
             }
-            dev.StartWrDMA(0);
-            dispatcherTimer.Start();
-            //if (p->bWriteDisc[0])
-            //CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)savefile0, p, 0, NULL);
+            dev.StartWrDMA(0); 
             Thread nonParameterThread = new Thread(new ParameterizedThreadStart(p => NonParameterRun(dev,dvireName,dataSize,deviceIndex)));
-
             nonParameterThread.Start();
+            return string.Empty;
         }
 
         private void NonParameterRun(PCIE_Device dev,string dvireName,int dataSize,int deviceIndex)
@@ -371,7 +379,7 @@ namespace Hcdz.WPFServer
             //设置初始DMA写地址,长度等
             dev.WriteBAR0(0, 0x4, (uint)ppwDma.Page[0].pPhysicalAddr);		//wr_addr low
             dev.WriteBAR0(0, 0x8, (uint)(ppwDma.Page[0].pPhysicalAddr >> 32));	//wr_addr high
-            dev.WriteBAR0(0, 0xC, 16 * 1024);           //dma wr size
+            dev.WriteBAR0(0, 0xC, (UInt32)dataSize * 1024);           //dma wr size
 
             //dev.WriteBAR0(0, 56, 1);
             //dev.WriteBAR0(0, 48, 1);
@@ -383,39 +391,37 @@ namespace Hcdz.WPFServer
             }
             //启动DMA
             dev.WriteBAR0(0, 0x10, 1);			//dma wr 使能
-            var startTime = DateTime.Now.Ticks;
-
+            dev.Status = 1;
+            IsStop = false;
             while (!IsStop)
             {
 
-                byte[] tmpResult = new Byte[16 * 1024];
+                byte[] tmpResult = new Byte[dataSize * 1024];
                 Marshal.Copy(dev.pWbuffer, tmpResult, 0, tmpResult.Length);
                // Stream.Write(tmpResult, 0, tmpResult.Length);
-                var bytes = tmpResult.Length / 16;
-                for (int i = 0; i < bytes; i++)
-                {
-                    var index = i * 16;
-                    byte[] result = new byte[16];
-                    for (int j = 0; j < 16; j++)
-                    {
-                        result[j] = tmpResult[index + j];
-                    }
-                    var barValue = Convert.ToInt32(result[15]);
-                    if (barValue == 1)
-                    {
-                        WriteFile(result,list);
-                    }
-                }
-                //  queue.Enqueue(tmpResult);
-                //tranIndex++;
-                total += 16 * 1024;
-                foreach (var item in DeviceChannelModels)
-                {
-                    dev.WriteBAR0(0, item.RegAddress, item.IsOpen == true ? (UInt32)1 : 0);
-                }
-                dev.WriteBAR0(0, 0x10, 1);//执行下次读取
-                var end = DateTime.Now.Ticks - startTime;
-                times = TimeSpan.FromTicks(end).Ticks;
+                //var bytes = tmpResult.Length / dataSize;
+                //for (int i = 0; i < bytes; i++)
+                //{
+                //    var index = i * dataSize;
+                //    byte[] result = new byte[16];
+                //    for (int j = 0; j < 16; j++)
+                //    {
+                //        result[j] = tmpResult[index + j];
+                //    }
+                //    var barValue = Convert.ToInt32(result[15]);
+                //    if (barValue == 1)
+                //    {
+                //        WriteFile(result,list);
+                //    }
+                //}
+              
+                //foreach (var item in DeviceChannelModels)
+                //{
+                //    dev.WriteBAR0(0, item.RegAddress, item.IsOpen == true ? (UInt32)1 : 0);
+                //}
+                ReadTotalSize = dataSize * 1024;
+                Clients.Client(Context.ConnectionId).NotifyTotal(ReadTotalSize);
+                dev.WriteBAR0(0, 0x10, 1);//执行下次读取 
             }
             dev.WriteBAR0(0, 0x10, 0);
         }
@@ -429,13 +435,32 @@ namespace Hcdz.WPFServer
             for (int i = 0; i < 8; i++)
             {
                 trueValue[i] = result[i];
-            }
-            //using (var stream= new FileStream(item.FilePath, FileMode.Append, FileAccess.Write))
-            //{
-            //    stream.Write(trueValue, 0, 16);
-            //}
+            }          
             item.Stream.Write(trueValue, 0, 16);
         }
-
+        /// <summary>
+        /// Copies the contents of input to output. Doesn't close either stream.
+        /// </summary>
+        public  void CopyStream(Stream input, Stream output)
+        {
+            byte[] buffer = new byte[80 * 1024];
+            int len;
+            while ((len = input.Read(buffer, 0, buffer.Length)) > 0)
+            {
+                output.Write(buffer, 0, len);
+            }
+        }
+        public void CloseDma()
+        {
+            IsStop = true;
+           var devices = PCIE_DeviceList.TheDeviceList();
+            for (int i = 0; i < devices.Count; i++)
+            {
+                var dev = (PCIE_Device)devices[i];
+                dev.WriteBAR0(0, 0x10, 0);
+                dev.Status = 0;
+            } 
+          
+        }
     }
 }
