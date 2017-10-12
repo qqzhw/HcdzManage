@@ -23,5 +23,8 @@
     <Setting Name="ServerUrl" Type="System.String" Scope="User">
       <Value Profile="(Default)">http://localhost:8080/signalr</Value>
     </Setting>
+    <Setting Name="DwonloadUrl" Type="System.String" Scope="User">
+      <Value Profile="(Default)">http://localhost:8080/api/download/getbackup?filepath=</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

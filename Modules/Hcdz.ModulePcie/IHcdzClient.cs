@@ -50,7 +50,7 @@ namespace Hcdz.ModulePcie
         Task<string> OnReadDma(string driveName,int dataSize,int deviceIndex);
         Task CloseDma();
         Task OpenOrCloseChannel(DeviceChannelModel model);
-		Task<bool> ScanDevice();
+		Task<bool> ScanDevice(int index);
 
 	}
 }

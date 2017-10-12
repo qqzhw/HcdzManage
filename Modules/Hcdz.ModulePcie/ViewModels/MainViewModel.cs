@@ -66,17 +66,17 @@ namespace Hcdz.ModulePcie.ViewModels
             Stream = new FileStream("D:\\test", FileMode.Append, FileAccess.Write);
 			_hcdzClient.MessageReceived += _hcdzClient_MessageReceived;
             _hcdzClient.Connected +=ClientConnected;
-			_hcdzClient.Connect("dddd");
-			
-		
+			_hcdzClient.Connect();
+
+            LoadDeviceChannel();
         }
 
 		private async void LoadData()
 		{
 			DriveInfo[] drives =await _hcdzClient.GetDrives();
-			_driveInfoItems = new ObservableCollection<DriveInfo>(drives);
+			DriveInfoItems = new ObservableCollection<DriveInfo>(drives);
 
-			LoadDeviceChannel();
+			
 		}
 
 		private void ClientConnected(bool result)
@@ -133,7 +133,7 @@ namespace Hcdz.ModulePcie.ViewModels
 
         private async void OnScanDevice(object obj)
         { 
-		    var result=await	_hcdzClient.ScanDevice();
+		    var result=await	_hcdzClient.ScanDevice(0);
 			if (result)
 			{
 				MessageBox.Show("设备运行正常!");
