@@ -323,24 +323,24 @@ namespace Hcdz.WPFServer
         public bool ScanDevice(int deviceIndex)
         {
             PCIE_Device dev = PCIE_DeviceList.TheDeviceList().Get(deviceIndex);
-            
-            if (dev.WDC_DMAContigBufLock() != 0)
+
+            if (dev.WDCScan_DMAContigBufLock() != 0)
             {
                 //MessageBox.Show(("分配报告内存失败"));
-                return  false;
+                return false;
             }
-            //DWORD wrDMASize = dataSize; //16kb
-            if (!dev.DMAWriteMenAlloc((uint)0, (uint)1, 1024))
+            ////DWORD wrDMASize = dataSize; //16kb
+            if (!dev.ScanDMAWriteMenAlloc(1024))
             {
                 //MessageBox.Show("内存分配失败!");
                 return false;
             }
             dev.StartWrDMA(0);
-            dev.WriteBAR0(0, 0x60, 1);		//中断屏蔽
-            dev.WriteBAR0(0, 0x50, 1);		//dma 写报告使能
+            //dev.WriteBAR0(0, 0x60, 1);		//中断屏蔽
+            //dev.WriteBAR0(0, 0x50, 1);		//dma 写报告使能
 
-            var dma = (WD_DMA)dev.m_dmaMarshaler.MarshalNativeToManaged(dev.pReportWrDMA);
-            var ppwDma = (WD_DMA)dev.m_dmaMarshaler.MarshalNativeToManaged(dev.ppwDma);
+            var dma = (WD_DMA)dev.m_dmaMarshaler.MarshalNativeToManaged(dev.pScanReportWrDMA);
+            var ppwDma = (WD_DMA)dev.m_dmaMarshaler.MarshalNativeToManaged(dev.pScanpwDma);
 
             dev.WriteBAR0(0, 0x58, (uint)dma.Page[0].pPhysicalAddr);		//dma 写报告地址
             //设置初始DMA写地址,长度等
@@ -354,11 +354,13 @@ namespace Hcdz.WPFServer
             //启动DMA
             //       //dma wr 使能
             byte[] tmpResult = new Byte[1024];
-            Marshal.Copy(dev.pWbuffer, tmpResult, 0, tmpResult.Length);
+            Marshal.Copy(dev.pScanWbuffer, tmpResult, 0, tmpResult.Length);
             if (dev == null)
             {
                 return false;
             }
+            Thread.Sleep(1);
+             dev.WriteBAR0(0, 0x28, 0);
             return true;
         }
 
@@ -429,7 +431,7 @@ namespace Hcdz.WPFServer
             {
                dev.WriteBAR0(0, item.RegAddress, item.IsOpen == true ? (UInt32)1 : 0);
             }
-            dev.WriteBAR0(0, 0x28, 1);
+           
             //启动DMA
             dev.WriteBAR0(0, 0x10, 1);          //dma wr 使能
             
@@ -503,6 +505,16 @@ namespace Hcdz.WPFServer
                 dev.Status = 0;
             } 
           
+        }
+        public void CloseScanDevice()
+        {
+            var devices = PCIE_DeviceList.TheDeviceList();
+            for (int i = 0; i < devices.Count; i++)
+            {
+                var dev = (PCIE_Device)devices[i];
+                dev.WriteBAR0(0, 0x28, 0);
+                dev.WriteBAR0(0, 0x10, 0); 
+            }
         }
     }
 }

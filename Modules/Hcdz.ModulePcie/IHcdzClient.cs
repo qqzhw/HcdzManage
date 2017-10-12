@@ -51,6 +51,7 @@ namespace Hcdz.ModulePcie
         Task CloseDma();
         Task OpenOrCloseChannel(DeviceChannelModel model);
 		Task<bool> ScanDevice(int index);
+        Task CloseScanDevice();
 
-	}
+    }
 }

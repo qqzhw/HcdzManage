@@ -450,5 +450,14 @@ namespace Hcdz.ModulePcie
 			}
 			return false;
 		}
-	}
+
+        public async Task CloseScanDevice()
+        {
+            if (_connection.State == ConnectionState.Connected)
+            {
+                  await _chat.Invoke("CloseScanDevice");
+            }
+          
+        }
+    }
 }
