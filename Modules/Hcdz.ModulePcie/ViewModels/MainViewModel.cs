@@ -34,10 +34,7 @@ namespace Hcdz.ModulePcie.ViewModels
 		private readonly IServiceLocator _serviceLocator;
 		private readonly IHcdzClient  _hcdzClient;
 		private DispatcherTimer dispatcherTimer;
-        private ConcurrentQueue<byte[]> queue;
-		private bool IsCompleted=false;
-        private bool IsStop = false;
-        Int64 times;
+      
         long total = 0;
         private FileStream Stream;
 		public MainViewModel(IUnityContainer container, IEventAggregator eventAggregator, IRegionManager regionManager, IServiceLocator serviceLocator, IHcdzClient hcdzClient)
@@ -47,7 +44,7 @@ namespace Hcdz.ModulePcie.ViewModels
 			_regionManager = regionManager; 
 			_serviceLocator = serviceLocator;
 			_hcdzClient = hcdzClient;
-			 queue = new ConcurrentQueue<byte[]>();
+			 
             devicesItems = new ObservableCollection<PCIE_Device>();
             dispatcherTimer = new DispatcherTimer(DispatcherPriority.Background)
             {
@@ -71,12 +68,12 @@ namespace Hcdz.ModulePcie.ViewModels
             _hcdzClient.Connected +=ClientConnected;
 			_hcdzClient.Connect("dddd");
 			
-			LoadData();//加载基本信息
+		
         }
 
-		private void LoadData()
+		private async void LoadData()
 		{
-			DriveInfo[] drives = DriveInfo.GetDrives();
+			DriveInfo[] drives =await _hcdzClient.GetDrives();
 			_driveInfoItems = new ObservableCollection<DriveInfo>(drives);
 
 			LoadDeviceChannel();
@@ -86,9 +83,8 @@ namespace Hcdz.ModulePcie.ViewModels
         {
             if (result)
             {
-				 
-			   OnLoadSelectDir(_selectedDsik);
-			 
+				LoadData();//加载基本信息
+				OnLoadSelectDir(_selectedDsik); 
 				Initializer();
             }
         }
@@ -98,11 +94,10 @@ namespace Hcdz.ModulePcie.ViewModels
 			 
 		}
 
-		private void OnCloseReadDma(object obj)
-        {
-            IsStop = true;
-            dispatcherTimer.Stop();
-            _hcdzClient.CloseDma();
+		private async void OnCloseReadDma(object obj)
+        { 
+             dispatcherTimer.Stop();
+             await  _hcdzClient.CloseDma();
         }
 
         private  async void OnLoadSelectDir(object dirPath)
@@ -125,34 +120,28 @@ namespace Hcdz.ModulePcie.ViewModels
         }
 
         private async void OnCloseChannel(DeviceChannelModel model)
-        {
-            //var device = model.Device;
-            // var device = pciDevList.Get(0);
-            //device.WriteBAR0(0, 0x28, 1);
-            //   device.WriteBAR0(0, model.RegAddress, 0);
+        { 
             model.IsOpen = false;
            await _hcdzClient.OpenOrCloseChannel(model);
         }
 
         private async void OnOpenChannel(DeviceChannelModel model)
-        {
-            //var device = model.Device;
-           // var device = pciDevList.Get(0);
-            //device.WriteBAR0(0, 0x28, 1);
-          //  device.WriteBAR0(0, 0x34, 1);
+        { 
             model.IsOpen = true;
             await _hcdzClient.OpenOrCloseChannel(model);
         }
 
-        private void OnScanDevice(object obj)
+        private async void OnScanDevice(object obj)
         { 
-            //device.WriteBAR0(0, 0x28, 1);
-         //   DWORD outData = 0;
-          //  device.WriteBAR0(0, 0x28, 1);
-           //if ()
-           // {
-           //     MessageBox.Show("自检失败!");
-           // }
+		    var result=await	_hcdzClient.ScanDevice();
+			if (result)
+			{
+				MessageBox.Show("设备运行正常!");
+			}
+			else
+			{
+				MessageBox.Show("设备自检信息异常!");
+			}
         }
 
         private void OnReadDma(object obj)
@@ -280,46 +269,53 @@ namespace Hcdz.ModulePcie.ViewModels
             if (!IsOpen)
             {
 				var result =await _hcdzClient.DeviceOpen(index);
-                if (result)
-                {
-                    if (index == 1)
-                    {
-                        OpenDeviceText1 = "关闭设备";
-                        IsOpen = true;
-                    }
-                    else
-                    {
-                        OpenDeviceText = "关闭设备";
-                        IsOpen = true;
-                        DeviceDesc= await _hcdzClient.InitDeviceInfo(index);
-                    }
-                    //var device = pciDevList.Get(index);
-                    //DWORD outData=0;
-                    //device.ReadBAR0(0, 0x00, ref outData);
-                    //if ((outData & 0x10) == 0x10)
-                    //    DeviceDesc += "链路速率：2.5Gb/s\r\n";
-                    //else if ((outData & 0x20) == 0x20)
-                    //    DeviceDesc += "链路速率：5.0Gb/s\r\n";
-                    //else
-                    //    DeviceDesc += "speed judge error/s\r\n";
+				if (result)
+				{
+					if (index == 1)
+					{
+						OpenDeviceText1 = "关闭设备";
+						IsOpen = true;
+					}
+					else
+					{
+						OpenDeviceText = "关闭设备";
+						IsOpen = true;
+						DeviceDesc = await _hcdzClient.InitDeviceInfo(index);
+					}
+					//var device = pciDevList.Get(index);
+					//DWORD outData=0;
+					//device.ReadBAR0(0, 0x00, ref outData);
+					//if ((outData & 0x10) == 0x10)
+					//    DeviceDesc += "链路速率：2.5Gb/s\r\n";
+					//else if ((outData & 0x20) == 0x20)
+					//    DeviceDesc += "链路速率：5.0Gb/s\r\n";
+					//else
+					//    DeviceDesc += "speed judge error/s\r\n";
 
-                    //outData = (outData & 0xF);
-                    //if (outData == 1)
-                    //    DeviceDesc += "链路宽度：x1";
-                    //else if (outData == 2)
-                    //    DeviceDesc += "链路宽度：x2";
-                    //else if (outData == 4)
-                    //    DeviceDesc += "链路宽度：x4";
-                    //else if (outData == 8)
-                    //    DeviceDesc += "链路宽度：x8";
-                    //else
-                    //    DeviceDesc += "width judge error/s\r\n";                    
-                }
-            }
+					//outData = (outData & 0xF);
+					//if (outData == 1)
+					//    DeviceDesc += "链路宽度：x1";
+					//else if (outData == 2)
+					//    DeviceDesc += "链路宽度：x2";
+					//else if (outData == 4)
+					//    DeviceDesc += "链路宽度：x4";
+					//else if (outData == 8)
+					//    DeviceDesc += "链路宽度：x8";
+					//else
+					//    DeviceDesc += "width judge error/s\r\n";                    
+				}
+				else
+				{
+					RadDesktopAlertManager desktop = new RadDesktopAlertManager(AlertScreenPosition.BottomCenter);
+					 
+					desktop.ShowAlert(new RadDesktopAlert()
+					{ 
+						Content = "设备连接失败!"
+					});
+				}
+			}
             else
-            {
-              //  PCIE_Device dev = pciDevList.Get(0);
-               //    DeviceClose(0);
+            { 
                 OpenDeviceText = "连接设备";
                 IsOpen = false;
             } 
@@ -596,49 +592,49 @@ namespace Hcdz.ModulePcie.ViewModels
          
         private void ReadDMA()
 		{
-			while (!IsCompleted)
-			{
-                if (queue.IsEmpty)
-                {
-                    //IsCompleted = true;
-                    //foreach (var item in _deviceChannelModels)
-                    //{
-                    //    if (item.Stream==null)
-                    //    {
-                    //        continue;
-                    //    }
-                    //    item.Stream.Close();
-                    //    item.Stream.Dispose();
-                    //}
-                }
-                else
-                {
-                    byte[] item;
-                    if (queue.TryDequeue(out item))
-                    {
-                           //if (result%2==0)
+			//while (!IsCompleted)
+			//{
+   //             if (queue.IsEmpty)
+   //             {
+   //                 //IsCompleted = true;
+   //                 //foreach (var item in _deviceChannelModels)
+   //                 //{
+   //                 //    if (item.Stream==null)
+   //                 //    {
+   //                 //        continue;
+   //                 //    }
+   //                 //    item.Stream.Close();
+   //                 //    item.Stream.Dispose();
+   //                 //}
+   //             }
+   //             else
+   //             {
+   //                 byte[] item;
+   //                 //if (queue.TryDequeue(out item))
+   //                 {
+   //                        //if (result%2==0)
                    
-                         // ThreadPool.QueueUserWorkItem(WriteBar);
-                            //  WriteBar(result); 
+   //                      // ThreadPool.QueueUserWorkItem(WriteBar);
+   //                         //  WriteBar(result); 
                         
-                        //var bytes = item.Length / 16;
-                        //for (int i = 0; i < bytes; i++)
-                        //{
-                        //    var index = i * 16;
-                        //    byte[] result = new byte[16];
-                        //    for (int j = 0; j < 16; j++)
-                        //    {
-                        //        result[j] = item[index + j];
-                        //    }
-                        //    var barValue = Convert.ToInt32(result[15]);
-                        //    if (barValue == 1)
-                        //    {
-                        //        WriteFile(result);
-                        //    }
-                        //}
-                    }
-                }
-			}
+   //                     //var bytes = item.Length / 16;
+   //                     //for (int i = 0; i < bytes; i++)
+   //                     //{
+   //                     //    var index = i * 16;
+   //                     //    byte[] result = new byte[16];
+   //                     //    for (int j = 0; j < 16; j++)
+   //                     //    {
+   //                     //        result[j] = item[index + j];
+   //                     //    }
+   //                     //    var barValue = Convert.ToInt32(result[15]);
+   //                     //    if (barValue == 1)
+   //                     //    {
+   //                     //        WriteFile(result);
+   //                     //    }
+   //                     //}
+   //                 }
+   //             }
+			//}
 		}
 
         //private void WriteFile(BYTE[] result)

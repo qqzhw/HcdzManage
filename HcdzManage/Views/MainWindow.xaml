@@ -15,7 +15,7 @@
                       FontFamily="SimHei"
                       Dialog:DialogParticipation.Register="{Binding}"
                       GlowBrush="{DynamicResource AccentColorBrush}" 
-                      NonActiveGlowBrush="#CDFF0000" WindowTransitionsEnabled="False"
+                      NonActiveGlowBrush="#CDFF0000" WindowTransitionsEnabled="False" ShowMaxRestoreButton="False"
                       ShowIconOnTitleBar="True" TitlebarHeight="50"
                       WindowStartupLocation="CenterScreen" SnapsToDevicePixels="True"
                       ShowTitleBar="True"

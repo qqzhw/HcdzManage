@@ -14,7 +14,7 @@ namespace Hcdz.ModulePcie
 	{
 		event Action<string> MessageReceived;
 		event Action<IEnumerable<string>> LoggedOut; 
-		event Action<string, string, string> AddMessageContent;  
+	 
 		event Action Disconnected;
         event Action<bool> Connected;
 		event Action<string, string, long, long> ProgressChanged;
@@ -50,6 +50,7 @@ namespace Hcdz.ModulePcie
         Task<string> OnReadDma(string driveName,int dataSize,int deviceIndex);
         Task CloseDma();
         Task OpenOrCloseChannel(DeviceChannelModel model);
+		Task<bool> ScanDevice();
 
-    }
+	}
 }

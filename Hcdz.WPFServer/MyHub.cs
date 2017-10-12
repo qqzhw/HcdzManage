@@ -178,7 +178,8 @@ namespace Hcdz.WPFServer
 		{
 			DWORD dwStatus;
 			PCIE_Device device = PCIE_DeviceList.TheDeviceList().Get(iSelectedIndex);
-
+			if (device == null)
+				return false;
             /* Open a handle to the device */
             dwStatus = device.Open();
             if (dwStatus != (DWORD)wdc_err.WD_STATUS_SUCCESS)

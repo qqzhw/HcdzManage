@@ -65,7 +65,7 @@
                 </StackPanel>
             </StackPanel>
         </Border>
-        <Grid  Grid.Row="1">
+        <Grid  Grid.Row="1" Margin="0,15,0,0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition/>
                 <ColumnDefinition/>
@@ -97,10 +97,10 @@
                                                         <Button HorizontalAlignment="Right" Margin="20,0,0,0" Width="60"  Content="关闭" Style="{DynamicResource MetroFlatButton}"  Command="{Binding DataContext.CloseChannel ,RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}" CommandParameter="{Binding}" />
                                                     </StackPanel>
                                                     <!--<metro:MetroProgressBar  Margin="10,10,0,0" Value="56" Foreground="#5DA0C7"    Background="#EDEDED" Height="32"/>-->
-                                                    <StackPanel Orientation="Horizontal"  Margin="15,2,20,0">
+                                                    <!--<StackPanel Orientation="Horizontal"  Margin="15,2,20,0">
                                                         <TextBlock Text="传输速率：" FontSize="14"  Foreground="#333333"/>
                                                         <TextBlock Margin="2,0,0,0" FontSize="14"  Foreground="#333333" Text="2.3GB/s" />
-                                                    </StackPanel>
+                                                    </StackPanel>-->
 
                                                 </StackPanel>
                                             </Border>
@@ -140,10 +140,10 @@
                         IsEnabled="{Binding BtnOpenTrue}"/>
                                                         <Button HorizontalAlignment="Right" Margin="20,0,0,0" Width="60"  Content="关闭" Style="{DynamicResource MetroFlatButtonDisable}" IsEnabled="False"  Command="{Binding CloseChannel ,RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}"  CommandParameter="{Binding}"/>
                                                 </StackPanel>
-                                              <StackPanel Orientation="Horizontal"  Margin="15,2,20,0">
+                                              <!--<StackPanel Orientation="Horizontal"  Margin="15,2,20,0">
                                                    <TextBlock Text="已读大小：" FontSize="14"  Foreground="#333333"/>
                                                     <TextBlock Margin="2,0,0,0" FontSize="14"  Foreground="#333333" Text="2.3GB" />
-                                                </StackPanel>
+                                                </StackPanel>-->
 
                                             </StackPanel>
                                         </Border>
@@ -180,9 +180,9 @@
             </Grid>
 
         </Border>
-        <Border Grid.Row="2" HorizontalAlignment="Right" CornerRadius="5" Margin="10,20,0,2"  BorderThickness="1" BorderBrush="#BCE8F1">
-            <Grid Margin="10">
-                  <TextBox Grid.Row="1" Text="自检信息："  HorizontalAlignment="Left" Margin="0,5,0,0"/>
+        <Border Grid.Row="2" HorizontalAlignment="Right" MinWidth="550" CornerRadius="5" Margin="0,20,10,10"  BorderThickness="1" BorderBrush="#BCE8F1">
+            <Grid Margin="10,5,10,0">
+                  <TextBox Grid.Row="1" Text="日志信息" BorderBrush="AliceBlue" BorderThickness="0"  HorizontalAlignment="Left" MinWidth="530" MinLines="7" Margin="0,5,0,0"/>
              </Grid>
 
         </Border>

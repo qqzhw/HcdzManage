@@ -38,8 +38,7 @@ namespace Hcdz.ModulePcie
 		public event Action<string> MessageReceived;
 		public event Action<IEnumerable<string>> LoggedOut; 
 		public event Action<string, string, long,long> ProgressChanged; 
-		public event Action<string, string, string> AddMessageContent;
-
+	 
         // Global  
        public  event Action<long> NotifyTotal;
         public event Action<bool> Connected;
@@ -224,12 +223,7 @@ namespace Hcdz.ModulePcie
 			_chat.On<string, string, long,long>(ClientEvents.FileProgress, (source, destination, totalFileSize, totalBytesTransferred) =>
 			{
 				Execute(ProgressChanged , fileChanged =>fileChanged(source, destination, totalFileSize, totalBytesTransferred));
-			}); 
-
-			_chat.On<string, string, string>(ClientEvents.AddMessageContent, (messageId, extractedContent, roomName) =>
-			{
-				Execute(AddMessageContent, addMessageContent => addMessageContent(messageId, extractedContent, roomName));
-			});
+			});  
             _chat.On<long>(ClientEvents.NotifyTotalSize, (totalSize) =>
             {
                 Execute(NotifyTotal, total => total(totalSize));
@@ -443,5 +437,18 @@ namespace Hcdz.ModulePcie
                 await _chat.Invoke("CloseDma");
             }
         }
-    }
+
+		/// <summary>
+		/// 设备自检
+		/// </summary>
+		/// <returns></returns>
+		public async Task<bool> ScanDevice()
+		{
+			if (_connection.State == ConnectionState.Connected)
+			{
+				return await _chat.Invoke<bool>("ScanDevice");
+			}
+			return false;
+		}
+	}
 }
