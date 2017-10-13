@@ -47,10 +47,13 @@ namespace Hcdz.WPFServer
 			SignalR.Dispose();
 			Close();
 		}
+       
         protected override void OnClosing(CancelEventArgs e)
         {
+           
             SignalR.Dispose();
             base.OnClosing(e);
+            Application.Current.Shutdown();
         }
         /// <summary>
         /// Starts the server and checks for error thrown when another server is already 

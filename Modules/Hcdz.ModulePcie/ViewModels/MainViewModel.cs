@@ -97,6 +97,7 @@ namespace Hcdz.ModulePcie.ViewModels
 		private async void OnCloseReadDma(object obj)
         { 
              dispatcherTimer.Stop();
+              total = 0;
              await  _hcdzClient.CloseDma();
         }
 

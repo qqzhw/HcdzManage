@@ -9,7 +9,11 @@
         xmlns:metro="http://metro.pvirtech.com/winfx/xaml/controls"
         xmlns:prism="http://prismlibrary.com/" FontSize="14"              
         prism:ViewModelLocator.AutoWireViewModel="True"
+        xmlns:convert="clr-namespace:Hcdz.ModulePcie.ViewModels"
         mc:Ignorable="d"  d:DesignHeight="600" d:DesignWidth="800" >
+    <UserControl.Resources>
+        <convert:TrueToColorConverter x:Key="colorConvert"/>
+    </UserControl.Resources>
     <Grid>
 		<Grid.RowDefinitions>
 			<RowDefinition Height="Auto"/>
@@ -87,7 +91,7 @@
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <StackPanel Orientation="Horizontal">
-                                        <Ellipse Width="16" Height="16"  Fill="#32cd32" Margin="5,10,0,0"/>
+                                        <Ellipse Width="16" Height="16"  Fill="{Binding IsOpen,Converter={StaticResource colorConvert}}" Margin="5,10,0,0"/>
                                         <GroupBox MinWidth="530" FontSize="14"  Header="{Binding Name}"   HorizontalAlignment="Center"   Margin="10,5,0,10" VerticalAlignment="Center">
                                             <Border  BorderBrush="#D9EDF7" BorderThickness="1">
                                                 <StackPanel  VerticalAlignment="Center" Margin="0,10,15,10">
@@ -131,7 +135,7 @@
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <StackPanel Orientation="Horizontal">
-                                        <Ellipse Width="16" Height="16"  Fill="#32cd32" Margin="5,10,0,0"/>
+                                        <Ellipse Width="16" Height="16"  Fill="{Binding IsOpen,Converter={StaticResource colorConvert}}" Margin="5,10,0,0"/>
                                     <GroupBox MinWidth="530" FontSize="14"  Header="{Binding Name}"     HorizontalAlignment="Center"   Margin="10,5,0,10" VerticalAlignment="Center">
                                         <Border  BorderBrush="#D9EDF7" BorderThickness="1">
                                             <StackPanel  VerticalAlignment="Center" Margin="0,10,15,10">

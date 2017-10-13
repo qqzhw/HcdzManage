@@ -16,47 +16,47 @@ using System.Threading;
 using System.Runtime.InteropServices;
 using System.Windows.Threading;
 using System.Collections.Concurrent;
-using Hcdz.Framework.Common; 
+using Hcdz.Framework.Common;
 
 namespace Hcdz.WPFServer
-{ 
-	public class MyHub : Hub
-	{
-		private readonly static Dictionary<PCIE_Device, List<DeviceChannelModel>> DeviceChannelList = new Dictionary<PCIE_Device, List<DeviceChannelModel>>();
-        private readonly static List<DeviceChannelModel> DeviceChannelModels = new  List<DeviceChannelModel>();
+{
+    public class MyHub : Hub
+    {
+        private readonly static Dictionary<PCIE_Device, List<DeviceChannelModel>> DeviceChannelList = new Dictionary<PCIE_Device, List<DeviceChannelModel>>();
+        private readonly static List<DeviceChannelModel> DeviceChannelModels = new List<DeviceChannelModel>();
         private static DispatcherTimer dispatcherTimer = new DispatcherTimer();
         private static bool DeviceStatus;
         private bool IsCompleted = false;
         private static bool IsStop = false;
-       
-         static long ReadTotalSize = 0;
+        private static ConcurrentQueue<byte[]> concurrentQueue = new ConcurrentQueue<byte[]>();
+        static long ReadTotalSize = 0;
         //private static FileStream   Stream = new FileStream("D:\\test", FileMode.Append, FileAccess.Write);
-        public  MyHub()
-        { 
+        public MyHub()
+        {
         }
-		public void Send(string name, string message)
-		{
-			Clients.All.addMessage(name, message);
-		}
-		public override Task OnConnected()
-		{
-			//Use Application.Current.Dispatcher to access UI thread from outside the MainWindow class
-			Application.Current.Dispatcher.Invoke(() =>
-				((MainWindow)Application.Current.MainWindow).WriteToConsole("Client connected: " + Context.ConnectionId));
-			//发送消息成功  
-			var hub = GlobalHost.ConnectionManager.GetHubContext<MyHub>();
-			hub.Clients.Client(Context.ConnectionId).Connected(true);
-			return base.OnConnected();
-		}
-		 
-		public override Task OnDisconnected(bool stopCalled)
-		{
-			//Use Application.Current.Dispatcher to access UI thread from outside the MainWindow class
-			Application.Current.Dispatcher.Invoke(() =>
-				((MainWindow)Application.Current.MainWindow).WriteToConsole("Client disconnected: " + Context.ConnectionId));
+        public void Send(string name, string message)
+        {
+            Clients.All.addMessage(name, message);
+        }
+        public override Task OnConnected()
+        {
+            //Use Application.Current.Dispatcher to access UI thread from outside the MainWindow class
+            Application.Current.Dispatcher.Invoke(() =>
+                ((MainWindow)Application.Current.MainWindow).WriteToConsole("Client connected: " + Context.ConnectionId));
+            //发送消息成功  
+            var hub = GlobalHost.ConnectionManager.GetHubContext<MyHub>();
+            hub.Clients.Client(Context.ConnectionId).Connected(true);
+            return base.OnConnected();
+        }
 
-			return base.OnDisconnected(stopCalled);
-		}
+        public override Task OnDisconnected(bool stopCalled)
+        {
+            //Use Application.Current.Dispatcher to access UI thread from outside the MainWindow class
+            Application.Current.Dispatcher.Invoke(() =>
+                ((MainWindow)Application.Current.MainWindow).WriteToConsole("Client disconnected: " + Context.ConnectionId));
+
+            return base.OnDisconnected(stopCalled);
+        }
 
         public DriveInfo[] GetDrives()
         {
@@ -67,94 +67,94 @@ namespace Hcdz.WPFServer
         {
             return CommonHelper.FormatDrive(driveName);
         }
-		public void CopyFileEx(string sourceFullPath,string targetFullPath)
-		{
-			FileUtilities.CreateDirectoryIfNotExist(Path.GetDirectoryName(targetFullPath));
-			FileUtilities.CopyFileEx(sourceFullPath, targetFullPath, token);
-		}
-
-		private void token(string source, string destination, long totalFileSize, long totalBytesTransferred)
-		{
-			Clients.Client(Context.ConnectionId).FileProgress(source, destination, totalFileSize, totalBytesTransferred);
-		}
-
-		public async Task<List<DirectoryInfoModel>> GetFileList(string path = "")
-		{
-			DriveInfo[] drives = DriveInfo.GetDrives();
-			FileSystemInfo[] dirFileitems = null;
-			var list = new List<DirectoryInfoModel>();
-			await Task.Run(() =>
-			{
-				if (string.IsNullOrEmpty(path))
-				{
-					path = drives[0].Name;
-					DirectoryInfo dirInfo = new DirectoryInfo(path);//根目录				
-					dirFileitems = dirInfo.GetFileSystemInfos("*", SearchOption.TopDirectoryOnly);
-				}
-				else
-				{
-					DirectoryInfo dirInfo = new DirectoryInfo(path);//根目录				 
-					dirFileitems = dirInfo.GetFileSystemInfos("*", SearchOption.TopDirectoryOnly);
-				} 
-				foreach (var item in dirFileitems)
-				{
-					if (item is DirectoryInfo)
-					{
-						var directory = item as DirectoryInfo;
-						if ((directory.Attributes & FileAttributes.Hidden) != FileAttributes.Hidden && (directory.Attributes & FileAttributes.System) != FileAttributes.System)
-						{
-							list.Add(new DirectoryInfoModel()
-							{
-								Root = directory.Root,
-								FullName = directory.FullName,
-								IsDir = true,
-								Icon = "pack://application:,,,/Hcdz.ModulePcie;component/Images/folder.png",
-								Name = directory.Name,
-								Parent = directory.Parent,
-								CreationTime = directory.CreationTime,
-								Exists = directory.Exists,
-								Extension = directory.Extension,
-								LastAccessTime = directory.LastAccessTime,
-								LastWriteTime = directory.LastWriteTime.ToString("yyyy-MM-dd HH:mm:ss"),
-							});
-						}
-					}
-					else if (item is FileInfo)
-					{
-						var file = item as FileInfo;
-						if ((file.Attributes & FileAttributes.Hidden) != FileAttributes.Hidden && (file.Attributes & FileAttributes.System) != FileAttributes.System)
-						{
-							list.Add(new DirectoryInfoModel()
-							{
-								FullName = file.FullName,
-								// FullPath=file.FullPath
-								IsDir = false,
-								Name = file.Name,
-								CreationTime = file.CreationTime,
-								Exists = file.Exists,
-								Extension = file.Extension,
-								LastAccessTime = file.LastAccessTime,
-								LastWriteTime = file.LastWriteTime.ToString("yyyy-MM-dd HH:mm:ss"),
-								IsReadOnly = file.IsReadOnly,
-								//Directory = file.Directory,
-								DirectoryName = file.DirectoryName,
-								LengthText = ByteFormatter.ToString(file.Length),
-								Length = file.Length
-							});
-						}
-
-					}
-				}
-				return list;
-			});
-			return list;
-		}
-
-        public   DWORD InitLoad()
+        public void CopyFileEx(string sourceFullPath, string targetFullPath)
         {
-			//PCIE_DeviceList.TheDeviceList().Add(new PCIE_Device(new WD_PCI_SLOT() { dwSlot=3}));
-			//PCIE_DeviceList.TheDeviceList().Add(new PCIE_Device(new WD_PCI_SLOT() { dwSlot = 5 }));
-		 var pciDevList = PCIE_DeviceList.TheDeviceList();
+            FileUtilities.CreateDirectoryIfNotExist(Path.GetDirectoryName(targetFullPath));
+            FileUtilities.CopyFileEx(sourceFullPath, targetFullPath, token);
+        }
+
+        private void token(string source, string destination, long totalFileSize, long totalBytesTransferred)
+        {
+            Clients.Client(Context.ConnectionId).FileProgress(source, destination, totalFileSize, totalBytesTransferred);
+        }
+
+        public async Task<List<DirectoryInfoModel>> GetFileList(string path = "")
+        {
+            DriveInfo[] drives = DriveInfo.GetDrives();
+            FileSystemInfo[] dirFileitems = null;
+            var list = new List<DirectoryInfoModel>();
+            await Task.Run(() =>
+            {
+                if (string.IsNullOrEmpty(path))
+                {
+                    path = drives[0].Name;
+                    DirectoryInfo dirInfo = new DirectoryInfo(path);//根目录				
+                    dirFileitems = dirInfo.GetFileSystemInfos("*", SearchOption.TopDirectoryOnly);
+                }
+                else
+                {
+                    DirectoryInfo dirInfo = new DirectoryInfo(path);//根目录				 
+                    dirFileitems = dirInfo.GetFileSystemInfos("*", SearchOption.TopDirectoryOnly);
+                }
+                foreach (var item in dirFileitems)
+                {
+                    if (item is DirectoryInfo)
+                    {
+                        var directory = item as DirectoryInfo;
+                        if ((directory.Attributes & FileAttributes.Hidden) != FileAttributes.Hidden && (directory.Attributes & FileAttributes.System) != FileAttributes.System)
+                        {
+                            list.Add(new DirectoryInfoModel()
+                            {
+                                Root = directory.Root,
+                                FullName = directory.FullName,
+                                IsDir = true,
+                                Icon = "pack://application:,,,/Hcdz.ModulePcie;component/Images/folder.png",
+                                Name = directory.Name,
+                                Parent = directory.Parent,
+                                CreationTime = directory.CreationTime,
+                                Exists = directory.Exists,
+                                Extension = directory.Extension,
+                                LastAccessTime = directory.LastAccessTime,
+                                LastWriteTime = directory.LastWriteTime.ToString("yyyy-MM-dd HH:mm:ss"),
+                            });
+                        }
+                    }
+                    else if (item is FileInfo)
+                    {
+                        var file = item as FileInfo;
+                        if ((file.Attributes & FileAttributes.Hidden) != FileAttributes.Hidden && (file.Attributes & FileAttributes.System) != FileAttributes.System)
+                        {
+                            list.Add(new DirectoryInfoModel()
+                            {
+                                FullName = file.FullName,
+                                // FullPath=file.FullPath
+                                IsDir = false,
+                                Name = file.Name,
+                                CreationTime = file.CreationTime,
+                                Exists = file.Exists,
+                                Extension = file.Extension,
+                                LastAccessTime = file.LastAccessTime,
+                                LastWriteTime = file.LastWriteTime.ToString("yyyy-MM-dd HH:mm:ss"),
+                                IsReadOnly = file.IsReadOnly,
+                                //Directory = file.Directory,
+                                DirectoryName = file.DirectoryName,
+                                LengthText = ByteFormatter.ToString(file.Length),
+                                Length = file.Length
+                            });
+                        }
+
+                    }
+                }
+                return list;
+            });
+            return list;
+        }
+
+        public DWORD InitLoad()
+        {
+            //PCIE_DeviceList.TheDeviceList().Add(new PCIE_Device(new WD_PCI_SLOT() { dwSlot=3}));
+            //PCIE_DeviceList.TheDeviceList().Add(new PCIE_Device(new WD_PCI_SLOT() { dwSlot = 5 }));
+            var pciDevList = PCIE_DeviceList.TheDeviceList();
             //GlobalHost.DependencyResolver.Register(typeof(PCIE_DeviceList), () => pciDevList);
             try
             {
@@ -167,21 +167,21 @@ namespace Hcdz.WPFServer
                 }
                 DeviceStatus = true;
                 return dwStatus;
-              
+
             }
             catch (Exception)
             {
                 return 1000;
-            } 
+            }
         }
 
-		/* Open a handle to a device */
-		public bool DeviceOpen(int iSelectedIndex)
-		{
-			DWORD dwStatus;
-			PCIE_Device device = PCIE_DeviceList.TheDeviceList().Get(iSelectedIndex);
-			if (device == null)
-				return false;
+        /* Open a handle to a device */
+        public bool DeviceOpen(int iSelectedIndex)
+        {
+            DWORD dwStatus;
+            PCIE_Device device = PCIE_DeviceList.TheDeviceList().Get(iSelectedIndex);
+            if (device == null)
+                return false;
             /* Open a handle to the device */
             dwStatus = device.Open();
             if (dwStatus != (DWORD)wdc_err.WD_STATUS_SUCCESS)
@@ -191,13 +191,13 @@ namespace Hcdz.WPFServer
                 return false;
             }
             return true;
-		}
+        }
 
-		/* Close handle to a NEWAMD86 device */
-		public bool DeviceClose(int iSelectedIndex)
-		{
-			PCIE_Device device = PCIE_DeviceList.TheDeviceList().Get(iSelectedIndex);
-			bool bStatus = false;
+        /* Close handle to a NEWAMD86 device */
+        public bool DeviceClose(int iSelectedIndex)
+        {
+            PCIE_Device device = PCIE_DeviceList.TheDeviceList().Get(iSelectedIndex);
+            bool bStatus = false;
 
             if (device.Handle != IntPtr.Zero && !(bStatus = device.Close()))
             {
@@ -207,35 +207,35 @@ namespace Hcdz.WPFServer
             else
                 device.Handle = IntPtr.Zero;
             return bStatus;
-		}
+        }
 
-		public string InitDeviceInfo(int index)
-		{ 
-			string desc = string.Empty;
-			var device = PCIE_DeviceList.TheDeviceList().Get(index);
-			 DeviceChannelList.Add(device, AddChannel(index));
-			DWORD outData = 0;
-			device.ReadBAR0(0, 0x00, ref outData);
-			if ((outData & 0x10) == 0x10)
-				desc += "链路速率：2.5Gb/s\r\n";
-			else if ((outData & 0x20) == 0x20)
-				desc += "链路速率：5.0Gb/s\r\n";
-			else
-				desc += "speed judge error/s\r\n";
+        public string InitDeviceInfo(int index)
+        {
+            string desc = string.Empty;
+            var device = PCIE_DeviceList.TheDeviceList().Get(index);
+            DeviceChannelList.Add(device, AddChannel(index));
+            DWORD outData = 0;
+            device.ReadBAR0(0, 0x00, ref outData);
+            if ((outData & 0x10) == 0x10)
+                desc += "链路速率：2.5Gb/s\r\n";
+            else if ((outData & 0x20) == 0x20)
+                desc += "链路速率：5.0Gb/s\r\n";
+            else
+                desc += "speed judge error/s\r\n";
 
-			outData = (outData & 0xF);
-			if (outData == 1)
-				desc += "链路宽度：x1";
-			else if (outData == 2)
-				desc += "链路宽度：x2";
-			else if (outData == 4)
-				desc += "链路宽度：x4";
-			else if (outData == 8)
-				desc += "链路宽度：x8";
-			else
-				desc += "width judge error/s\r\n";
-			return desc;
-		}
+            outData = (outData & 0xF);
+            if (outData == 1)
+                desc += "链路宽度：x1";
+            else if (outData == 2)
+                desc += "链路宽度：x2";
+            else if (outData == 4)
+                desc += "链路宽度：x4";
+            else if (outData == 8)
+                desc += "链路宽度：x8";
+            else
+                desc += "width judge error/s\r\n";
+            return desc;
+        }
 
         public void OpenOrCloseChannel(DeviceChannelModel model)
         {
@@ -243,82 +243,82 @@ namespace Hcdz.WPFServer
             {
                 foreach (var childitem in item.Value)
                 {
-                    if (childitem.Id==model.Id)
+                    if (childitem.Id == model.Id)
                     {
                         childitem.IsOpen = model.IsOpen;
                     }
-                } 
+                }
             }
         }
-         
+
         private List<DeviceChannelModel> AddChannel(int index)
-		{
-			List<DeviceChannelModel> list = new List<DeviceChannelModel>();
-			switch (index)
-			{
-				case 0:
-					DeviceChannelModel channel0 = new DeviceChannelModel
-					{  
-						Id = 1,
-						Name = "通道1",
-						RegAddress = 0x30,
-						DiskPath = "Bar1",
+        {
+            List<DeviceChannelModel> list = new List<DeviceChannelModel>();
+            switch (index)
+            {
+                case 0:
+                    DeviceChannelModel channel0 = new DeviceChannelModel
+                    {
+                        Id = 1,
+                        Name = "通道1",
+                        RegAddress = 0x30,
+                        DiskPath = "Bar1",
                         DeviceNo = index
                     };
-					DeviceChannelModel channel1 = new DeviceChannelModel
-					{
-						Id = 2,
-						Name = "通道2",
-						RegAddress = 0x34,
-						DiskPath = "Bar2",
+                    DeviceChannelModel channel1 = new DeviceChannelModel
+                    {
+                        Id = 2,
+                        Name = "通道2",
+                        RegAddress = 0x34,
+                        DiskPath = "Bar2",
                         DeviceNo = index,
                     };
-					DeviceChannelModel channel2 = new DeviceChannelModel
-					{
-						Id = 3,
-						Name = "通道3",
-						RegAddress = 0x38,
-						DiskPath = "Bar3",
+                    DeviceChannelModel channel2 = new DeviceChannelModel
+                    {
+                        Id = 3,
+                        Name = "通道3",
+                        RegAddress = 0x38,
+                        DiskPath = "Bar3",
                         DeviceNo = index
                     };
-					list.Add(channel0);
-					list.Add(channel1);
-					list.Add(channel2);
-					break;
-				case 1:
-					DeviceChannelModel channel3 = new DeviceChannelModel
-					{
-						Id = 4,
-						Name = "通道4",
-						RegAddress = 0x40,
-						DiskPath = "Bar4",
+                    list.Add(channel0);
+                    list.Add(channel1);
+                    list.Add(channel2);
+                    break;
+                case 1:
+                    DeviceChannelModel channel3 = new DeviceChannelModel
+                    {
+                        Id = 4,
+                        Name = "通道4",
+                        RegAddress = 0x40,
+                        DiskPath = "Bar4",
                         DeviceNo = index
                     };
-					DeviceChannelModel channel4 = new DeviceChannelModel
-					{
-						Id = 5,
-						Name = "通道5",
-						RegAddress = 0x44,
-						DiskPath = "Bar5",
+                    DeviceChannelModel channel4 = new DeviceChannelModel
+                    {
+                        Id = 5,
+                        Name = "通道5",
+                        RegAddress = 0x44,
+                        DiskPath = "Bar5",
                         DeviceNo = index
                     };
-					DeviceChannelModel channel5 = new DeviceChannelModel
-					{
-						Id = 6,
-						Name = "通道6",
-						RegAddress = 0x48,
-						DiskPath = "Bar6",
+                    DeviceChannelModel channel5 = new DeviceChannelModel
+                    {
+                        Id = 6,
+                        Name = "通道6",
+                        RegAddress = 0x48,
+                        DiskPath = "Bar6",
                         DeviceNo = index
                     };
-					list.Add(channel3);
-					list.Add(channel4);
-					list.Add(channel5);
-					break;
-				default:
-					break;
-			}
-			return list;
-		}
+                    list.Add(channel3);
+                    list.Add(channel4);
+                    list.Add(channel5);
+                    break;
+                default:
+                    break;
+            }
+            return list;
+        }
 
         public bool ScanDevice(int deviceIndex)
         {
@@ -348,9 +348,9 @@ namespace Hcdz.WPFServer
             dev.WriteBAR0(0, 0x8, (uint)(ppwDma.Page[0].pPhysicalAddr >> 32));	//wr_addr high
             dev.WriteBAR0(0, 0xC, (UInt32)1024);           //dma wr size
             dev.WriteBAR0(0, 0x28, 1);
-           dev.WriteBAR0(0, 0x10, 1);   
-            
-            
+            dev.WriteBAR0(0, 0x10, 1);
+
+
             //启动DMA
             //       //dma wr 使能
             byte[] tmpResult = new Byte[1024];
@@ -360,14 +360,14 @@ namespace Hcdz.WPFServer
                 return false;
             }
             Thread.Sleep(1);
-             dev.WriteBAR0(0, 0x28, 0);
+            dev.WriteBAR0(0, 0x28, 0);
             return true;
         }
 
-        public string OnReadDma(string dvireName,int dataSize, int deviceIndex)
+        public string OnReadDma(string dvireName, int dataSize, int deviceIndex)
         {
             PCIE_Device dev = PCIE_DeviceList.TheDeviceList().Get(deviceIndex);
-            if (dev==null)
+            if (dev == null)
             {
                 return "连接设备异常,请重试";
             }
@@ -403,11 +403,37 @@ namespace Hcdz.WPFServer
                 }
 
             }
-            dev.StartWrDMA(0); 
-            Thread nonParameterThread = new Thread(new ParameterizedThreadStart(p => NonParameterRun(dev,dvireName,dataSize,deviceIndex)));
+            dev.StartWrDMA(0);
+            
+            //Thread readThread = new Thread(new ParameterizedThreadStart(p => OnWriteDMA(dev)));
+            //readThread.IsBackground = true;
+            //readThread.Start();
+
+            Thread nonParameterThread = new Thread(new ParameterizedThreadStart(p => NonParameterRun(dev, dvireName, dataSize, deviceIndex)));
             nonParameterThread.Start();
             return string.Empty;
         }
+
+        private void OnWriteDMA(PCIE_Device dev)
+        {
+            while (true)
+            {
+                if (concurrentQueue.Count > 0)
+                {
+                    byte[] item;
+                    if (concurrentQueue.TryDequeue(out item))
+                    {
+                        WriteFile(item, DeviceChannelList[dev]);
+                    }
+                }
+            }
+        }
+
+       
+        private void WriteBar(object state)
+        {
+
+        } 
 
         private void NonParameterRun(PCIE_Device dev,string dvireName,int dataSize,int deviceIndex)
         {
@@ -442,6 +468,7 @@ namespace Hcdz.WPFServer
 
                 byte[] tmpResult = new Byte[dataSize * 1024];
                 Marshal.Copy(dev.pWbuffer, tmpResult, 0, tmpResult.Length);
+               // concurrentQueue.Enqueue(tmpResult);
                 // Stream.Write(tmpResult, 0, tmpResult.Length);
                 var bytes = tmpResult.Length / dataSize;
                 for (int i = 0; i < bytes; i++)
@@ -452,10 +479,11 @@ namespace Hcdz.WPFServer
                     {
                         result[j] = tmpResult[index + j];
                     }
-                    var barValue = Convert.ToInt32(result[15]);
+                    var barValue = result[15];
                     if (barValue == 1)
                     {
-                        WriteFile(result, list);
+                          WriteFile(result, list);
+                        //concurrentQueue.Enqueue(result);
                     }
                 }
 
@@ -471,16 +499,19 @@ namespace Hcdz.WPFServer
         }
         private void WriteFile(byte[] result,List<DeviceChannelModel> channelModels)
         {
-            var channelNo = Convert.ToInt32(result[8]);
+            var channelNo = result[8];
             var item = channelModels.FirstOrDefault(o => o.Id == channelNo);
             if (item == null)
                 return;
-            byte[] trueValue = new byte[16];
-            for (int i = 0; i < 8; i++)
-            {
-                trueValue[i] = result[i];
-            }          
-            item.Stream.Write(trueValue, 0, 16);
+            //byte[] trueValue = new byte[16];
+            //for (int i = 0; i < 8; i++)
+            //{
+            //    trueValue[i] = result[i];
+            //}    
+            result[8] = 0;
+            result[15] = 0;
+            item.Stream.Write(result, 0, 16);
+            //item.Stream.Flush();            
         }
         /// <summary>
         /// Copies the contents of input to output. Doesn't close either stream.
