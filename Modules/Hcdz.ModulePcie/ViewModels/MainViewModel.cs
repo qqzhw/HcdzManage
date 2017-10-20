@@ -36,7 +36,7 @@ namespace Hcdz.ModulePcie.ViewModels
 		private DispatcherTimer dispatcherTimer;
       
         long total = 0;
-        private FileStream Stream;
+       // private FileStream Stream;
 		public MainViewModel(IUnityContainer container, IEventAggregator eventAggregator, IRegionManager regionManager, IServiceLocator serviceLocator, IHcdzClient hcdzClient)
 		{
 			_container = container;
@@ -63,7 +63,7 @@ namespace Hcdz.ModulePcie.ViewModels
             _deviceChannel2 = new ObservableCollection<DeviceChannelModel>();//主板2 通道
             _viewModel = new PcieViewModel();
            
-            Stream = new FileStream("D:\\test", FileMode.Append, FileAccess.Write);
+           // Stream = new FileStream("D:\\test", FileMode.Append, FileAccess.Write);
 			_hcdzClient.MessageReceived += _hcdzClient_MessageReceived;
             _hcdzClient.Connected +=ClientConnected;
 			_hcdzClient.Connect();
