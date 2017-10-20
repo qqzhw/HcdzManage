@@ -18,6 +18,7 @@ using Owin;
 using System.Reflection;
 using System.ComponentModel;
 using Hcdz.WPFServer.Properties;
+using Pvirtech.Framework.Common;
 
 namespace Hcdz.WPFServer
 {
@@ -33,7 +34,7 @@ namespace Hcdz.WPFServer
 		{
 			InitializeComponent();
 			Init();
-           
+			//LogHelper.WriteLog("ddd");
         }
 
 		private void Init()

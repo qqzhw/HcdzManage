@@ -17,6 +17,7 @@ using System.Runtime.InteropServices;
 using System.Windows.Threading;
 using System.Collections.Concurrent;
 using Hcdz.Framework.Common;
+using Pvirtech.Framework.Common;
 
 namespace Hcdz.WPFServer
 {
@@ -138,7 +139,7 @@ namespace Hcdz.WPFServer
                                 IsReadOnly = file.IsReadOnly,
                                 //Directory = file.Directory,
                                 DirectoryName = file.DirectoryName,
-                                LengthText = ByteFormatter.ToString(file.Length),
+                                LengthText = Models.ByteFormatter.ToString(file.Length),
                                 Length = file.Length
                             });
                         }
@@ -169,8 +170,9 @@ namespace Hcdz.WPFServer
                 return dwStatus;
 
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+				LogHelper.ErrorLog(ex);
                 return 1000;
             }
         }
