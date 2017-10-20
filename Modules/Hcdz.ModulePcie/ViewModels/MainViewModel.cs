@@ -67,8 +67,8 @@ namespace Hcdz.ModulePcie.ViewModels
 			_hcdzClient.MessageReceived += _hcdzClient_MessageReceived;
             _hcdzClient.Connected +=ClientConnected;
 			_hcdzClient.Connect();
-
-            LoadDeviceChannel();
+			LogHelper.WriteLog("错误码：");
+			LoadDeviceChannel();
         }
 
 		private async void LoadData()
@@ -473,7 +473,7 @@ namespace Hcdz.ModulePcie.ViewModels
             var result =  await _hcdzClient.InitializerDevice();
             if (result>0)
             {
-               
+				LogHelper.WriteLog("错误码："+result.ToString());
               string content = "加载设备失败!";
                 if (result == 536870921)
                 {
