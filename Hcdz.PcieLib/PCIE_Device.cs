@@ -596,8 +596,11 @@ namespace Hcdz.PcieLib
        int lpOverlapped
    );
         public IntPtr ppwDma;
+        public IntPtr pScanpwDma;
         public IntPtr pWbuffer;
+        public IntPtr pScanWbuffer;
         public IntPtr pReportWrBuffer;
+        public IntPtr pScanReportWrBuffer;
         public WD_DMA WdDma;
         HANDLE? hev;
         HANDLE? hfile1;
@@ -605,7 +608,7 @@ namespace Hcdz.PcieLib
         DWORD tranBlock1, tranBlock2;
         DWORD rBlockSize, wBlockSize, rBNum, wBnum;//变量1：读缓冲区大小，变量2：写缓冲区大小，变量3：读缓冲区个数，变量4：写缓冲区个数
         public IntPtr pReportWrDMA;
-
+        public IntPtr pScanReportWrDMA;
         public bool DMAWriteMenAlloc(DWORD index, DWORD menBlocknum, DWORD blocksize)
         {
             DWORD status;
@@ -652,10 +655,28 @@ namespace Hcdz.PcieLib
 
             return true;
         }
+
+        public bool ScanDMAWriteMenAlloc(DWORD blocksize)
+        {
+            if (wdc_lib_decl.WDC_DMAContigBufLock(Handle, ref pScanWbuffer, 0x20, blocksize, ref pScanpwDma) != 0)
+            { 
+                pScanWbuffer = pScanpwDma = IntPtr.Zero;
+                Close();
+                return false;
+            }
+            return true;
+        }
         public DWORD WDC_DMAContigBufLock()
         {
 
             DWORD dwstatus = wdc_lib_decl.WDC_DMAContigBufLock(Handle, ref pReportWrBuffer, (uint)WD_DMA_OPTIONS.DMA_READ_FROM_DEVICE, 0x100, ref pReportWrDMA);
+
+            return dwstatus;
+        }
+        public DWORD WDCScan_DMAContigBufLock()
+        {
+
+            DWORD dwstatus = wdc_lib_decl.WDC_DMAContigBufLock(Handle, ref pScanReportWrBuffer, (uint)WD_DMA_OPTIONS.DMA_READ_FROM_DEVICE, 0x100, ref pScanReportWrDMA);
 
             return dwstatus;
         }

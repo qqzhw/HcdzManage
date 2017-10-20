@@ -442,13 +442,22 @@ namespace Hcdz.ModulePcie
 		/// 设备自检
 		/// </summary>
 		/// <returns></returns>
-		public async Task<bool> ScanDevice()
+		public async Task<bool> ScanDevice(int deviceIndex)
 		{
 			if (_connection.State == ConnectionState.Connected)
 			{
-				return await _chat.Invoke<bool>("ScanDevice");
+				return await _chat.Invoke<bool>("ScanDevice", deviceIndex);
 			}
 			return false;
 		}
-	}
+
+        public async Task CloseScanDevice()
+        {
+            if (_connection.State == ConnectionState.Connected)
+            {
+                  await _chat.Invoke("CloseScanDevice");
+            }
+          
+        }
+    }
 }

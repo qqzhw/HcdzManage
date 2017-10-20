@@ -16,6 +16,8 @@ using Microsoft.Owin.Cors;
 using Microsoft.Owin.Hosting;
 using Owin;
 using System.Reflection;
+using System.ComponentModel;
+using Hcdz.WPFServer.Properties;
 
 namespace Hcdz.WPFServer
 {
@@ -25,12 +27,13 @@ namespace Hcdz.WPFServer
 	public partial class MainWindow : Window
 	{
 		public IDisposable SignalR { get; set; }
-		const string ServerURI = "http://localhost:8080";
+		protected string ServerURI ;
 
 		public MainWindow()
 		{
 			InitializeComponent();
-		}
+            ServerURI = Settings.Default.Server;
+        }
 
 		private void ButtonStart_Click(object sender, RoutedEventArgs e)
 		{
@@ -44,11 +47,19 @@ namespace Hcdz.WPFServer
 			SignalR.Dispose();
 			Close();
 		}
-		/// <summary>
-		/// Starts the server and checks for error thrown when another server is already 
-		/// running. This method is called asynchronously from Button_Start.
-		/// </summary>
-		private void StartServer()
+       
+        protected override void OnClosing(CancelEventArgs e)
+        {
+           
+            SignalR.Dispose();
+            base.OnClosing(e);
+            Application.Current.Shutdown();
+        }
+        /// <summary>
+        /// Starts the server and checks for error thrown when another server is already 
+        /// running. This method is called asynchronously from Button_Start.
+        /// </summary>
+        private void StartServer()
 		{
 			try
 			{
