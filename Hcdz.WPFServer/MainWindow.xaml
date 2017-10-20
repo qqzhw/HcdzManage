@@ -5,17 +5,31 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Hcdz.WPFServer"
         mc:Ignorable="d"
-       Title="WPF SignalR Server" Height="319" Width="343  ">
+       Title="上位机服务端" Height="350" Width="560 ">
 	<Grid>
-
-		<Button x:Name="ButtonStart" Content="Start" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="100" Click="ButtonStart_Click"/>
-		<Button x:Name="ButtonStop" Content="Stop" HorizontalAlignment="Left" Margin="225,10,0,0" VerticalAlignment="Top" Width="100" Click="ButtonStop_Click" IsEnabled="False"/>
-		<RichTextBox x:Name="RichTextBoxConsole" HorizontalAlignment="Left" Height="243" Margin="10,35,0,0" VerticalAlignment="Top" Width="315">
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto" />
+			<RowDefinition  Height="*"/>
+		</Grid.RowDefinitions>
+		<StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="10,5,0,0">
+			<Label Content="地址"/>
+			<TextBox x:Name="txtServer" Height="22" Width="150" />
+			<Label Content="Key"/>
+			<TextBox x:Name="txtLicence" Height="22" Width="200"  Margin="5,0,0,0"/>
+			<Button x:Name="ButtonSave" Content="保存配置" HorizontalAlignment="Left" Margin="10,0,0,0"   Width="100" Click="ButtonSave_Click"/>
+		</StackPanel>
+		<StackPanel Grid.Row="1">
+			<StackPanel Orientation="Horizontal" Margin="10,10,0,0">
+				<Button x:Name="ButtonStart" Content="开始" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Top" Width="100" Click="ButtonStart_Click"/>
+				<Button x:Name="ButtonStop" Content="停止" HorizontalAlignment="Left" Margin="225,0,0,0" VerticalAlignment="Top" Width="100" Click="ButtonStop_Click" IsEnabled="False"/>
+			</StackPanel>
+		
+		<RichTextBox x:Name="RichTextBoxConsole" HorizontalAlignment="Left" Height="240" Margin="10,10,0,0" VerticalAlignment="Top" Width="530">
 			<FlowDocument>
 				<Paragraph>
 				</Paragraph>
 			</FlowDocument>
 		</RichTextBox>
-
+		</StackPanel>
 	</Grid>
 </Window>

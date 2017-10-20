@@ -76,5 +76,11 @@ namespace Hcdz.WPFServer
 			}
 			RichTextBoxConsole.AppendText(message + "\r");
 		}
+
+		private void ButtonSave_Click(object sender, RoutedEventArgs e)
+		{
+			Properties.Settings.Default.License = txtLicence.Text.Trim();
+			Properties.Settings.Default.
+		}
 	}
 }
