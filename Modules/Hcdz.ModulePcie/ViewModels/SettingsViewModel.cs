@@ -36,6 +36,8 @@ namespace Hcdz.ModulePcie.ViewModels
 			Settings.Default.Bar3 = Bar3;
 			Settings.Default.Bar4 = Bar4;
 			Settings.Default.Bar5 = Bar5;
+			Settings.Default.ServerUrl = SignalrServer;
+			Settings.Default.DwonloadUrl = DownloadUrl;
 			Settings.Default.Save();
 		}
 
@@ -47,6 +49,8 @@ namespace Hcdz.ModulePcie.ViewModels
 			_bar3 = Settings.Default.Bar3;
 			_bar4 = Settings.Default.Bar4;
 			_bar5 = Settings.Default.Bar5;
+			_signalrServer = Settings.Default.ServerUrl;
+			_downloadUrl = Settings.Default.DwonloadUrl;
 		}
 		#region 属性
 
@@ -85,6 +89,18 @@ namespace Hcdz.ModulePcie.ViewModels
 		{
 			get { return _bar5; }
 			set { SetProperty(ref _bar5, value); }
+		}
+		private string _signalrServer;
+		public string SignalrServer
+		{
+			get { return _signalrServer; }
+			set { SetProperty(ref _signalrServer, value); }
+		}
+		private string _downloadUrl;
+		public string DownloadUrl
+		{
+			get { return _downloadUrl; }
+			set { SetProperty(ref _downloadUrl, value); }
 		}
 
 		public ICommand SaveCommand { get; private set; }

@@ -32,8 +32,16 @@ namespace Hcdz.WPFServer
 		public MainWindow()
 		{
 			InitializeComponent();
-            ServerURI = Settings.Default.Server;
+			Init();
+           
         }
+
+		private void Init()
+		{
+			ServerURI = Settings.Default.Server;
+			txtLicence.Text = Properties.Settings.Default.License;
+			txtServer.Text = Properties.Settings.Default.Server;
+		}
 
 		private void ButtonStart_Click(object sender, RoutedEventArgs e)
 		{
@@ -50,8 +58,10 @@ namespace Hcdz.WPFServer
        
         protected override void OnClosing(CancelEventArgs e)
         {
-           
-            SignalR.Dispose();
+			if (SignalR != null)
+			{
+				SignalR.Dispose();
+			}
             base.OnClosing(e);
             Application.Current.Shutdown();
         }
@@ -91,7 +101,8 @@ namespace Hcdz.WPFServer
 		private void ButtonSave_Click(object sender, RoutedEventArgs e)
 		{
 			Properties.Settings.Default.License = txtLicence.Text.Trim();
-			Properties.Settings.Default.
+			Properties.Settings.Default.Server = txtServer.Text.Trim();
+			Properties.Settings.Default.Save();
 		}
 	}
 }
