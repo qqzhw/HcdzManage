@@ -33,8 +33,7 @@ namespace Hcdz.ModulePcie.ViewModels
 		private readonly IRegionManager _regionManager;
 		private readonly IServiceLocator _serviceLocator;
 		private readonly IHcdzClient  _hcdzClient;
-		private DispatcherTimer dispatcherTimer;
-      
+		private DispatcherTimer dispatcherTimer; 
         long total = 0;
        // private FileStream Stream;
 		public MainViewModel(IUnityContainer container, IEventAggregator eventAggregator, IRegionManager regionManager, IServiceLocator serviceLocator, IHcdzClient hcdzClient)
@@ -267,59 +266,106 @@ namespace Hcdz.ModulePcie.ViewModels
         {
             int index = 0;
             int.TryParse(obj.ToString(), out index);
-            if (!IsOpen)
+            if (index==0)
             {
-				var result =await _hcdzClient.DeviceOpen(index);
-				if (result)
+				if (!IsOpen)
 				{
-					if (index == 1)
+					var result = await _hcdzClient.DeviceOpen(index);
+					if (result)
 					{
-						OpenDeviceText1 = "关闭设备";
-						IsOpen = true;
+					 
+							OpenDeviceText = "关闭设备";
+							IsOpen = true;
+							DeviceDesc = await _hcdzClient.InitDeviceInfo(index);
+						 
+						//var device = pciDevList.Get(index);
+						//DWORD outData=0;
+						//device.ReadBAR0(0, 0x00, ref outData);
+						//if ((outData & 0x10) == 0x10)
+						//    DeviceDesc += "链路速率：2.5Gb/s\r\n";
+						//else if ((outData & 0x20) == 0x20)
+						//    DeviceDesc += "链路速率：5.0Gb/s\r\n";
+						//else
+						//    DeviceDesc += "speed judge error/s\r\n";
+
+						//outData = (outData & 0xF);
+						//if (outData == 1)
+						//    DeviceDesc += "链路宽度：x1";
+						//else if (outData == 2)
+						//    DeviceDesc += "链路宽度：x2";
+						//else if (outData == 4)
+						//    DeviceDesc += "链路宽度：x4";
+						//else if (outData == 8)
+						//    DeviceDesc += "链路宽度：x8";
+						//else
+						//    DeviceDesc += "width judge error/s\r\n";                    
 					}
 					else
 					{
-						OpenDeviceText = "关闭设备";
-						IsOpen = true;
-						DeviceDesc = await _hcdzClient.InitDeviceInfo(index);
-					}
-					//var device = pciDevList.Get(index);
-					//DWORD outData=0;
-					//device.ReadBAR0(0, 0x00, ref outData);
-					//if ((outData & 0x10) == 0x10)
-					//    DeviceDesc += "链路速率：2.5Gb/s\r\n";
-					//else if ((outData & 0x20) == 0x20)
-					//    DeviceDesc += "链路速率：5.0Gb/s\r\n";
-					//else
-					//    DeviceDesc += "speed judge error/s\r\n";
+						RadDesktopAlertManager desktop = new RadDesktopAlertManager(AlertScreenPosition.BottomCenter);
 
-					//outData = (outData & 0xF);
-					//if (outData == 1)
-					//    DeviceDesc += "链路宽度：x1";
-					//else if (outData == 2)
-					//    DeviceDesc += "链路宽度：x2";
-					//else if (outData == 4)
-					//    DeviceDesc += "链路宽度：x4";
-					//else if (outData == 8)
-					//    DeviceDesc += "链路宽度：x8";
-					//else
-					//    DeviceDesc += "width judge error/s\r\n";                    
+						desktop.ShowAlert(new RadDesktopAlert()
+						{
+							Content = "设备连接失败!"
+						});
+					}
 				}
 				else
 				{
-					RadDesktopAlertManager desktop = new RadDesktopAlertManager(AlertScreenPosition.BottomCenter);
-					 
-					desktop.ShowAlert(new RadDesktopAlert()
-					{ 
-						Content = "设备连接失败!"
-					});
+					OpenDeviceText = "连接设备";
+					IsOpen = false;
 				}
 			}
             else
-            { 
-                OpenDeviceText = "连接设备";
-                IsOpen = false;
-            } 
+            {
+				if (!IsSecOpen)
+				{
+					var result = await _hcdzClient.DeviceOpen(index);
+					if (result)
+					{
+
+						OpenDeviceText1 = "关闭设备";
+						IsSecOpen = true;
+						DeviceDesc = await _hcdzClient.InitDeviceInfo(index);
+
+						//var device = pciDevList.Get(index);
+						//DWORD outData=0;
+						//device.ReadBAR0(0, 0x00, ref outData);
+						//if ((outData & 0x10) == 0x10)
+						//    DeviceDesc += "链路速率：2.5Gb/s\r\n";
+						//else if ((outData & 0x20) == 0x20)
+						//    DeviceDesc += "链路速率：5.0Gb/s\r\n";
+						//else
+						//    DeviceDesc += "speed judge error/s\r\n";
+
+						//outData = (outData & 0xF);
+						//if (outData == 1)
+						//    DeviceDesc += "链路宽度：x1";
+						//else if (outData == 2)
+						//    DeviceDesc += "链路宽度：x2";
+						//else if (outData == 4)
+						//    DeviceDesc += "链路宽度：x4";
+						//else if (outData == 8)
+						//    DeviceDesc += "链路宽度：x8";
+						//else
+						//    DeviceDesc += "width judge error/s\r\n";                    
+					}
+					else
+					{
+						RadDesktopAlertManager desktop = new RadDesktopAlertManager(AlertScreenPosition.BottomCenter);
+
+						desktop.ShowAlert(new RadDesktopAlert()
+						{
+							Content = "设备连接失败!"
+						});
+					}
+				}
+				else
+				{
+					OpenDeviceText1 = "连接设备";
+					IsSecOpen = false;
+				}
+			} 
         }
 
         private void DispatcherTimer_Tick(object sender, EventArgs e)
@@ -349,8 +395,10 @@ namespace Hcdz.ModulePcie.ViewModels
         }
         private bool _isOpen;
         public bool IsOpen { get { return _isOpen; } set { SetProperty(ref _isOpen, value); } }
+		private bool _isSecOpen;
+		public bool IsSecOpen { get { return _isSecOpen; } set { SetProperty(ref _isSecOpen, value); } }
 
-        private string _openDeviceText;
+		private string _openDeviceText;
         public string OpenDeviceText { get { return _openDeviceText; }set { SetProperty(ref _openDeviceText,value); } }
         private string _openDeviceText1;
         public string OpenDeviceText1

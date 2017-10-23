@@ -180,35 +180,55 @@ namespace Hcdz.WPFServer
         /* Open a handle to a device */
         public bool DeviceOpen(int iSelectedIndex)
         {
+			LogHelper.WriteLog(string.Format("连接第{0}张板卡",iSelectedIndex));
             DWORD dwStatus;
             PCIE_Device device = PCIE_DeviceList.TheDeviceList().Get(iSelectedIndex);
             if (device == null)
                 return false;
-            /* Open a handle to the device */
-            dwStatus = device.Open();
-            if (dwStatus != (DWORD)wdc_err.WD_STATUS_SUCCESS)
-            {
-                Log.ErrLog("NEWAMD86_diag.DeviceOpen: Failed opening a " +
-                    "handle to the device (" + device.ToString(false) + ")");
-                return false;
-            }
-            return true;
+			/* Open a handle to the device */
+			try
+			{
+				dwStatus = device.Open();
+				if (dwStatus != (DWORD)wdc_err.WD_STATUS_SUCCESS)
+				{
+					Log.ErrLog("NEWAMD86_diag.DeviceOpen: Failed opening a " +
+						"handle to the device (" + device.ToString(false) + ")");
+					return false;
+				}
+				return true;
+			}
+			catch (Exception ex)
+			{
+				LogHelper.ErrorLog(ex, "DeviceOpen");
+				return false;
+			}
+          
         }
 
         /* Close handle to a NEWAMD86 device */
         public bool DeviceClose(int iSelectedIndex)
         {
-            PCIE_Device device = PCIE_DeviceList.TheDeviceList().Get(iSelectedIndex);
+			LogHelper.WriteLog(string.Format("断开第{0}张板卡", iSelectedIndex));
+			PCIE_Device device = PCIE_DeviceList.TheDeviceList().Get(iSelectedIndex);
             bool bStatus = false;
+			try
+			{
+				if (device.Handle != IntPtr.Zero && !(bStatus = device.Close()))
+				{
+					Log.ErrLog("DeviceClose: Failed closing "
+						+ "device (" + device.ToString(false) + ")");
+				}
+				else
+					device.Handle = IntPtr.Zero;
+				return bStatus;
 
-            if (device.Handle != IntPtr.Zero && !(bStatus = device.Close()))
-            {
-                Log.ErrLog("DeviceClose: Failed closing "
-                    + "device (" + device.ToString(false) + ")");
-            }
-            else
-                device.Handle = IntPtr.Zero;
-            return bStatus;
+			}
+			catch (Exception ex)
+			{
+				LogHelper.ErrorLog(ex, "DeviceClose");
+
+			}
+			return false;
         }
 
         public string InitDeviceInfo(int index)
@@ -511,8 +531,9 @@ namespace Hcdz.WPFServer
             //    trueValue[i] = result[i];
             //}    
             result[8] = 0;
-            result[15] = 0;
-            item.Stream.Write(result, 0, 16);
+           // result[15] = 0;
+			var bt = result.Take(8).ToArray();
+            item.Stream.Write(bt, 0, 8);
             //item.Stream.Flush();            
         }
         /// <summary>
