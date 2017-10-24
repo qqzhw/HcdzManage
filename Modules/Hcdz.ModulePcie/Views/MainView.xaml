@@ -12,8 +12,8 @@
         xmlns:convert="clr-namespace:Hcdz.ModulePcie.ViewModels"
         mc:Ignorable="d"  d:DesignHeight="600" d:DesignWidth="800" >
     <UserControl.Resources>
-        <convert:TrueToColorConverter x:Key="colorConvert"/>
-    </UserControl.Resources>
+        <convert:TrueToColorConverter x:Key="colorConvert"/> 
+	</UserControl.Resources>
     <Grid>
 		<Grid.RowDefinitions>
 			<RowDefinition Height="Auto"/>
@@ -83,7 +83,9 @@
                     <Border Background="#D9EDF7">
                         <Grid>
                             <TextBlock Text="板卡1 (10EE,7028)" FontSize="16" Foreground="#31708F" VerticalAlignment="Center" Margin="20,0,0,0"/>
-                            <Button HorizontalAlignment="Right" Margin="0,0,8,0" VerticalAlignment="Center" Width="80"  Content="{Binding OpenDeviceText}" Style="{DynamicResource MetroFlatButton}"  Command="{Binding OpenDevice}"  CommandParameter="0"/>
+							<Button HorizontalAlignment="Right" Margin="0,0,8,0" VerticalAlignment="Center" Width="80"  Content="{Binding OpenDeviceText}" Style="{DynamicResource MetroFlatButton}"  Command="{Binding OpenDevice}"  CommandParameter="0,OpenDeviceText">
+								 
+							</Button>
                         </Grid>
                     </Border>
                     <Border BorderThickness="1" BorderBrush="#D9EDF7" Grid.Row="1">                       
@@ -98,7 +100,7 @@
                                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" >
                                                         <Button HorizontalAlignment="Right" Margin="30,0,0,0" Width="60"  Content="打开" Style="{DynamicResource MetroFlatButton}"  Command="{Binding DataContext.OpenChannel ,RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}"
                         IsEnabled="{Binding BtnIsEnabled}" CommandParameter="{Binding}"/>
-                                                        <Button HorizontalAlignment="Right" Margin="20,0,0,0" Width="60"  Content="关闭" Style="{DynamicResource MetroFlatButton}"  Command="{Binding DataContext.CloseChannel ,RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}" CommandParameter="{Binding}" />
+														<Button HorizontalAlignment="Right" Margin="20,0,0,0" Width="60"  Content="关闭" Style="{DynamicResource MetroFlatButtonDisable}"  Command="{Binding DataContext.CloseChannel ,RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}" CommandParameter="{Binding}" />
                                                     </StackPanel>
                                                     <!--<metro:MetroProgressBar  Margin="10,10,0,0" Value="56" Foreground="#5DA0C7"    Background="#EDEDED" Height="32"/>-->
                                                     <!--<StackPanel Orientation="Horizontal"  Margin="15,2,20,0">
@@ -126,7 +128,7 @@
                     <Border Background="#D9EDF7">
                         <Grid>
                             <TextBlock Text="板卡2 (10EE,7028)" FontSize="16" Foreground="#31708F" VerticalAlignment="Center" Margin="20,0,0,0"/>
-                            <Button HorizontalAlignment="Right" Margin="0,0,8,0" VerticalAlignment="Center" Width="80"  Content="{Binding OpenDeviceText1}" Style="{DynamicResource MetroFlatButton}"  Command="{Binding OpenDevice}"  CommandParameter="1"/>
+							<Button HorizontalAlignment="Right" Margin="0,0,8,0" VerticalAlignment="Center" Width="80"  Content="{Binding OpenDeviceText1}" Style="{DynamicResource MetroFlatButton}"  Command="{Binding OpenDevice}"  CommandParameter="1,OpenDeviceText1"/>
                         </Grid>
                     </Border>
                     <Border BorderThickness="1" BorderBrush="#D9EDF7" Grid.Row="1">
@@ -141,8 +143,8 @@
                                             <StackPanel  VerticalAlignment="Center" Margin="0,10,15,10">
                                                 <StackPanel Orientation="Horizontal"  HorizontalAlignment="Right">
                                                     <Button HorizontalAlignment="Right" Margin="30,0,0,0" Width="60"  Content="打开" Style="{DynamicResource MetroFlatButton}"  Command="{Binding DataContext.OpenChannel ,RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}" CommandParameter="{Binding}"
-                        IsEnabled="{Binding BtnOpenTrue}"/>
-                                                        <Button HorizontalAlignment="Right" Margin="20,0,0,0" Width="60"  Content="关闭" Style="{DynamicResource MetroFlatButtonDisable}" IsEnabled="False"  Command="{Binding CloseChannel ,RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}"  CommandParameter="{Binding}"/>
+                        IsEnabled="{Binding BtnIsEnabled}"/>
+														<Button HorizontalAlignment="Right" Margin="20,0,0,0" Width="60"  Content="关闭" Style="{DynamicResource MetroFlatButtonDisable}"    Command="{Binding DataContext.CloseChannel ,RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}"  CommandParameter="{Binding}"/>
                                                 </StackPanel>
                                               <!--<StackPanel Orientation="Horizontal"  Margin="15,2,20,0">
                                                    <TextBlock Text="已读大小：" FontSize="14"  Foreground="#333333"/>

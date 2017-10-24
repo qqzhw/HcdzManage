@@ -135,6 +135,7 @@
     <Compile Include="TaskAsyncHelper.cs" />
     <Compile Include="ViewModels\ContextMenuBehavior.cs" />
     <Compile Include="ViewModels\DeviceChannelModel.cs" />
+    <Compile Include="ViewModels\DeviceConverter.cs" />
     <Compile Include="ViewModels\DirectoryListModel.cs" />
     <Compile Include="ViewModels\PcieViewModel.cs" />
     <Compile Include="ViewModels\SettingsViewModel.cs" />

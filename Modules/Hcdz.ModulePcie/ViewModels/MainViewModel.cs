@@ -264,41 +264,20 @@ namespace Hcdz.ModulePcie.ViewModels
       
         private async void OnOpenDevice(object obj)
         {
-            int index = 0;
-            int.TryParse(obj.ToString(), out index);
+			var param =  ((string)obj).Split(',');
+		      
+			int index = 0;
+            int.TryParse(param[0].ToString(), out index);
             if (index==0)
             {
 				if (!IsOpen)
 				{
 					var result = await _hcdzClient.DeviceOpen(index);
 					if (result)
-					{
-					 
-							OpenDeviceText = "关闭设备";
-							IsOpen = true;
-							DeviceDesc = await _hcdzClient.InitDeviceInfo(index);
-						 
-						//var device = pciDevList.Get(index);
-						//DWORD outData=0;
-						//device.ReadBAR0(0, 0x00, ref outData);
-						//if ((outData & 0x10) == 0x10)
-						//    DeviceDesc += "链路速率：2.5Gb/s\r\n";
-						//else if ((outData & 0x20) == 0x20)
-						//    DeviceDesc += "链路速率：5.0Gb/s\r\n";
-						//else
-						//    DeviceDesc += "speed judge error/s\r\n";
-
-						//outData = (outData & 0xF);
-						//if (outData == 1)
-						//    DeviceDesc += "链路宽度：x1";
-						//else if (outData == 2)
-						//    DeviceDesc += "链路宽度：x2";
-						//else if (outData == 4)
-						//    DeviceDesc += "链路宽度：x4";
-						//else if (outData == 8)
-						//    DeviceDesc += "链路宽度：x8";
-						//else
-						//    DeviceDesc += "width judge error/s\r\n";                    
+					{ 
+					 	OpenDeviceText = "关闭设备";
+				 	   IsOpen = true;
+			           DeviceDesc = await _hcdzClient.InitDeviceInfo(index); 
 					}
 					else
 					{
@@ -312,8 +291,21 @@ namespace Hcdz.ModulePcie.ViewModels
 				}
 				else
 				{
-					OpenDeviceText = "连接设备";
-					IsOpen = false;
+					var flag=await _hcdzClient.DeviceClose(0);
+					if (flag)
+					{
+						OpenDeviceText = "连接设备";
+						IsOpen = false;
+					}
+					else
+					{
+						RadDesktopAlertManager desktop = new RadDesktopAlertManager(AlertScreenPosition.BottomCenter);
+
+						desktop.ShowAlert(new RadDesktopAlert()
+						{
+							Content = "设备断开失败!"
+						});
+					}
 				}
 			}
             else
@@ -362,8 +354,21 @@ namespace Hcdz.ModulePcie.ViewModels
 				}
 				else
 				{
-					OpenDeviceText1 = "连接设备";
-					IsSecOpen = false;
+					var flag = await _hcdzClient.DeviceClose(1);
+					if (flag)
+					{
+						OpenDeviceText1 = "连接设备";
+						IsSecOpen = false;
+					}
+					else
+					{
+						RadDesktopAlertManager desktop = new RadDesktopAlertManager(AlertScreenPosition.BottomCenter);
+
+						desktop.ShowAlert(new RadDesktopAlert()
+						{
+							Content = "设备2断开失败!"
+						});
+					}
 				}
 			} 
         }
