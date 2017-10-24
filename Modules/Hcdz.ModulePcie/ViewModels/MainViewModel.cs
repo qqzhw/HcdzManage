@@ -147,7 +147,8 @@ namespace Hcdz.ModulePcie.ViewModels
         private void OnReadDma(object obj)
         {
             var findItem = _deviceChannelModels.FirstOrDefault(O => O.IsOpen == true);
-            if(findItem==null)
+			var findItem2 = _deviceChannel2.FirstOrDefault(O => O.IsOpen == true);
+			if (findItem==null&& findItem2==null)
             {
                 MessageBox.Show("请打开相关通道！");
                 return;
@@ -312,35 +313,13 @@ namespace Hcdz.ModulePcie.ViewModels
             {
 				if (!IsSecOpen)
 				{
-					var result = await _hcdzClient.DeviceOpen(index);
+					var result = await _hcdzClient.DeviceOpen(1);
 					if (result)
 					{
 
 						OpenDeviceText1 = "关闭设备";
 						IsSecOpen = true;
-						DeviceDesc = await _hcdzClient.InitDeviceInfo(index);
-
-						//var device = pciDevList.Get(index);
-						//DWORD outData=0;
-						//device.ReadBAR0(0, 0x00, ref outData);
-						//if ((outData & 0x10) == 0x10)
-						//    DeviceDesc += "链路速率：2.5Gb/s\r\n";
-						//else if ((outData & 0x20) == 0x20)
-						//    DeviceDesc += "链路速率：5.0Gb/s\r\n";
-						//else
-						//    DeviceDesc += "speed judge error/s\r\n";
-
-						//outData = (outData & 0xF);
-						//if (outData == 1)
-						//    DeviceDesc += "链路宽度：x1";
-						//else if (outData == 2)
-						//    DeviceDesc += "链路宽度：x2";
-						//else if (outData == 4)
-						//    DeviceDesc += "链路宽度：x4";
-						//else if (outData == 8)
-						//    DeviceDesc += "链路宽度：x8";
-						//else
-						//    DeviceDesc += "width judge error/s\r\n";                    
+						DeviceDesc = await _hcdzClient.InitDeviceInfo(1);              
 					}
 					else
 					{

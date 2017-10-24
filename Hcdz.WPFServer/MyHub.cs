@@ -156,8 +156,9 @@ namespace Hcdz.WPFServer
             //PCIE_DeviceList.TheDeviceList().Add(new PCIE_Device(new WD_PCI_SLOT() { dwSlot=3}));
             //PCIE_DeviceList.TheDeviceList().Add(new PCIE_Device(new WD_PCI_SLOT() { dwSlot = 5 }));
             var pciDevList = PCIE_DeviceList.TheDeviceList();
-            //GlobalHost.DependencyResolver.Register(typeof(PCIE_DeviceList), () => pciDevList);
-            try
+			//GlobalHost.DependencyResolver.Register(typeof(PCIE_DeviceList), () => pciDevList);
+			
+			try
             {
                 if (DeviceStatus)
                     return 0;
@@ -166,7 +167,8 @@ namespace Hcdz.WPFServer
                 {
                     return dwStatus;
                 }
-                DeviceStatus = true;
+				LogHelper.WriteLog(string.Format("总发现{0}张设备卡", pciDevList.Count));
+				DeviceStatus = true;
                 return dwStatus;
 
             }
@@ -175,6 +177,7 @@ namespace Hcdz.WPFServer
 				LogHelper.ErrorLog(ex);
                 return 1000;
             }
+		
         }
 
         /* Open a handle to a device */
