@@ -66,7 +66,7 @@ namespace Hcdz.ModulePcie.ViewModels
 			_hcdzClient.MessageReceived += _hcdzClient_MessageReceived;
             _hcdzClient.Connected +=ClientConnected;
 			_hcdzClient.Connect();
-			LogHelper.WriteLog("错误码：");
+			 
 			LoadDeviceChannel();
         }
 
@@ -618,9 +618,9 @@ namespace Hcdz.ModulePcie.ViewModels
             _deviceChannelModels.Add(channel0);
             _deviceChannelModels.Add(channel1);
             _deviceChannelModels.Add(channel2);
-            _deviceChannel2.Add(channel3);
-            _deviceChannel2.Add(channel4);
-            _deviceChannel2.Add(channel5);
+			_deviceChannelModels.Add(channel3);
+			_deviceChannelModels.Add(channel4);
+			_deviceChannelModels.Add(channel5);
         }
          
         private void ReadDMA()
