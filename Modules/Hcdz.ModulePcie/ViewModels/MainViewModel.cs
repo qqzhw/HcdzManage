@@ -1,28 +1,20 @@
-﻿using Microsoft.Practices.ServiceLocation;
+﻿using Hcdz.PcieLib;
+using Microsoft.Practices.ServiceLocation;
 using Microsoft.Practices.Unity;
+using Prism.Commands;
 using Prism.Events;
 using Prism.Mvvm;
 using Prism.Regions;
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using System.IO;
-using Hcdz.PcieLib;
-
-using System.Collections.ObjectModel;
-using Telerik.Windows.Controls;
-using System.Windows.Threading;
-using System.Windows.Input;
-using Prism.Commands;
-using System.Windows;
-using Jungo.wdapi_dotnet;
-using System.Runtime.InteropServices;
 using Pvirtech.Framework.Common;
+using System;
+using System.Collections.ObjectModel;
+using System.IO;
+using System.Linq;
+using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Threading;
+using Telerik.Windows.Controls;
 
 namespace Hcdz.ModulePcie.ViewModels
 {
@@ -50,7 +42,7 @@ namespace Hcdz.ModulePcie.ViewModels
                 Interval = TimeSpan.FromSeconds(1)
             };
             dispatcherTimer.Tick += DispatcherTimer_Tick;
-            _openDeviceText =_openDeviceText1= "连接设备";
+            _openDeviceText =  "连接设备";
             OpenDevice = new DelegateCommand<object>(OnOpenDevice);
             ScanDeviceCmd=new DelegateCommand<object>(OnScanDevice);
             ReadDmaCmd =new DelegateCommand<object>(OnReadDma);
@@ -63,11 +55,11 @@ namespace Hcdz.ModulePcie.ViewModels
             _viewModel = new PcieViewModel();
            
            // Stream = new FileStream("D:\\test", FileMode.Append, FileAccess.Write);
-			_hcdzClient.MessageReceived += _hcdzClient_MessageReceived;
+			_hcdzClient.MessageReceived += OnMessageReceived;
             _hcdzClient.Connected +=ClientConnected;
 			_hcdzClient.Connect();
-			 
-			LoadDeviceChannel();
+            _hcdzClient.NotifyTotal += _hcdzClient_NotifyTotal;
+            LoadDeviceChannel();
         }
 
 		private async void LoadData()
@@ -88,14 +80,16 @@ namespace Hcdz.ModulePcie.ViewModels
             }
         }
 
-        private void _hcdzClient_MessageReceived(string obj)
+        private void OnMessageReceived(string message)
 		{
-			 
+            LogInfo += message;
 		}
 
 		private async void OnCloseReadDma(object obj)
-        { 
+        {
+              BtnIsEnabled = true;
              dispatcherTimer.Stop();
+            TextRate = "0.00MB/s";
               total = 0;
              await  _hcdzClient.CloseDma();
         }
@@ -146,14 +140,13 @@ namespace Hcdz.ModulePcie.ViewModels
 
         private void OnReadDma(object obj)
         {
-            var findItem = _deviceChannelModels.FirstOrDefault(O => O.IsOpen == true);
-			var findItem2 = _deviceChannel2.FirstOrDefault(O => O.IsOpen == true);
-			if (findItem==null&& findItem2==null)
+            BtnIsEnabled = false;
+            var findItem = _deviceChannelModels.FirstOrDefault(O => O.IsOpen == true); 
+			if (findItem==null)
             {
-                MessageBox.Show("请打开相关通道！");
+                MessageBox.Show("请打开设备通道！");
                 return;
-            }
-            _hcdzClient.NotifyTotal += _hcdzClient_NotifyTotal;
+            } 
             dispatcherTimer.Start();
             int dma = 16;
             var dmaSize = SelectedDMA.Content.ToString();
@@ -264,21 +257,16 @@ namespace Hcdz.ModulePcie.ViewModels
 
       
         private async void OnOpenDevice(object obj)
-        {
-			var param =  ((string)obj).Split(',');
-		      
-			int index = 0;
-            int.TryParse(param[0].ToString(), out index);
-            if (index==0)
-            {
-				if (!IsOpen)
+        { 
+			 if (!IsOpen)
 				{
-					var result = await _hcdzClient.DeviceOpen(index);
-					if (result)
-					{ 
+				  var result = await _hcdzClient.DeviceOpen(0); 
+                  if (result)
+					{
+                        BtnIsEnabled = true;
 					 	OpenDeviceText = "关闭设备";
 				 	   IsOpen = true;
-			           DeviceDesc = await _hcdzClient.InitDeviceInfo(index); 
+			           DeviceDesc = await _hcdzClient.InitDeviceInfo(0); 
 					}
 					else
 					{
@@ -308,48 +296,48 @@ namespace Hcdz.ModulePcie.ViewModels
 						});
 					}
 				}
-			}
-            else
-            {
-				if (!IsSecOpen)
-				{
-					var result = await _hcdzClient.DeviceOpen(1);
-					if (result)
-					{
+			 
+    //        else
+    //        {
+				//if (!IsSecOpen)
+				//{
+				//	var result = await _hcdzClient.DeviceOpen(1);
+				//	if (result)
+				//	{
 
-						OpenDeviceText1 = "关闭设备";
-						IsSecOpen = true;
-						DeviceDesc = await _hcdzClient.InitDeviceInfo(1);              
-					}
-					else
-					{
-						RadDesktopAlertManager desktop = new RadDesktopAlertManager(AlertScreenPosition.BottomCenter);
+				//		OpenDeviceText1 = "关闭设备";
+				//		IsSecOpen = true;
+				//		DeviceDesc = await _hcdzClient.InitDeviceInfo(1);              
+				//	}
+				//	else
+				//	{
+				//		RadDesktopAlertManager desktop = new RadDesktopAlertManager(AlertScreenPosition.BottomCenter);
 
-						desktop.ShowAlert(new RadDesktopAlert()
-						{
-							Content = "设备连接失败!"
-						});
-					}
-				}
-				else
-				{
-					var flag = await _hcdzClient.DeviceClose(1);
-					if (flag)
-					{
-						OpenDeviceText1 = "连接设备";
-						IsSecOpen = false;
-					}
-					else
-					{
-						RadDesktopAlertManager desktop = new RadDesktopAlertManager(AlertScreenPosition.BottomCenter);
+				//		desktop.ShowAlert(new RadDesktopAlert()
+				//		{
+				//			Content = "设备连接失败!"
+				//		});
+				//	}
+				//}
+				//else
+				//{
+				//	var flag = await _hcdzClient.DeviceClose(1);
+				//	if (flag)
+				//	{
+				//		OpenDeviceText1 = "连接设备";
+				//		IsSecOpen = false;
+				//	}
+				//	else
+				//	{
+				//		RadDesktopAlertManager desktop = new RadDesktopAlertManager(AlertScreenPosition.BottomCenter);
 
-						desktop.ShowAlert(new RadDesktopAlert()
-						{
-							Content = "设备2断开失败!"
-						});
-					}
-				}
-			} 
+				//		desktop.ShowAlert(new RadDesktopAlert()
+				//		{
+				//			Content = "设备2断开失败!"
+				//		});
+				//	}
+				//}
+			//} 
         }
 
         private void DispatcherTimer_Tick(object sender, EventArgs e)
@@ -379,21 +367,21 @@ namespace Hcdz.ModulePcie.ViewModels
         }
         private bool _isOpen;
         public bool IsOpen { get { return _isOpen; } set { SetProperty(ref _isOpen, value); } }
-		private bool _isSecOpen;
-		public bool IsSecOpen { get { return _isSecOpen; } set { SetProperty(ref _isSecOpen, value); } }
+		private bool  _btnIsEnabled=false;
+		public bool BtnIsEnabled { get { return _btnIsEnabled; } set { SetProperty(ref _btnIsEnabled, value); } }
 
 		private string _openDeviceText;
         public string OpenDeviceText { get { return _openDeviceText; }set { SetProperty(ref _openDeviceText,value); } }
-        private string _openDeviceText1;
-        public string OpenDeviceText1
+        private string _logInfo;
+        public string LogInfo
         {
             get
             {
-                return _openDeviceText1;
+                return _logInfo;
             }
             set
             {
-                SetProperty(ref _openDeviceText1, value);
+                SetProperty(ref _logInfo, value);
             }
         }
         /// <summary>
@@ -669,24 +657,6 @@ namespace Hcdz.ModulePcie.ViewModels
    //             }
 			//}
 		}
-
-        //private void WriteFile(BYTE[] result)
-        //{
-        //    var channelNo = Convert.ToInt32(result[8]);
-        //    var item = _deviceChannelModels.FirstOrDefault(o => o.Id == channelNo);
-        //    if (item == null)
-        //        return;
-        //    byte[] trueValue = new byte[16];
-        //    for (int i = 0; i < 8; i++)
-        //    {
-        //        trueValue[i] = result[i];
-        //    }
-        //    //using (var stream= new FileStream(item.FilePath, FileMode.Append, FileAccess.Write))
-        //    //{
-        //    //    stream.Write(trueValue, 0, 16);
-        //    //}
-        //   item.Stream.Write(trueValue, 0, 16);
-        //}
-     
+         
     }
 }

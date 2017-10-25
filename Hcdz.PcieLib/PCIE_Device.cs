@@ -769,6 +769,10 @@ namespace Hcdz.PcieLib
         }
         public bool WriteBAR0(DWORD index, UINT64 offset, DWORD indata)
         {
+            if (Handle==IntPtr.Zero)
+            {
+                return false;
+            }
             var result = wdc_lib_decl.WDC_WriteAddr32(Handle, 0, offset, indata);
             if (result != 0)
             {

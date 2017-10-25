@@ -18,7 +18,7 @@
 		<Grid.RowDefinitions>
 			<RowDefinition Height="Auto"/>
 			<RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
 		</Grid.RowDefinitions>
         <Border  Height="40"  >
             <Border.Background>
@@ -60,7 +60,7 @@
                     <ComboBoxItem Content="测速"/>                    
                 </ComboBox>
                 <Button   Margin="20,0,0,0" VerticalAlignment="Center" Width="80"  Content="自检" Style="{DynamicResource MetroFlatButton}"  Command="{Binding ScanDeviceCmd}" CommandParameter="{Binding}"/>
-                <Button   Margin="20,0,0,0" VerticalAlignment="Center" Width="80"  Content="启动DMA" Style="{DynamicResource MetroFlatButton}"  Command="{Binding ReadDmaCmd}"  CommandParameter="{Binding}"/>
+                <Button   Margin="20,0,0,0" VerticalAlignment="Center" Width="80"  Content="启动DMA" Style="{DynamicResource MetroFlatButton}"  Command="{Binding ReadDmaCmd}" IsEnabled="{Binding BtnIsEnabled}"  CommandParameter="{Binding}"/>
                 <Button   Margin="20,0,0,0" VerticalAlignment="Center" Width="80"  Content="关闭DMA" Style="{DynamicResource MetroFlatButton}"  Command="{Binding CloseDmaCmd}"  CommandParameter="{Binding}"/>
                 <!--<metro:MetroProgressBar  Margin="10,0,0,0" Width="400" Value="56" Foreground="#5DA0C7"    Background="#EDEDED" Height="32"/>-->
                 <StackPanel Orientation="Horizontal"  VerticalAlignment="Center" Margin="30,0,0,0">
@@ -69,11 +69,7 @@
                 </StackPanel>
             </StackPanel>
         </Border>
-        <Grid  Grid.Row="1" Margin="0,15,0,0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition/>
-                <ColumnDefinition/>
-            </Grid.ColumnDefinitions>
+        <Grid  Grid.Row="1" Margin="0,15,0,0">          
             <Border  Margin="10,5,10,0"     BorderThickness="1" BorderBrush="#BCE8F1"     CornerRadius="5">
                 <Grid  Margin="10" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
                     <Grid.RowDefinitions>
@@ -83,23 +79,23 @@
                     <Border Background="#D9EDF7">
                         <Grid>
                             <TextBlock Text="设备采集卡(10EE,7028)" FontSize="16" Foreground="#31708F" VerticalAlignment="Center" Margin="20,0,0,0"/>
-							<Button HorizontalAlignment="Right" Margin="0,0,8,0" VerticalAlignment="Center" Width="80"  Content="{Binding OpenDeviceText}" Style="{DynamicResource MetroFlatButton}"  Command="{Binding OpenDevice}"  CommandParameter="0,OpenDeviceText">
+							<Button HorizontalAlignment="Right" Margin="0,0,8,0" VerticalAlignment="Center" Width="80"  Content="{Binding OpenDeviceText}" Style="{DynamicResource MetroFlatButton}"  Command="{Binding OpenDevice}"  CommandParameter="0">
 								 
 							</Button>
                         </Grid>
                     </Border>
-                    <Border BorderThickness="1" BorderBrush="#D9EDF7" Grid.Row="1">                       
-                        <ItemsControl HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ItemsSource="{Binding DeviceChannelModels}">
+                    <Border BorderThickness="1"  BorderBrush="#D9EDF7" Grid.Row="1">                       
+                        <ItemsControl Margin="0,5,0,0"  ItemsSource="{Binding DeviceChannelModels}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <StackPanel Orientation="Horizontal">
+                                    <StackPanel Margin="5,0,0,0" Orientation="Horizontal">
                                         <Ellipse Width="16" Height="16"  Fill="{Binding IsOpen,Converter={StaticResource colorConvert}}" Margin="5,10,0,0"/>
-                                        <GroupBox MinWidth="530" FontSize="14"  Header="{Binding Name}"   HorizontalAlignment="Center"   Margin="10,5,0,10" VerticalAlignment="Center">
+                                        <GroupBox MinWidth="530" FontSize="16" HeaderTemplate="{StaticResource headerTemplate}"  Header="{Binding}"   HorizontalAlignment="Center"   Margin="10,5,0,10" VerticalAlignment="Center">
                                             <Border  BorderBrush="#D9EDF7" BorderThickness="1">
                                                 <StackPanel  VerticalAlignment="Center" Margin="0,10,15,10">
                                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" >
                                                         <Button HorizontalAlignment="Right" Margin="30,0,0,0" Width="60"  Content="打开" Style="{DynamicResource MetroFlatButton}"  Command="{Binding DataContext.OpenChannel ,RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}"
-                        IsEnabled="{Binding BtnIsEnabled}" CommandParameter="{Binding}"/>
+                                         CommandParameter="{Binding}"/>
 														<Button HorizontalAlignment="Right" Margin="20,0,0,0" Width="60"  Content="关闭" Style="{DynamicResource MetroFlatButtonDisable}"  Command="{Binding DataContext.CloseChannel ,RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}" CommandParameter="{Binding}" />
                                                     </StackPanel>
                                                     <!--<metro:MetroProgressBar  Margin="10,10,0,0" Value="56" Foreground="#5DA0C7"    Background="#EDEDED" Height="32"/>-->
@@ -114,6 +110,11 @@
                                     </StackPanel>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel  ItemWidth="590"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
                         </ItemsControl>
 
                     </Border>
@@ -163,7 +164,7 @@
             </Border>-->
 
         </Grid>
-        <Border Grid.Row="2" HorizontalAlignment="Left" CornerRadius="5" Margin="10,20,0,2" Width="620" BorderThickness="1" BorderBrush="#BCE8F1">
+        <Border Grid.Row="2" HorizontalAlignment="Left" CornerRadius="5" Margin="10,20,0,10" Width="620" BorderThickness="1" BorderBrush="#BCE8F1">
             <Grid Margin="10">
                 <Grid.RowDefinitions>
                     <RowDefinition />
@@ -188,8 +189,10 @@
         </Border>
         <Border Grid.Row="2" HorizontalAlignment="Right" MinWidth="550" CornerRadius="5" Margin="0,20,10,10"  BorderThickness="1" BorderBrush="#BCE8F1">
             <Grid Margin="10,5,10,0">
-                  <TextBox Grid.Row="1" Text="日志信息" BorderBrush="AliceBlue" BorderThickness="0"  HorizontalAlignment="Left" MinWidth="530" MinLines="7" Margin="0,5,0,0"/>
-             </Grid>
+                <ScrollViewer>
+                <TextBox Grid.Row="1" Text="{Binding LogInfo}" BorderBrush="AliceBlue" FontSize="13" BorderThickness="0"  HorizontalAlignment="Left" ScrollViewer.CanContentScroll="True" MinWidth="530" MinLines="8" Margin="0,5,0,0"/>
+                </ScrollViewer>
+            </Grid>
 
         </Border>
     </Grid>

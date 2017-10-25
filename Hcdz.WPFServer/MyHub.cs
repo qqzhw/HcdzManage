@@ -183,27 +183,39 @@ namespace Hcdz.WPFServer
         /* Open a handle to a device */
         public bool DeviceOpen(int iSelectedIndex)
         {
-			LogHelper.WriteLog(string.Format("连接第{0}张板卡",iSelectedIndex));
+			LogHelper.WriteLog(string.Format("连接第{0}张板卡",iSelectedIndex+1));
             DWORD dwStatus;
+            var devices = PCIE_DeviceList.TheDeviceList();
             PCIE_Device device = PCIE_DeviceList.TheDeviceList().Get(iSelectedIndex);
             if (device == null)
                 return false;
 			/* Open a handle to the device */
 			try
 			{
-				dwStatus = device.Open();
-				if (dwStatus != (DWORD)wdc_err.WD_STATUS_SUCCESS)
-				{
-					Log.ErrLog("NEWAMD86_diag.DeviceOpen: Failed opening a " +
-						"handle to the device (" + device.ToString(false) + ")");
-					return false;
-				}
-				return true;
+                for (int i = 0; i < devices.Count; i++)
+                {
+                    var dev = devices.Get(i);
+                    if (dev!=null)
+                    {
+                        dwStatus = dev.Open();
+                        if (dwStatus != (DWORD)wdc_err.WD_STATUS_SUCCESS)
+                        {
+                            string str = "打开设备: 连接设备失败 (" + dev.ToString(false) + ")";
+                            Clients.Client(Context.ConnectionId).NoticeMessage(str);
+                            LogHelper.WriteLog(str);
+                            return false;
+                        }
+                    }
+                   
+                }
+                Clients.Client(Context.ConnectionId).NoticeMessage("已成功连接设备!\n");
+                return true;
 			}
 			catch (Exception ex)
 			{
 				LogHelper.ErrorLog(ex, "DeviceOpen");
-				return false;
+                Clients.Client(Context.ConnectionId).NoticeMessage(ex.Message + " open\n");
+                return false;
 			}
           
         }
@@ -211,34 +223,56 @@ namespace Hcdz.WPFServer
         /* Close handle to a NEWAMD86 device */
         public bool DeviceClose(int iSelectedIndex)
         {
-			LogHelper.WriteLog(string.Format("断开第{0}张板卡", iSelectedIndex));
-			PCIE_Device device = PCIE_DeviceList.TheDeviceList().Get(iSelectedIndex);
+            //pBoard->pci_e.WriteBAR0(0, 0x10, regval);
+            LogHelper.WriteLog(string.Format("断开第{0}张板卡", iSelectedIndex+1));
+            var devices = PCIE_DeviceList.TheDeviceList();
+            PCIE_Device device = PCIE_DeviceList.TheDeviceList().Get(iSelectedIndex);
             bool bStatus = false;
-			try
-			{
-				if (device.Handle != IntPtr.Zero && !(bStatus = device.Close()))
-				{
-					Log.ErrLog("DeviceClose: Failed closing "
-						+ "device (" + device.ToString(false) + ")");
-				}
-				else
-					device.Handle = IntPtr.Zero;
-				return bStatus;
-
-			}
-			catch (Exception ex)
-			{
-				LogHelper.ErrorLog(ex, "DeviceClose");
-
-			}
+            try
+            {
+                Clients.Client(Context.ConnectionId).NoticeMessage("正在停止数据读取...\n");
+                CloseDma();
+                Clients.Client(Context.ConnectionId).NoticeMessage("已停止数据读取!\n");
+                for (int i = 0; i < devices.Count; i++)
+                {
+                    var dev = devices.Get(i);
+                    if (dev != null)
+                    {
+                        if (dev.Handle != IntPtr.Zero && !(bStatus = dev.Close()))
+                        {
+                            string str = "断开设备: 关闭设备失败 (" + dev.ToString(false) + ")";
+                            Clients.Client(Context.ConnectionId).NoticeMessage(str);
+                            LogHelper.WriteLog(str);
+                        }
+                        else
+                            dev.Handle = IntPtr.Zero;
+                    }
+                    if (bStatus)
+                    {
+                        Clients.Client(Context.ConnectionId).NoticeMessage(string.Format("已成功断开设备{0}!\n",i+1));
+                    }
+                    return bStatus;
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.ErrorLog(ex, "DeviceClose");
+                Clients.Client(Context.ConnectionId).NoticeMessage(ex.Message+"close \n");
+            }
 			return false;
         }
 
         public string InitDeviceInfo(int index)
         {
+            Clients.Client(Context.ConnectionId).NoticeMessage("获取链路信息..." + "\n");
+            DeviceChannelList.Clear();
             string desc = string.Empty;
             var device = PCIE_DeviceList.TheDeviceList().Get(index);
-            DeviceChannelList.Add(device, AddChannel(index));
+            for (int i = 0; i < PCIE_DeviceList.TheDeviceList().Count; i++)
+            {
+                var item = PCIE_DeviceList.TheDeviceList().Get(i);
+                DeviceChannelList.Add(item, AddChannel(i));
+            }         
             DWORD outData = 0;
             device.ReadBAR0(0, 0x00, ref outData);
             if ((outData & 0x10) == 0x10)
@@ -394,13 +428,16 @@ namespace Hcdz.WPFServer
             PCIE_Device dev = PCIE_DeviceList.TheDeviceList().Get(deviceIndex);
             if (dev == null)
             {
-                return "连接设备异常,请重试";
+                Clients.Client(Context.ConnectionId).NoticeMessage("设备读取发生异常 null" + "\n");
+                return "设备读取异常,请重试";
             }
             if (dev.Status == 1)
                 return "正在读取数据...";
+            Clients.Client(Context.ConnectionId).NoticeMessage(string.Format("正在读取设备{0}数据...\n",deviceIndex+1 ));
             dev.FPGAReset(0);
             if (dev.WDC_DMAContigBufLock() != 0)
             {
+                Clients.Client(Context.ConnectionId).NoticeMessage("锁定内存空间失败..." + "\n");
                 //MessageBox.Show(("分配报告内存失败"));
                 return "锁定内存空间失败";
             }
@@ -408,6 +445,7 @@ namespace Hcdz.WPFServer
             if (!dev.DMAWriteMenAlloc((uint)0, (uint)1, (UInt32)dataSize * 1024))
             {
                 //MessageBox.Show("内存分配失败!");
+                Clients.Client(Context.ConnectionId).NoticeMessage("内存分配失败..." + "\n");
                 return "内存分配失败";
             }
             var dt = DateTime.Now.ToString("yyyyMMddHHmmss");
@@ -434,8 +472,18 @@ namespace Hcdz.WPFServer
             //readThread.IsBackground = true;
             //readThread.Start();
 
-            Thread nonParameterThread = new Thread(new ParameterizedThreadStart(p => NonParameterRun(dev, dvireName, dataSize, deviceIndex)));
-            nonParameterThread.Start();
+            //Thread nonParameterThread = new Thread(new ParameterizedThreadStart(p => NonParameterRun(dev, dvireName, dataSize, deviceIndex)));
+            //nonParameterThread.Start();
+            Task.Factory.StartNew(new Action(()=>NonParameterRun(dev, dvireName, dataSize, deviceIndex))).ContinueWith(t=> {
+                foreach (var item in list)
+                {
+                    if (item.Stream == null)
+                        continue;
+                    item.Stream.Flush();
+                    item.Stream.Close();
+                    item.Stream.Dispose();
+                }
+            });
             return string.Empty;
         }
 
