@@ -184,7 +184,7 @@ namespace Hcdz.WPFServer
         public bool DeviceOpen(int iSelectedIndex)
         {
 			LogHelper.WriteLog(string.Format("连接第{0}张板卡",iSelectedIndex+1));
-            DWORD dwStatus;
+            DWORD dwStatus=0;
             var devices = PCIE_DeviceList.TheDeviceList();
             PCIE_Device device = PCIE_DeviceList.TheDeviceList().Get(iSelectedIndex);
             if (device == null)
@@ -200,16 +200,18 @@ namespace Hcdz.WPFServer
                         dwStatus = dev.Open();
                         if (dwStatus != (DWORD)wdc_err.WD_STATUS_SUCCESS)
                         {
-                            string str = "打开设备: 连接设备失败 (" + dev.ToString(false) + ")";
+                            string str = "打开设备: 连接设备失败 (" + dev.ToString(false) + ")\n";
                             Clients.Client(Context.ConnectionId).NoticeMessage(str);
-                            LogHelper.WriteLog(str);
-                            return false;
+                            LogHelper.WriteLog(str); 
                         }
-                    }
-                   
+                    } 
                 }
                 Clients.Client(Context.ConnectionId).NoticeMessage("已成功连接设备!\n");
-                return true;
+				if (dwStatus>0)
+				{
+					return false;
+				}
+				return true;
 			}
 			catch (Exception ex)
 			{
@@ -250,9 +252,9 @@ namespace Hcdz.WPFServer
                     if (bStatus)
                     {
                         Clients.Client(Context.ConnectionId).NoticeMessage(string.Format("已成功断开设备{0}!\n",i+1));
-                    }
-                    return bStatus;
+                    } 
                 }
+				return bStatus;
             }
             catch (Exception ex)
             {
