@@ -10,6 +10,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -56,13 +57,26 @@ namespace Hcdz.ModulePcie.ViewModels
            
            // Stream = new FileStream("D:\\test", FileMode.Append, FileAccess.Write);
 			_hcdzClient.MessageReceived += OnMessageReceived;
-            _hcdzClient.Connected +=ClientConnected;
+            _hcdzClient.Connected +=ClientConnected; 
 			_hcdzClient.Connect();
             _hcdzClient.NotifyTotal += _hcdzClient_NotifyTotal;
             LoadDeviceChannel();
         }
 
-		private async void LoadData()
+        private void Connection_Closed()
+        {
+            DeviceDesc = string.Empty;
+            BtnIsEnabled = true;
+            dispatcherTimer.Stop();
+            TextRate = "0.00MB/s";
+            total = 0;
+            OpenDeviceText = "连接设备";
+            IsOpen = false;
+        }
+
+       
+
+        private async void LoadData()
 		{
 			DriveInfo[] drives =await _hcdzClient.GetDrives();
 			DriveInfoItems = new ObservableCollection<DriveInfo>(drives);
@@ -77,6 +91,7 @@ namespace Hcdz.ModulePcie.ViewModels
 				LoadData();//加载基本信息
 				OnLoadSelectDir(_selectedDsik); 
 				Initializer();
+                _hcdzClient.Connection.Closed += Connection_Closed;
             }
         }
 
@@ -138,22 +153,37 @@ namespace Hcdz.ModulePcie.ViewModels
 			}
         }
 
-        private void OnReadDma(object obj)
+        private async void OnReadDma(object obj)
         {
             BtnIsEnabled = false;
             var findItem = _deviceChannelModels.FirstOrDefault(O => O.IsOpen == true); 
 			if (findItem==null)
             {
                 MessageBox.Show("请打开设备通道！");
+                BtnIsEnabled = true;
                 return;
-            } 
+            }
+            if (string.IsNullOrEmpty(SelectedDsik))
+            {
+                MessageBox.Show("请选择存储盘符！");
+                BtnIsEnabled = true;
+                return;
+            }
             dispatcherTimer.Start();
             int dma = 16;
             var dmaSize = SelectedDMA.Content.ToString();
             int.TryParse(dmaSize.TrimEnd('K'), out dma);
-          
-            _hcdzClient.OnReadDma(SelectedDsik, dma, 0);
-            _hcdzClient.OnReadDma(SelectedDsik, dma, 1);
+           
+           var  result=await _hcdzClient.OnReadDma(SelectedDsik, dma, 0); 
+            Thread.Sleep(1);
+           var result2=await  _hcdzClient.OnReadDma(SelectedDsik, dma, 1);
+            if (result2.Contains("内存")|| result.Contains("内存"))
+            {
+                MessageBox.Show("分配内存失败,请重新连接设备!");
+                total = 0;
+                OpenDeviceText = "连接设备";
+                IsOpen = false; 
+            }
             //PCIE_Device dev =pciDevList.Get(0);
             //dev.FPGAReset(0);
             //if (dev.WDC_DMAContigBufLock() != 0)
@@ -257,87 +287,90 @@ namespace Hcdz.ModulePcie.ViewModels
 
       
         private async void OnOpenDevice(object obj)
-        { 
-			 if (!IsOpen)
-				{
-				  var result = await _hcdzClient.DeviceOpen(0); 
-                  if (result)
-					{
-                        BtnIsEnabled = true;
-					 	OpenDeviceText = "关闭设备";
-				 	   IsOpen = true;
-			           DeviceDesc = await _hcdzClient.InitDeviceInfo(0); 
-					}
-					else
-					{
-						RadDesktopAlertManager desktop = new RadDesktopAlertManager(AlertScreenPosition.BottomCenter);
+        {
+            if (!IsOpen)
+            {
+                var result = await _hcdzClient.DeviceOpen(0);
+                if (result)
+                {
+                    BtnIsEnabled = true;
+                    OpenDeviceText = "关闭设备";
+                    IsOpen = true;
+                    DeviceDesc = await _hcdzClient.InitDeviceInfo(0);
+                }
+                else
+                {
+                    RadDesktopAlertManager desktop = new RadDesktopAlertManager(AlertScreenPosition.BottomCenter);
 
-						desktop.ShowAlert(new RadDesktopAlert()
-						{
-							Content = "设备连接失败!"
-						});
-					}
-				}
-				else
-				{
-					var flag=await _hcdzClient.DeviceClose(0);
-					if (flag)
-					{
-						OpenDeviceText = "连接设备";
-						IsOpen = false;
-					}
-					else
-					{
-						RadDesktopAlertManager desktop = new RadDesktopAlertManager(AlertScreenPosition.BottomCenter);
+                    desktop.ShowAlert(new RadDesktopAlert()
+                    {
+                        Content = "设备连接失败!"
+                    });
+                }
+            }
+            else
+            {
+                var flag = await _hcdzClient.DeviceClose(0);
+                if (flag)
+                {
+                    OpenDeviceText = "连接设备";
+                    IsOpen = false;
+                    DeviceDesc = string.Empty;
+                }
+                else
+                {
+                    RadDesktopAlertManager desktop = new RadDesktopAlertManager(AlertScreenPosition.BottomCenter);
 
-						desktop.ShowAlert(new RadDesktopAlert()
-						{
-							Content = "设备断开失败!"
-						});
-					}
-				}
-			 
-    //        else
-    //        {
-				//if (!IsSecOpen)
-				//{
-				//	var result = await _hcdzClient.DeviceOpen(1);
-				//	if (result)
-				//	{
+                    desktop.ShowAlert(new RadDesktopAlert()
+                    {
+                        Content = "设备断开失败!"
+                    });
+                }
+                CloseDMAChannel();
 
-				//		OpenDeviceText1 = "关闭设备";
-				//		IsSecOpen = true;
-				//		DeviceDesc = await _hcdzClient.InitDeviceInfo(1);              
-				//	}
-				//	else
-				//	{
-				//		RadDesktopAlertManager desktop = new RadDesktopAlertManager(AlertScreenPosition.BottomCenter);
+            }
 
-				//		desktop.ShowAlert(new RadDesktopAlert()
-				//		{
-				//			Content = "设备连接失败!"
-				//		});
-				//	}
-				//}
-				//else
-				//{
-				//	var flag = await _hcdzClient.DeviceClose(1);
-				//	if (flag)
-				//	{
-				//		OpenDeviceText1 = "连接设备";
-				//		IsSecOpen = false;
-				//	}
-				//	else
-				//	{
-				//		RadDesktopAlertManager desktop = new RadDesktopAlertManager(AlertScreenPosition.BottomCenter);
+            //        else
+            //        {
+            //if (!IsSecOpen)
+            //{
+            //	var result = await _hcdzClient.DeviceOpen(1);
+            //	if (result)
+            //	{
 
-				//		desktop.ShowAlert(new RadDesktopAlert()
-				//		{
-				//			Content = "设备2断开失败!"
-				//		});
-				//	}
-				//}
-			//} 
+            //		OpenDeviceText1 = "关闭设备";
+            //		IsSecOpen = true;
+            //		DeviceDesc = await _hcdzClient.InitDeviceInfo(1);              
+            //	}
+            //	else
+            //	{
+            //		RadDesktopAlertManager desktop = new RadDesktopAlertManager(AlertScreenPosition.BottomCenter);
+
+            //		desktop.ShowAlert(new RadDesktopAlert()
+            //		{
+            //			Content = "设备连接失败!"
+            //		});
+            //	}
+            //}
+            //else
+            //{
+            //	var flag = await _hcdzClient.DeviceClose(1);
+            //	if (flag)
+            //	{
+            //		OpenDeviceText1 = "连接设备";
+            //		IsSecOpen = false;
+            //	}
+            //	else
+            //	{
+            //		RadDesktopAlertManager desktop = new RadDesktopAlertManager(AlertScreenPosition.BottomCenter);
+
+            //		desktop.ShowAlert(new RadDesktopAlert()
+            //		{
+            //			Content = "设备2断开失败!"
+            //		});
+            //	}
+            //}
+            //} 
         }
 
         private void DispatcherTimer_Tick(object sender, EventArgs e)
@@ -658,5 +691,12 @@ namespace Hcdz.ModulePcie.ViewModels
 			//}
 		}
          
+        private void CloseDMAChannel()
+        {
+            foreach (var item in DeviceChannelModels)
+            {
+                item.IsOpen = false;
+            }  
+        }
     }
 }

@@ -10,6 +10,10 @@ namespace Hcdz.WPFServer.Models
 {
     public class DeviceChannelModel: BindableBase
     {
+        public DeviceChannelModel()
+        {
+           // FileByte = new List<byte>();
+        }
         public int Id { get; set; }
         public int DeviceNo { get; set; }
         public string VendorId { get; set; }
@@ -29,7 +33,7 @@ namespace Hcdz.WPFServer.Models
             set { SetProperty(ref _filePath, value); }
         }
         public FileStream Stream { get; set; }
-        public byte[] FileByte { get; set; }
+        public List<byte> FileByte { get; set; }
         public StringBuilder ByteString { get; set; }
         private string _error;
         public string Error

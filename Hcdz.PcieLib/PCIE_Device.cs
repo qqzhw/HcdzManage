@@ -669,14 +669,14 @@ namespace Hcdz.PcieLib
         public DWORD WDC_DMAContigBufLock()
         {
 
-            DWORD dwstatus = wdc_lib_decl.WDC_DMAContigBufLock(Handle, ref pReportWrBuffer, (uint)WD_DMA_OPTIONS.DMA_READ_FROM_DEVICE, 0x100, ref pReportWrDMA);
+            DWORD dwstatus = wdc_lib_decl.WDC_DMAContigBufLock(Handle, ref pReportWrBuffer, (uint)WD_DMA_OPTIONS.DMA_READ_FROM_DEVICE, 0x200, ref pReportWrDMA);
 
             return dwstatus;
         }
         public DWORD WDCScan_DMAContigBufLock()
         {
 
-            DWORD dwstatus = wdc_lib_decl.WDC_DMAContigBufLock(Handle, ref pScanReportWrBuffer, (uint)WD_DMA_OPTIONS.DMA_READ_FROM_DEVICE, 0x100, ref pScanReportWrDMA);
+            DWORD dwstatus = wdc_lib_decl.WDC_DMAContigBufLock(Handle, ref pScanReportWrBuffer, (uint)WD_DMA_OPTIONS.DMA_READ_FROM_DEVICE, 0x200, ref pScanReportWrDMA);
 
             return dwstatus;
         }
@@ -784,7 +784,7 @@ namespace Hcdz.PcieLib
         }
         private void PC1220X64_IntHandler(PCIE_Device device)
         {
-            throw new NotImplementedException();
+           
         }
     }
 

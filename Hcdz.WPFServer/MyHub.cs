@@ -55,7 +55,7 @@ namespace Hcdz.WPFServer
             //Use Application.Current.Dispatcher to access UI thread from outside the MainWindow class
             Application.Current.Dispatcher.Invoke(() =>
                 ((MainWindow)Application.Current.MainWindow).WriteToConsole("Client disconnected: " + Context.ConnectionId));
-
+            DeviceClose(0);
             return base.OnDisconnected(stopCalled);
         }
 
@@ -241,13 +241,20 @@ namespace Hcdz.WPFServer
                     if (dev != null)
                     {
                         if (dev.Handle != IntPtr.Zero && !(bStatus = dev.Close()))
-                        {
+                        { 
                             string str = "断开设备: 关闭设备失败 (" + dev.ToString(false) + ")";
                             Clients.Client(Context.ConnectionId).NoticeMessage(str);
                             LogHelper.WriteLog(str);
                         }
                         else
+                        {
                             dev.Handle = IntPtr.Zero;
+                            dev.ppwDma = IntPtr.Zero;
+                            dev.pReportWrBuffer = IntPtr.Zero;
+                            dev.pReportWrDMA = IntPtr.Zero;
+                            dev.pWbuffer = IntPtr.Zero; 
+                            bStatus = true;
+                        }
                     }
                     if (bStatus)
                     {
@@ -441,6 +448,7 @@ namespace Hcdz.WPFServer
             {
                 Clients.Client(Context.ConnectionId).NoticeMessage("锁定内存空间失败..." + "\n");
                 //MessageBox.Show(("分配报告内存失败"));
+                DeviceClose(0);
                 return "锁定内存空间失败";
             }
             //DWORD wrDMASize = dataSize; //16kb
@@ -448,6 +456,7 @@ namespace Hcdz.WPFServer
             {
                 //MessageBox.Show("内存分配失败!");
                 Clients.Client(Context.ConnectionId).NoticeMessage("内存分配失败..." + "\n");
+                DeviceClose(0);
                 return "内存分配失败";
             }
             var dt = DateTime.Now.ToString("yyyyMMddHHmmss");
@@ -512,6 +521,7 @@ namespace Hcdz.WPFServer
 
         private void NonParameterRun(PCIE_Device dev,string dvireName,int dataSize,int deviceIndex)
         {
+            int wrDMASize = dataSize * 1024; //16kb
             dev.WriteBAR0(0, 0x60, 1);		//中断屏蔽
             dev.WriteBAR0(0, 0x50, 1);		//dma 写报告使能
 
@@ -522,7 +532,7 @@ namespace Hcdz.WPFServer
             //设置初始DMA写地址,长度等
             dev.WriteBAR0(0, 0x4, (uint)ppwDma.Page[0].pPhysicalAddr);		//wr_addr low
             dev.WriteBAR0(0, 0x8, (uint)(ppwDma.Page[0].pPhysicalAddr >> 32));	//wr_addr high
-            dev.WriteBAR0(0, 0xC, (UInt32)dataSize * 1024);           //dma wr size
+            dev.WriteBAR0(0, 0xC, (UInt32)wrDMASize);           //dma wr size
 
             //dev.WriteBAR0(0, 56, 1);
            // dev.WriteBAR0(0, 48, 1);
@@ -541,33 +551,28 @@ namespace Hcdz.WPFServer
             while (!IsStop)
             {
 
-                byte[] tmpResult = new Byte[dataSize * 1024];
-                Marshal.Copy(dev.pWbuffer, tmpResult, 0, tmpResult.Length);
-               // concurrentQueue.Enqueue(tmpResult);
+                 byte[] tmpResult = new Byte[wrDMASize];
+                   Marshal.Copy(dev.pWbuffer, tmpResult, 0, wrDMASize);
+                // concurrentQueue.Enqueue(tmpResult);
+               // dev.WriteFile(fs.Handle,ref dev.pWbuffer, (uint)dataSize * 1024, out dd, 0);
                 // Stream.Write(tmpResult, 0, tmpResult.Length);
-                var bytes = tmpResult.Length / dataSize;
+                var bytes = tmpResult.Length /16;
                 for (int i = 0; i < bytes; i++)
                 {
-                    var index = i * dataSize;
+                    var index = i * 16;
                     byte[] result = new byte[16];
                     for (int j = 0; j < 16; j++)
                     {
                         result[j] = tmpResult[index + j];
                     }
-                    var barValue = result[15];
-                    if (barValue == 1)
+                    if (result[15] == 1)
                     {
-                          WriteFile(result, list);
-                        //concurrentQueue.Enqueue(result);
+                        WriteFile(result, list);
                     }
                 }
-
-                //foreach (var item in DeviceChannelModels)
-                //{
-                //    dev.WriteBAR0(0, item.RegAddress, item.IsOpen == true ? (UInt32)1 : 0);
-                //}
-                ReadTotalSize = dataSize * 1024;
-                Clients.Client(Context.ConnectionId).NotifyTotal(ReadTotalSize);
+              
+               // ReadTotalSize = wrDMASize;
+                Clients.Client(Context.ConnectionId).NotifyTotal(wrDMASize);
                 dev.WriteBAR0(0, 0x10, 1);//执行下次读取 
             }
             dev.WriteBAR0(0, 0x10, 0);
@@ -575,19 +580,21 @@ namespace Hcdz.WPFServer
         private void WriteFile(byte[] result,List<DeviceChannelModel> channelModels)
         {
             var channelNo = result[8];
-            var item = channelModels.FirstOrDefault(o => o.Id == channelNo);
+            var item = channelModels.Find(o => o.Id == channelNo);
             if (item == null)
-                return;
-            //byte[] trueValue = new byte[16];
-            //for (int i = 0; i < 8; i++)
-            //{
-            //    trueValue[i] = result[i];
-            //}    
-            result[8] = 0;
+             return;
+                byte[] trueValue = new byte[8];
+            for (int i = 0; i < 8; i++)
+            {
+                trueValue[i] = result[i];
+            }
+
+           // result[8] = 0;
            // result[15] = 0;
-			var bt = result.Take(8).ToArray();
-            item.Stream.Write(bt, 0, 8);
-            //item.Stream.Flush();            
+			//var bt = result.Take(8).ToArray();
+         //   item.FileByte.AddRange(bt);
+           item.Stream?.Write(trueValue, 0, 8);
+          //  item.Stream.Flush();            
         }
         /// <summary>
         /// Copies the contents of input to output. Doesn't close either stream.

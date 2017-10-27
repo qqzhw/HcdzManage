@@ -46,10 +46,11 @@ namespace Hcdz.WPFServer
 
         private void Initializer()
         {
-           //var pciDevList = PCIE_DeviceList.TheDeviceList();
-           //GlobalHost.DependencyResolver.Register(typeof(PCIE_DeviceList),() =>pciDevList);
-		 
-		 	GlobalHost.DependencyResolver.Register(typeof(MyHub), () => new MyHub());		 
+            //var pciDevList = PCIE_DeviceList.TheDeviceList();
+            //GlobalHost.DependencyResolver.Register(typeof(PCIE_DeviceList),() =>pciDevList);
+            GlobalHost.Configuration.DisconnectTimeout = TimeSpan.FromSeconds(6);
+
+             GlobalHost.DependencyResolver.Register(typeof(MyHub), () => new MyHub());		 
 
 		}
 

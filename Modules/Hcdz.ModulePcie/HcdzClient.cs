@@ -419,7 +419,7 @@ namespace Hcdz.ModulePcie
             {
                return  await _chat.Invoke<string>("OnReadDma", driveName, dataSize,deviceIndex);
             }
-            return "位置错误";
+            return "内存错误";
         }
          
         public async Task OpenOrCloseChannel(DeviceChannelModel model)
