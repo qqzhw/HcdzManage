@@ -31,7 +31,7 @@ namespace Hcdz.WPFServer
         private static bool IsStop = false;
         private static ConcurrentQueue<byte[]> concurrentQueue = new ConcurrentQueue<byte[]>();
         static long ReadTotalSize = 0;
-        private static FileStream DeviceFile;
+        //private static FileStream DeviceFile;
         public MyHub()
         {
            
@@ -479,13 +479,13 @@ namespace Hcdz.WPFServer
             //    }
 
             //}
-            var dir = Path.Combine(dvireName, "device");
+            var dir = Path.Combine(dvireName, "device"+deviceIndex.ToString());
             if (!Directory.Exists(dir))
             {
                 Directory.CreateDirectory(dir);
             }
             var filePath = Path.Combine(dir, dt);
-            DeviceFile = new FileStream(filePath, FileMode.Append, FileAccess.Write);
+            dev.DeviceFile = new FileStream(filePath, FileMode.Append, FileAccess.Write);
             dev.StartWrDMA(0);
             
             //Thread readThread = new Thread(new ParameterizedThreadStart(p => OnWriteDMA(dev)));
@@ -503,9 +503,9 @@ namespace Hcdz.WPFServer
                 //    item.Stream.Close();
                 //    item.Stream.Dispose();
                 //}
-                DeviceFile.Flush();
-                DeviceFile.Close();
-                DeviceFile.Dispose();
+                dev.DeviceFile.Flush();
+                dev.DeviceFile.Close();
+                dev.DeviceFile.Dispose();
             });
             return string.Empty;
         }
@@ -569,7 +569,7 @@ namespace Hcdz.WPFServer
                 //DeviceFile.Flush();
                 // concurrentQueue.Enqueue(tmpResult);
                 DWORD lpNumberOfBytesWritten = 0;
-                PCIE_Device.WriteFile(DeviceFile.SafeFileHandle.DangerousGetHandle(),ref dev.pWbuffer, (uint)dataSize * 1024, out lpNumberOfBytesWritten, 0);
+                PCIE_Device.WriteFile(dev.DeviceFile.SafeFileHandle.DangerousGetHandle(),ref dev.pWbuffer, (uint)dataSize * 1024, out lpNumberOfBytesWritten, 0);
                 // Stream.Write(tmpResult, 0, tmpResult.Length);
                 //var bytes = tmpResult.Length /16;
                 //for (int i = 0; i < bytes; i++)
