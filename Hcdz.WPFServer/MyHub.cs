@@ -31,9 +31,10 @@ namespace Hcdz.WPFServer
         private static bool IsStop = false;
         private static ConcurrentQueue<byte[]> concurrentQueue = new ConcurrentQueue<byte[]>();
         static long ReadTotalSize = 0;
-        //private static FileStream   Stream = new FileStream("D:\\test", FileMode.Append, FileAccess.Write);
+        private static FileStream DeviceFile;
         public MyHub()
         {
+           
         }
         public void Send(string name, string message)
         {
@@ -434,6 +435,7 @@ namespace Hcdz.WPFServer
 
         public string OnReadDma(string dvireName, int dataSize, int deviceIndex)
         {
+            ReadTotalSize = 0;
             PCIE_Device dev = PCIE_DeviceList.TheDeviceList().Get(deviceIndex);
             if (dev == null)
             {
@@ -459,24 +461,31 @@ namespace Hcdz.WPFServer
                 DeviceClose(0);
                 return "内存分配失败";
             }
-            var dt = DateTime.Now.ToString("yyyyMMddHHmmss");
-            var list = DeviceChannelList[dev];
-            foreach (var item in list)
-            {
-                var dir = Path.Combine(dvireName, item.DiskPath);
-                if (!Directory.Exists(dir))
-                {
-                    Directory.CreateDirectory(dir);
-                }
-                var filePath = Path.Combine(dir, dt);
-                //File.Create(filePath);
-                item.FilePath = filePath;
-                if (item.IsOpen)
-                {
-                    item.Stream = new FileStream(filePath, FileMode.Append, FileAccess.Write);
-                }
+            string dt = DateTime.Now.ToString("yyyyMMddHHmmss");
+            // var list = DeviceChannelList[dev];
+            //foreach (var item in list)
+            //{
+            //    var dir = Path.Combine(dvireName, item.DiskPath);
+            //    if (!Directory.Exists(dir))
+            //    {
+            //        Directory.CreateDirectory(dir);
+            //    }
+            //    var filePath = Path.Combine(dir, dt);
+            //    //File.Create(filePath);
+            //    item.FilePath = filePath;
+            //    if (item.IsOpen)
+            //    {
+            //        item.Stream = new FileStream(filePath, FileMode.Append, FileAccess.Write);
+            //    }
 
+            //}
+            var dir = Path.Combine(dvireName, "device");
+            if (!Directory.Exists(dir))
+            {
+                Directory.CreateDirectory(dir);
             }
+            var filePath = Path.Combine(dir, dt);
+            DeviceFile = new FileStream(filePath, FileMode.Append, FileAccess.Write);
             dev.StartWrDMA(0);
             
             //Thread readThread = new Thread(new ParameterizedThreadStart(p => OnWriteDMA(dev)));
@@ -486,14 +495,17 @@ namespace Hcdz.WPFServer
             //Thread nonParameterThread = new Thread(new ParameterizedThreadStart(p => NonParameterRun(dev, dvireName, dataSize, deviceIndex)));
             //nonParameterThread.Start();
             Task.Factory.StartNew(new Action(()=>NonParameterRun(dev, dvireName, dataSize, deviceIndex))).ContinueWith(t=> {
-                foreach (var item in list)
-                {
-                    if (item.Stream == null)
-                        continue;
-                    item.Stream.Flush();
-                    item.Stream.Close();
-                    item.Stream.Dispose();
-                }
+                //foreach (var item in list)
+                //{
+                //    if (item.Stream == null)
+                //        continue;
+                //    item.Stream.Flush();
+                //    item.Stream.Close();
+                //    item.Stream.Dispose();
+                //}
+                DeviceFile.Flush();
+                DeviceFile.Close();
+                DeviceFile.Dispose();
             });
             return string.Empty;
         }
@@ -551,28 +563,31 @@ namespace Hcdz.WPFServer
             while (!IsStop)
             {
 
-                 byte[] tmpResult = new Byte[wrDMASize];
-                   Marshal.Copy(dev.pWbuffer, tmpResult, 0, wrDMASize);
+                // byte[] tmpResult = new Byte[wrDMASize];
+                //   Marshal.Copy(dev.pWbuffer, tmpResult, 0, wrDMASize);
+                //DeviceFile.Write(tmpResult, 0, wrDMASize);
+                //DeviceFile.Flush();
                 // concurrentQueue.Enqueue(tmpResult);
-               // dev.WriteFile(fs.Handle,ref dev.pWbuffer, (uint)dataSize * 1024, out dd, 0);
+                DWORD lpNumberOfBytesWritten = 0;
+                PCIE_Device.WriteFile(DeviceFile.SafeFileHandle.DangerousGetHandle(),ref dev.pWbuffer, (uint)dataSize * 1024, out lpNumberOfBytesWritten, 0);
                 // Stream.Write(tmpResult, 0, tmpResult.Length);
-                var bytes = tmpResult.Length /16;
-                for (int i = 0; i < bytes; i++)
-                {
-                    var index = i * 16;
-                    byte[] result = new byte[16];
-                    for (int j = 0; j < 16; j++)
-                    {
-                        result[j] = tmpResult[index + j];
-                    }
-                    if (result[15] == 1)
-                    {
-                        WriteFile(result, list);
-                    }
-                }
-              
-               // ReadTotalSize = wrDMASize;
-                Clients.Client(Context.ConnectionId).NotifyTotal(wrDMASize);
+                //var bytes = tmpResult.Length /16;
+                //for (int i = 0; i < bytes; i++)
+                //{
+                //    var index = i * 16;
+                //    byte[] result = new byte[16];
+                //    for (int j = 0; j < 16; j++)
+                //    {
+                //        result[j] = tmpResult[index + j];
+                //    }
+                //    if (result[15] == 1)
+                //    {
+                //        WriteFile(result, list);
+                //    }
+                //}
+
+                // ReadTotalSize = wrDMASize;
+                Clients.Client(Context.ConnectionId).NotifyTotal(lpNumberOfBytesWritten);
                 dev.WriteBAR0(0, 0x10, 1);//执行下次读取 
             }
             dev.WriteBAR0(0, 0x10, 0);

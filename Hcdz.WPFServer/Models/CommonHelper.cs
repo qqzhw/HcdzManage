@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Pvirtech.Framework.Common;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Management;
@@ -44,13 +45,23 @@ namespace Hcdz.WPFServer.Models
             if (driveLetter.Length != 2 || driveLetter[1] != ':' || !char.IsLetter(driveLetter[0]))
                 return false;
 
-            //format given drive         
-            ManagementObjectSearcher searcher = new ManagementObjectSearcher(@"select * from Win32_Volume WHERE DriveLetter = '" + driveLetter + "'");
-            foreach (ManagementObject vi in searcher.Get())
+            //format given drive    
+            try
             {
-                vi.InvokeMethod("Format", new object[] { fileSystem, quickFormat, clusterSize, label, enableCompression });
+                ManagementObjectSearcher searcher = new ManagementObjectSearcher(@"select * from Win32_Volume WHERE DriveLetter = '" + driveLetter + "'");
+
+                foreach (ManagementObject vi in searcher.Get())
+                {
+                    vi.InvokeMethod("Format", new object[] { fileSystem, quickFormat, clusterSize, label, enableCompression });
+                }
+                return true;
             }
-            return true;
+            catch (Exception ex)
+            {
+                LogHelper.ErrorLog(ex, "格式化磁盘");
+                return false;
+            } 
+         
         }
 
     }

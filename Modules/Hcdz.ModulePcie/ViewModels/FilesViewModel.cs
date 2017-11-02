@@ -193,7 +193,8 @@ namespace Hcdz.ModulePcie.ViewModels
 		{
             IsBusy = true;
 			var items=await List(drive.Name);
-			DirectoryItems = new ObservableCollection<DirectoryInfoModel>(items.OrderByDescending(o=>o.IsDir));
+            SelectedPath = drive.Name;
+            DirectoryItems = new ObservableCollection<DirectoryInfoModel>(items.OrderByDescending(o=>o.IsDir));
             IsBusy = false;
         }
 

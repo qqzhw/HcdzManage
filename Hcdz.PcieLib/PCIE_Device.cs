@@ -13,7 +13,7 @@ using WDC_DEVICE_HANDLE = System.IntPtr;
 using HANDLE = System.IntPtr;
 using System.Threading;
 using System.Runtime.InteropServices;
- 
+using System.IO;
 
 namespace Hcdz.PcieLib
 {
@@ -38,6 +38,7 @@ namespace Hcdz.PcieLib
         private PCIE_Regs m_regs;
         public string Name { get; set; }
         public int Status { get; set; }
+      
         #region " constructors " 
         /* constructors & destructors */
        public PCIE_Device(WD_PCI_SLOT slot) : this(0, 0, slot) { }
@@ -592,7 +593,7 @@ namespace Hcdz.PcieLib
        System.IntPtr hFile,
        ref IntPtr lpBuffer,
        uint nNumberOfBytesToWrite,
-       out IntPtr lpNumberOfBytesWritten,
+       out uint lpNumberOfBytesWritten,
        int lpOverlapped
    );
         public IntPtr ppwDma;

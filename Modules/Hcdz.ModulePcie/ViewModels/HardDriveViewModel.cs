@@ -61,7 +61,8 @@ namespace Hcdz.ModulePcie.ViewModels
                     TotalSize = item.TotalSize,
                     TotalSizeText = "共" + ByteFormatter.ToString(item.TotalSize),
                     VolumeLabel = string.IsNullOrEmpty(item.VolumeLabel) ? "本地磁盘 " : item.VolumeLabel,
-                    Percent = 100.0 - (int)(item.AvailableFreeSpace * 100.0 / item.TotalSize), 
+                    Percent = 100.0 - (int)(item.AvailableFreeSpace * 100.0 / item.TotalSize),
+                    DriveLetter = item.Name.Replace("\\", "")
                 };
                 drive.NameDesc = drive.VolumeLabel + string.Format("({0}:)", item.ToString().Replace(":", "").Replace("\\", ""));
                 models.Add(drive);

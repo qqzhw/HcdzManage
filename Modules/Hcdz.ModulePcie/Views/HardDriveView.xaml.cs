@@ -1,5 +1,6 @@
 ﻿using Hcdz.ModulePcie.Models;
 using Microsoft.Practices.ServiceLocation;
+using Pvirtech.Framework.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -33,15 +34,24 @@ namespace Hcdz.ModulePcie.Views
 			if (menuItem == null)
 				return;
             var hcdzClient = ServiceLocator.Current.GetInstance<IHcdzClient>();
-           var result=await hcdzClient.FormatDrive(menuItem.DriveLetter);
-            if (result)
+            try
             {
-                MessageBox.Show("格式化成功!");
+                var result = await hcdzClient.FormatDrive(menuItem.DriveLetter);
+                if (result)
+                {
+                    MessageBox.Show("格式化成功!");
+                }
+                else
+                {
+                    MessageBox.Show("格式化失败!");
+                }
             }
-            else
+            catch (Exception ex)
             {
-                MessageBox.Show("格式化失败!");
+                LogHelper.ErrorLog(ex);
+                MessageBox.Show("格式化磁盘出现异常,请重新连接，重试!");
             }
+           
         }
     }
 }
