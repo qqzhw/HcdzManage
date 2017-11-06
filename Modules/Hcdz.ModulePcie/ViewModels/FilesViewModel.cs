@@ -33,7 +33,8 @@ namespace Hcdz.ModulePcie.ViewModels
 		private readonly IRegionManager _regionManager;
 		private readonly IServiceLocator _serviceLocator;
 		private readonly IHcdzClient  _hcdzClient;
-		public FilesViewModel(IUnityContainer container, IEventAggregator eventAggregator, IRegionManager regionManager, IServiceLocator serviceLocator, IHcdzClient  hcdzClient)
+       
+        public FilesViewModel(IUnityContainer container, IEventAggregator eventAggregator, IRegionManager regionManager, IServiceLocator serviceLocator, IHcdzClient  hcdzClient)
 		{
 			_container = container;
 			_eventAggregator = eventAggregator;
@@ -48,7 +49,7 @@ namespace Hcdz.ModulePcie.ViewModels
             LoadedCommand = new DelegateCommand<object>(OnLoad);
             CreateNewCmd=new DelegateCommand<object>(OnCreateNew);
 			CopyNewCmd= new DelegateCommand<object>(OnCopyNew);
-			FileCopyCmd = new DelegateCommand<MouseButtonEventArgs>(OnFileCopy);
+			FileCopyCmd = new DelegateCommand<object>(OnFileCopy);
 			Menu = new ObservableCollection<MenuItem>();
 			Initializer();
 			_hcdzClient.ProgressChanged += FileCopyProgressChanged;
@@ -71,26 +72,30 @@ namespace Hcdz.ModulePcie.ViewModels
 
 		private void OnCopyNew(object obj)
 		{
-			string fileName = "testdb.bak";
-			String sourceFullPath = Path.Combine("D:\\", fileName);
+            var index = SourceFullPath.LastIndexOf("\\")+1;
+            var fileName = SourceFullPath.Substring(index, SourceFullPath.Length-index);
+
+            //string fileName = "testdb.bak";
+			 //String sourceFullPath = Path.Combine(SelectedPath, fileName);
 			 
 
-			String targetFullPath = Path.Combine("F:\\5555\\", fileName);
+			 String targetFullPath = Path.Combine(SelectedPath, fileName);
 
 
-			//FileUtilities.CreateDirectoryIfNotExist(Path.GetDirectoryName(targetFullPath));
-			ProgressShow = true;
-			//FileUtilities.CopyFileEx(sourceFullPath, targetFullPath, token);
-			_hcdzClient.CopyFileEx(sourceFullPath, targetFullPath);
+			////FileUtilities.CreateDirectoryIfNotExist(Path.GetDirectoryName(targetFullPath));
+			 ProgressShow = true;
+			 //FileUtilities.CopyFileEx(sourceFullPath, targetFullPath, token);
+			 _hcdzClient.CopyFileEx(SourceFullPath, targetFullPath);
 		}
 
-		private void InitMenu()
+		private void InitMenu(DirectoryInfoModel model)
 		{
 		
 			MenuItem mi = new MenuItem()
 			{
 				Header = "复制",
-				Command =FileCopyCmd
+				Command =FileCopyCmd,
+                CommandParameter=model
 			};
 			Menu.Add(mi);
 
@@ -104,31 +109,34 @@ namespace Hcdz.ModulePcie.ViewModels
 			mi = new MenuItem()
 			{
 				Header = "剪切",
-				Command = FileCutCmd
-			};
+				Command = FileCutCmd,
+                CommandParameter = model
+            };
 			Menu.Add(mi);
 
 			mi = new MenuItem()
 			{
 				Header = "删除",
-				Command = DeleteCmd
-			};
+				Command = DeleteCmd,
+                CommandParameter = model
+            };
 			Menu.Add(mi);
 			
 
 		}
 
-		private void OnFileCopy(MouseButtonEventArgs item)
+		private void OnFileCopy(object item)
 		{
 			if (item != null)
 			{
-				FrameworkElement originalSender = item.OriginalSource as FrameworkElement;
-				if (originalSender != null)
-				{
-					var row = originalSender.ParentOfType<GridViewRow>();
-					if (row == null)
-						return;
-				}
+				var model  = item as DirectoryInfoModel;
+                SourceFullPath = model.FullName;
+				//if (originalSender != null)
+				//{
+				//	var row = originalSender.ParentOfType<GridViewRow>();
+				//	if (row == null)
+				//		return;
+				//}
 			}
 		}
 
@@ -143,12 +151,13 @@ namespace Hcdz.ModulePcie.ViewModels
 				{
 					parentRow.IsSelected = true;
 					var model = parentRow.DataContext as DirectoryInfoModel;
+                    InitMenu(model);
 				}
 				else
 				{
 					return;
 				}
-				InitMenu();
+				
 			}
 		}
 
@@ -250,6 +259,14 @@ namespace Hcdz.ModulePcie.ViewModels
             } 
         }
         #region 属性
+
+        private string _sourceFullPath;
+        public string SourceFullPath
+        {
+            get { return _sourceFullPath; }
+            set { SetProperty(ref _sourceFullPath, value); }
+        }
+
         private string _selectedPath;
         public string SelectedPath
         {
@@ -311,7 +328,7 @@ namespace Hcdz.ModulePcie.ViewModels
         public ICommand ListRightMenue { get; private set; }
         public ICommand LoadedCommand { get; private set; }
         public ICommand CreateNewCmd { get; private set; }
-		public ICommand FileCopyCmd { get; private set; }
+		public ICommand FileCopyCmd { get;  set; }
 		public ICommand FileZtCmd { get; private set; }
 		public ICommand DeleteCmd { get; private set; }
 		public ICommand FileCutCmd { get; private set; }
