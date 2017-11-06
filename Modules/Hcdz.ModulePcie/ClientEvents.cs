@@ -13,6 +13,7 @@
         public static readonly string FlagChanged = "changeFlag";
 		public static readonly string FileProgress = "FileProgress";
         public static readonly string NotifyTotalSize = "NotifyTotal";
+        public static readonly string NotifyFormatTime = "NotifyFormatTime";
         
     }
 }

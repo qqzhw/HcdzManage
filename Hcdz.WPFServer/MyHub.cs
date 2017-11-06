@@ -67,7 +67,12 @@ namespace Hcdz.WPFServer
         }
         public bool FormatDrive(string driveName)
         {
-            return CommonHelper.FormatDrive(driveName);
+            var dt = DateTime.Now;
+            bool flag= CommonHelper.FormatDrive(driveName);
+            var dt2 = DateTime.Now;
+            TimeSpan ts = dt2 - dt;
+            Clients.Client(Context.ConnectionId).NotifyFormatTime(ts.Milliseconds);
+            return flag;
         }
         public void CopyFileEx(string sourceFullPath, string targetFullPath)
         {
@@ -503,7 +508,7 @@ namespace Hcdz.WPFServer
                 //    item.Stream.Close();
                 //    item.Stream.Dispose();
                 //}
-                dev.DeviceFile.Flush();
+               // dev.DeviceFile.Flush();
                 dev.DeviceFile.Close();
                 dev.DeviceFile.Dispose();
             });
@@ -563,14 +568,15 @@ namespace Hcdz.WPFServer
             while (!IsStop)
             {
 
-                // byte[] tmpResult = new Byte[wrDMASize];
-                //   Marshal.Copy(dev.pWbuffer, tmpResult, 0, wrDMASize);
-                //DeviceFile.Write(tmpResult, 0, wrDMASize);
-                //DeviceFile.Flush();
+                  byte[] tmpResult = new Byte[wrDMASize];
+                Marshal.Copy(dev.pWbuffer, tmpResult, 0, wrDMASize);
+                dev.DeviceFile.Write(tmpResult, 0, wrDMASize);
+                dev.DeviceFile.Flush();
                 // concurrentQueue.Enqueue(tmpResult);
-                DWORD lpNumberOfBytesWritten = 0;
-                PCIE_Device.WriteFile(dev.DeviceFile.SafeFileHandle.DangerousGetHandle(),ref dev.pWbuffer, (uint)dataSize * 1024, out lpNumberOfBytesWritten, 0);
+               // DWORD lpNumberOfBytesWritten = 0;
+                //  PCIE_Device.WriteFile(dev.DeviceFile.SafeFileHandle.DangerousGetHandle(),ref dev.pWbuffer, (uint)dataSize * 1024, out lpNumberOfBytesWritten, null);
                 // Stream.Write(tmpResult, 0, tmpResult.Length);
+                 
                 //var bytes = tmpResult.Length /16;
                 //for (int i = 0; i < bytes; i++)
                 //{
@@ -587,7 +593,7 @@ namespace Hcdz.WPFServer
                 //}
 
                 // ReadTotalSize = wrDMASize;
-                Clients.Client(Context.ConnectionId).NotifyTotal(lpNumberOfBytesWritten);
+                Clients.Client(Context.ConnectionId).NotifyTotal(wrDMASize);
                 dev.WriteBAR0(0, 0x10, 1);//执行下次读取 
             }
             dev.WriteBAR0(0, 0x10, 0);

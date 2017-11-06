@@ -10,6 +10,10 @@
              xmlns:controls="clr-namespace:Hcdz.Framework.Controls;assembly=Hcdz.Framework"
              d:DesignHeight="300" d:DesignWidth="300">
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="30"/>
+        </Grid.RowDefinitions>
 		<ItemsControl ItemsSource="{Binding DriveInfoItems}" x:Name="diskcontrol" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
@@ -29,5 +33,6 @@
                 </DataTemplate>
             </ItemsControl.ItemTemplate> 
 		</ItemsControl>
+        <TextBlock Grid.Row="1" Text="{Binding TimeInfo}"  HorizontalAlignment="Center" FontSize="14"/>
     </Grid>
 </UserControl>

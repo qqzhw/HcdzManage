@@ -42,7 +42,7 @@ namespace Hcdz.ModulePcie
         // Global  
        public  event Action<long> NotifyTotal;
         public event Action<bool> Connected;
-       
+        public event Action<int> NotifyFormatTime;
         public string SourceUrl { get; private set; }
 		public bool AutoReconnect { get; set; } = true;
 		public TextWriter TraceWriter { get; set; }
@@ -200,34 +200,38 @@ namespace Hcdz.ModulePcie
 			_connection.Stop();
 		}
 
-		private void SubscribeToEvents()
-		{
-			 if (AutoReconnect)
-			{
-				Disconnected += OnDisconnected;
-			}
+        private void SubscribeToEvents()
+        {
+            if (AutoReconnect)
+            {
+                Disconnected += OnDisconnected;
+            }
             _chat.On<bool>(ClientEvents.Connected, (message) =>
             {
                 Execute(Connected, msg => msg(message));
             });
             _chat.On<string>(ClientEvents.NoticeMessage, (message) =>
-			{
-				Execute(MessageReceived, messageReceived => messageReceived(message));
-			});
+            {
+                Execute(MessageReceived, messageReceived => messageReceived(message));
+            });
 
-			_chat.On<IEnumerable<string>>(ClientEvents.LogOut, rooms =>
-			{
-				Execute(LoggedOut, loggedOut => loggedOut(rooms));
-			});
-			  
-			_chat.On<string, string, long,long>(ClientEvents.FileProgress, (source, destination, totalFileSize, totalBytesTransferred) =>
-			{
-				Execute(ProgressChanged , fileChanged =>fileChanged(source, destination, totalFileSize, totalBytesTransferred));
-			});  
+            _chat.On<IEnumerable<string>>(ClientEvents.LogOut, rooms =>
+            {
+                Execute(LoggedOut, loggedOut => loggedOut(rooms));
+            });
+
+            _chat.On<string, string, long, long>(ClientEvents.FileProgress, (source, destination, totalFileSize, totalBytesTransferred) =>
+             {
+                 Execute(ProgressChanged, fileChanged => fileChanged(source, destination, totalFileSize, totalBytesTransferred));
+             });
             _chat.On<long>(ClientEvents.NotifyTotalSize, (totalSize) =>
             {
                 Execute(NotifyTotal, total => total(totalSize));
             });
+            _chat.On<int>(ClientEvents.NotifyFormatTime, (totalTime) =>
+                     {
+                         Execute(NotifyFormatTime, total => total(totalTime));
+                     });
         }
 
 		private async void OnDisconnected()

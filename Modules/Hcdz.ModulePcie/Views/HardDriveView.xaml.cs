@@ -1,4 +1,5 @@
 ﻿using Hcdz.ModulePcie.Models;
+using Hcdz.ModulePcie.ViewModels;
 using Microsoft.Practices.ServiceLocation;
 using Pvirtech.Framework.Common;
 using System;
@@ -30,10 +31,15 @@ namespace Hcdz.ModulePcie.Views
 
 		private async void MenuItem_Click(object sender, RoutedEventArgs e)
 		{
+            var datacontext = this.DataContext as HardDriveViewModel;
+            if (datacontext!=null)
+            {
+                datacontext.TimeInfo = string.Empty;
+            }
 			var menuItem = (sender as MenuItem).DataContext as DriveInfoModel;
 			if (menuItem == null)
 				return;
-            var hcdzClient = ServiceLocator.Current.GetInstance<IHcdzClient>();
+            var hcdzClient = ServiceLocator.Current.GetInstance<IHcdzClient>();         
             try
             {
                 var result = await hcdzClient.FormatDrive(menuItem.DriveLetter);
@@ -53,5 +59,7 @@ namespace Hcdz.ModulePcie.Views
             }
            
         }
+
+      
     }
 }

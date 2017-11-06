@@ -23,9 +23,31 @@ namespace Hcdz.ModulePcie.ViewModels
 			FormatCmd= new DelegateCommand<object>(OnFormatDisk);
             _hcdzClient = hcdzClient;
 			Init();
+            _hcdzClient.NotifyFormatTime += _hcdzClient_NotifyFormatTime;
+        }
+        private bool _isOpen;
+        public bool IsOpen { get { return _isOpen; } set { SetProperty(ref _isOpen, value); } }
+        private bool _btnIsEnabled = false;
+        public bool BtnIsEnabled { get { return _btnIsEnabled; } set { SetProperty(ref _btnIsEnabled, value); } }
+         
+        private string _timeInfo;
+        public string TimeInfo
+        {
+            get
+            {
+                return _timeInfo;
+            }
+            set
+            {
+                SetProperty(ref _timeInfo, value);
+            }
+        }
+        private void _hcdzClient_NotifyFormatTime(int obj)
+        {
+            TimeInfo = (obj / 1000.0).ToString("f2") + "秒";
         }
 
-		private void OnFormatDisk(object obj)
+        private void OnFormatDisk(object obj)
 		{
 			 
 		}
