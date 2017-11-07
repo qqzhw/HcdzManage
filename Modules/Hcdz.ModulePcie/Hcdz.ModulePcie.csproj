@@ -129,6 +129,7 @@
     <Compile Include="Models\PathHelper.cs" />
     <Compile Include="Models\TimeSpanFormatter.cs" />
     <Compile Include="TaskAsyncHelper.cs" />
+    <Compile Include="ViewModels\CommonHelper.cs" />
     <Compile Include="ViewModels\ContextMenuBehavior.cs" />
     <Compile Include="ViewModels\DeviceChannelModel.cs" />
     <Compile Include="ViewModels\DeviceConverter.cs" />

@@ -14,6 +14,7 @@
 		public static readonly string FileProgress = "FileProgress";
         public static readonly string NotifyTotalSize = "NotifyTotal";
         public static readonly string NotifyFormatTime = "NotifyFormatTime";
-        
+        public static readonly string NoticeScanByte = "NoticeScanByte";
+
     }
 }

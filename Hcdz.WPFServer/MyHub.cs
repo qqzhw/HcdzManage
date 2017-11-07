@@ -26,8 +26,7 @@ namespace Hcdz.WPFServer
         private readonly static Dictionary<PCIE_Device, List<DeviceChannelModel>> DeviceChannelList = new Dictionary<PCIE_Device, List<DeviceChannelModel>>();
         private readonly static List<DeviceChannelModel> DeviceChannelModels = new List<DeviceChannelModel>();
         private static DispatcherTimer dispatcherTimer = new DispatcherTimer();
-        private static bool DeviceStatus;
-        private bool IsCompleted = false;
+        private static bool DeviceStatus; 
         private static bool IsStop = false;
         private static ConcurrentQueue<byte[]> concurrentQueue = new ConcurrentQueue<byte[]>();
         static long ReadTotalSize = 0;
@@ -436,10 +435,7 @@ namespace Hcdz.WPFServer
             //       //dma wr 使能
             byte[] tmpResult = new Byte[1024];
             Marshal.Copy(dev.pScanWbuffer, tmpResult, 0, 1024);
-            if (dev == null)
-            {
-                return false;
-            }
+            Clients.Client(Context.ConnectionId).NoticeScanByte(CommonHelper.ByteToString(tmpResult));
             Thread.Sleep(10);
             dev.WriteBAR0(0, 0x28, 0);
             return true;
@@ -522,26 +518,7 @@ namespace Hcdz.WPFServer
             return string.Empty;
         }
 
-        private void OnWriteDMA(PCIE_Device dev)
-        {
-            while (true)
-            {
-                if (concurrentQueue.Count > 0)
-                {
-                    byte[] item;
-                    if (concurrentQueue.TryDequeue(out item))
-                    {
-                        WriteFile(item, DeviceChannelList[dev]);
-                    }
-                }
-            }
-        }
-
        
-        private void WriteBar(object state)
-        {
-
-        } 
 
         private void NonParameterRun(PCIE_Device dev,string dvireName,int dataSize,int deviceIndex)
         {
@@ -626,18 +603,7 @@ namespace Hcdz.WPFServer
            item.Stream?.Write(trueValue, 0, 8);
           //  item.Stream.Flush();            
         }
-        /// <summary>
-        /// Copies the contents of input to output. Doesn't close either stream.
-        /// </summary>
-        public  void CopyStream(Stream input, Stream output)
-        {
-            byte[] buffer = new byte[80 * 1024];
-            int len;
-            while ((len = input.Read(buffer, 0, buffer.Length)) > 0)
-            {
-                output.Write(buffer, 0, len);
-            }
-        }
+       
         public void CloseDma()
         {
             IsStop = true;

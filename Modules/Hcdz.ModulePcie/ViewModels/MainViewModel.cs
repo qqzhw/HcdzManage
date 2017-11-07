@@ -60,7 +60,17 @@ namespace Hcdz.ModulePcie.ViewModels
             _hcdzClient.Connected +=ClientConnected; 
 			_hcdzClient.Connect();
             _hcdzClient.NotifyTotal += _hcdzClient_NotifyTotal;
+            _hcdzClient.NoticeScanByte +=OnNoticeScanByte;
             LoadDeviceChannel();
+        }
+
+        private void OnNoticeScanByte(string strByte)
+        {
+            var result = CommonHelper.StringToByte(strByte);
+            if (result!=null)
+            {
+                LogHelper.WriteLog("自检返回数据:  "+strByte);
+            }
         }
 
         private void Connection_Closed()
