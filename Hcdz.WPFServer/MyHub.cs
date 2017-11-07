@@ -421,19 +421,26 @@ namespace Hcdz.WPFServer
             dev.WriteBAR0(0, 0x4, (uint)ppwDma.Page[0].pPhysicalAddr);		//wr_addr low
             dev.WriteBAR0(0, 0x8, (uint)(ppwDma.Page[0].pPhysicalAddr >> 32));	//wr_addr high
             dev.WriteBAR0(0, 0xC, (UInt32)1024);           //dma wr size
-            dev.WriteBAR0(0, 0x28, 1);
+            //dev.WriteBAR0(0, 0x30, 1);
+            //Thread.Sleep(10);
+            //dev.WriteBAR0(0, 0x34, 1);
+            //Thread.Sleep(10);
+            //dev.WriteBAR0(0, 0x38, 1);
+            //Thread.Sleep(10);
+           dev.WriteBAR0(0, 0x28, 1);
+           
             dev.WriteBAR0(0, 0x10, 1);
-
+           
 
             //启动DMA
             //       //dma wr 使能
             byte[] tmpResult = new Byte[1024];
-            Marshal.Copy(dev.pScanWbuffer, tmpResult, 0, tmpResult.Length);
+            Marshal.Copy(dev.pScanWbuffer, tmpResult, 0, 1024);
             if (dev == null)
             {
                 return false;
             }
-            Thread.Sleep(1);
+            Thread.Sleep(10);
             dev.WriteBAR0(0, 0x28, 0);
             return true;
         }
@@ -508,7 +515,7 @@ namespace Hcdz.WPFServer
                 //    item.Stream.Close();
                 //    item.Stream.Dispose();
                 //}
-               // dev.DeviceFile.Flush();
+                dev.DeviceFile.Flush();
                 dev.DeviceFile.Close();
                 dev.DeviceFile.Dispose();
             });
@@ -558,6 +565,7 @@ namespace Hcdz.WPFServer
             foreach (var item in list)
             {
                dev.WriteBAR0(0, item.RegAddress, item.IsOpen == true ? (UInt32)1 : 0);
+                Thread.Sleep(100);
             }
            
             //启动DMA
@@ -594,6 +602,7 @@ namespace Hcdz.WPFServer
 
                 // ReadTotalSize = wrDMASize;
                 Clients.Client(Context.ConnectionId).NotifyTotal(wrDMASize);
+                
                 dev.WriteBAR0(0, 0x10, 1);//执行下次读取 
             }
             dev.WriteBAR0(0, 0x10, 0);
