@@ -133,6 +133,7 @@
     <Compile Include="ViewModels\DeviceChannelModel.cs" />
     <Compile Include="ViewModels\DeviceConverter.cs" />
     <Compile Include="ViewModels\DirectoryListModel.cs" />
+    <Compile Include="ViewModels\FileDownloadViewModel.cs" />
     <Compile Include="ViewModels\PcieViewModel.cs" />
     <Compile Include="ViewModels\SettingsViewModel.cs" />
     <Compile Include="ViewModels\TrueToColorConverter.cs" />
@@ -140,10 +141,17 @@
       <DependentUpon>ChildView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Models\CustomWireProtocol.cs" />
+    <Compile Include="Views\FileDownloadView.xaml.cs">
+      <DependentUpon>FileDownloadView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\SettingsView.xaml.cs">
       <DependentUpon>SettingsView.xaml</DependentUpon>
     </Compile>
     <Page Include="Views\ChildView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\FileDownloadView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

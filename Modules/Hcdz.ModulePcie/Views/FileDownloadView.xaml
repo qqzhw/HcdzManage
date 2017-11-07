@@ -1,0 +1,15 @@
+﻿<UserControl x:Class="Hcdz.ModulePcie.Views.FileDownloadView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Hcdz.ModulePcie.Views"
+             xmlns:prism="http://prismlibrary.com/" 
+             x:Name="filewindow"
+             mc:Ignorable="d"  Width="500" Height="200"
+             d:DesignHeight="300" d:DesignWidth="300">
+    <Grid>
+        <TextBlock Text="五年级" />
+        <Button Margin="50,50,0,0"   Content="关闭" Width="70" Height="28" Command="{Binding  CloseWindow}"   CommandParameter="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}, Mode=OneWay}"/>
+    </Grid>
+</UserControl>

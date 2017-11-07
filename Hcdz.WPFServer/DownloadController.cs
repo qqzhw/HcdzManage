@@ -24,10 +24,11 @@ namespace Nop.Web.Controllers
 			{
 				response = await Task.Run<HttpResponseMessage>(() =>
 				{
-					//var directory = new DirectoryInfo(filePath);
-                 //   var files = File.OpenRead(filePath);
-				//	var lastCreatedFile = files.OrderByDescending(f => f.CreationTime).FirstOrDefault();
-					var filestream = File.OpenRead(filePath);
+                    filePath = "d:\\testdb.bak";
+                    //var directory = new DirectoryInfo(filePath);
+                    //   var files = File.OpenRead(filePath);
+                    //	var lastCreatedFile = files.OrderByDescending(f => f.CreationTime).FirstOrDefault();
+                    var filestream = File.OpenRead(filePath);
 					var fileResponse = new HttpResponseMessage(HttpStatusCode.OK);
 					fileResponse.Content = new StreamContent(filestream);
 					fileResponse.Content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");

@@ -23,6 +23,7 @@ using Microsoft.AspNet.SignalR.Client;
 using System.Windows.Controls;
 using System.Threading;
 using System.Net;
+using System.Net.Http;
 
 namespace Hcdz.ModulePcie.ViewModels
 {
@@ -140,7 +141,7 @@ namespace Hcdz.ModulePcie.ViewModels
 			}
 		}
 
-		private void OnRightMenue(object obj)
+		private   void OnRightMenue(object obj)
 		{
 			Menu.Clear();
 			var clickedItem = (obj as MouseButtonEventArgs).OriginalSource as FrameworkElement;
@@ -152,7 +153,22 @@ namespace Hcdz.ModulePcie.ViewModels
 					parentRow.IsSelected = true;
 					var model = parentRow.DataContext as DirectoryInfoModel;
                     InitMenu(model);
-				}
+                    var notification = new MessageNotification()
+                    {
+                        Title = "文件下载",
+                        Content = _container.Resolve<FileDownloadView>(new ParameterOverride("fileName", "d:\\ddd")),
+                    };
+                    PopupWindows.NormalNotificationRequest.Raise(notification,(callback)=> {
+                       
+                    });
+                    //using (WebClient client=new WebClient())
+                    //{
+                    //    client.DownloadProgressChanged += Client_DownloadProgressChanged;
+                    //    client.DownloadFileCompleted += Client_DownloadFileCompleted;
+                    //   client.DownloadFileAsync(new Uri(Properties.Settings.Default.DwonloadUrl+"tets.rar"),"deds");
+
+                    //}
+                }
 				else
 				{
 					return;
@@ -160,6 +176,16 @@ namespace Hcdz.ModulePcie.ViewModels
 				
 			}
 		}
+
+        private void Client_DownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e)
+        {
+            var s = 9;
+        }
+
+        private void Client_DownloadFileCompleted(object sender, System.ComponentModel.AsyncCompletedEventArgs e)
+        {
+            int s = 9;
+        }
 
         private void OnCreateNew(object obj)
         {
