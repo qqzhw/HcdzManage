@@ -436,13 +436,10 @@ namespace Hcdz.WPFServer
             byte[] tmpResult = new Byte[1024];
             Marshal.Copy(dev.pScanWbuffer, tmpResult, 0, 1024);
             Clients.Client(Context.ConnectionId).NoticeScanByte(CommonHelper.ByteToString(tmpResult));
-            Thread.Sleep(10);
+           
             dev.WriteBAR0(0, 0x28, 0);
-            if (tmpResult.FirstOrDefault()==63)
-            {
-                return true;
-            }
-            return false;
+           
+            return true;
         }
 
         public string OnReadDma(string dvireName, int dataSize, int deviceIndex)

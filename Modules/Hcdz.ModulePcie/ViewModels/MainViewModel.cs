@@ -66,10 +66,12 @@ namespace Hcdz.ModulePcie.ViewModels
 
         private void OnNoticeScanByte(string strByte)
         {
+          strByte=  "3C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 3C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 3C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 3C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 3C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 3C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 3C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 3C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00";
             var result = CommonHelper.StringToByte(strByte);
             if (result!=null)
             {
-                LogHelper.WriteLog("自检返回数据:  "+strByte);
+                LogHelper.WriteLog("自检返回数据:  "+strByte.Take(64));
+                var scanValue = result.Skip(32);
                 LogInfo += strByte;
             }
         }
@@ -156,11 +158,11 @@ namespace Hcdz.ModulePcie.ViewModels
 		    var result=await	_hcdzClient.ScanDevice(0);
 			if (result)
 			{
-				MessageBox.Show("设备运行正常!");
+				//MessageBox.Show("设备运行正常!");
 			}
 			else
 			{
-				MessageBox.Show("设备自检信息异常!");
+				//MessageBox.Show("设备自检信息异常!");
 			}
         }
 
