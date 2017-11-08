@@ -70,6 +70,7 @@ namespace Hcdz.ModulePcie.ViewModels
             if (result!=null)
             {
                 LogHelper.WriteLog("自检返回数据:  "+strByte);
+                LogInfo += strByte;
             }
         }
 

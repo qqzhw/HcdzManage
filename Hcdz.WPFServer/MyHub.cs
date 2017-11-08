@@ -438,7 +438,11 @@ namespace Hcdz.WPFServer
             Clients.Client(Context.ConnectionId).NoticeScanByte(CommonHelper.ByteToString(tmpResult));
             Thread.Sleep(10);
             dev.WriteBAR0(0, 0x28, 0);
-            return true;
+            if (tmpResult.FirstOrDefault()==63)
+            {
+                return true;
+            }
+            return false;
         }
 
         public string OnReadDma(string dvireName, int dataSize, int deviceIndex)
