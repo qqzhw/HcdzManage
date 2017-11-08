@@ -427,7 +427,7 @@ namespace Hcdz.WPFServer
             //dev.WriteBAR0(0, 0x38, 1);
             //Thread.Sleep(10);
            dev.WriteBAR0(0, 0x28, 1);
-           
+            Thread.Sleep(1000);
             dev.WriteBAR0(0, 0x10, 1);
            
 
@@ -543,12 +543,14 @@ namespace Hcdz.WPFServer
            // dev.WriteBAR0(0, 48, 1);
            
             var list = DeviceChannelList[dev];
-            foreach (var item in list)
-            {
-               dev.WriteBAR0(0, item.RegAddress, item.IsOpen == true ? (UInt32)1 : 0);
-                Thread.Sleep(100);
-            }
-           
+            //foreach (var item in list)
+            //{
+            //   dev.WriteBAR0(0, item.RegAddress, item.IsOpen == true ? (UInt32)1 : 0);             
+            //} 
+            Parallel.ForEach(list, item => {
+                dev.WriteBAR0(0, item.RegAddress, item.IsOpen == true ? (UInt32)1 : 0);
+            });
+            Thread.Sleep(1000);
             //启动DMA
             dev.WriteBAR0(0, 0x10, 1);          //dma wr 使能
             
