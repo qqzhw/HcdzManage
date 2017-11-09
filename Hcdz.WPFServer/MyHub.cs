@@ -430,18 +430,18 @@ namespace Hcdz.WPFServer
             //dev.WriteBAR0(0, 0x38, 1);
             //Thread.Sleep(10);
            dev.WriteBAR0(0, 0x28, 1);
-            Thread.Sleep(1000);
+            Thread.Sleep(1000);            
             dev.WriteBAR0(0, 0x10, 1);
-            
-
+          
+            dev.WriteBAR0(0, 0x28, 0);
+            dev.WriteBAR0(0, 0x10, 0);
             //启动DMA
             //       //dma wr 使能
             byte[] tmpResult = new Byte[1024];
             Marshal.Copy(dev.pScanWbuffer, tmpResult, 0, 1024);
             Clients.Client(Context.ConnectionId).NoticeScanByte(CommonHelper.ByteToString(tmpResult),deviceIndex);
-           
-            dev.WriteBAR0(0, 0x28, 0); 
-            dev.WriteBAR0(0, 0x10, 0);
+            
+          
             return true;
         }
 
