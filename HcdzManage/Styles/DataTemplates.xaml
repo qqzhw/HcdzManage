@@ -6,7 +6,7 @@
                 <ColumnDefinition/>
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
-            <TextBlock Text="{Binding Name}" FontFamily="SimHei" FontSize="14" VerticalAlignment="Center"  Margin="2,0,0,0"/>
+            <TextBlock Text="{Binding Name}" FontFamily="SimSun" FontSize="13"   VerticalAlignment="Center"  Margin="2,0,0,0"/>
             <!--<TextBlock Grid.Column="1" Text="{Binding Info}" HorizontalAlignment="Center"/>-->
         </Grid>
     </DataTemplate>

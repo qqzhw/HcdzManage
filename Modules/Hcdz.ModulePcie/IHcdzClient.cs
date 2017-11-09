@@ -19,7 +19,7 @@ namespace Hcdz.ModulePcie
         event Action<bool> Connected;
 		event Action<string, string, long, long> ProgressChanged;
         event Action<long> NotifyTotal;
-        event Action<string> NoticeScanByte;
+        event Action<string,int> NoticeScanByte;
         event Action<int> NotifyFormatTime;
         bool IsConnected { get; set; }
 		string SourceUrl { get; }

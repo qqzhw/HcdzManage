@@ -7,6 +7,7 @@ using Prism.Mvvm;
 using Prism.Regions;
 using Pvirtech.Framework.Common;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -64,15 +65,48 @@ namespace Hcdz.ModulePcie.ViewModels
             LoadDeviceChannel();
         }
 
-        private void OnNoticeScanByte(string strByte)
+        private void OnNoticeScanByte(string strByte,int deviceIndex)
         {
-          strByte=  "3C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 3C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 3C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 3C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 3C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 3C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 3C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 3C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00";
-            var result = CommonHelper.StringToByte(strByte);
+          //strByte=  "3C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 3C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 3C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 3C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 3C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 3C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 3C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 3C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00";
+            var result = CommonHelper.StrToHexByte(strByte);
             if (result!=null)
             {
-                LogHelper.WriteLog("自检返回数据:  "+strByte.Take(64));
-                var scanValue = result.Skip(32);
-                LogInfo += strByte;
+                List<byte> bytes = new List<byte>();
+                var index = result.Length / 16;
+                for (int i = 0; i <index; i++)
+                {
+                    bytes.Add(result[16 * i]);
+                }
+                var barList = bytes.Skip(2);
+                var findItem = barList.FirstOrDefault(o => o != 63);
+                if (findItem==0)
+                {
+                    MessageBox.Show("设备所有通道运行正常!");
+                }
+                else
+                {
+                    var V2 = Convert.ToString(findItem, 2);
+                    string[] deviceInfo= new string[V2.Length/2];
+                    for (int i = 0; i < V2.Length / 2; i++)
+                    {
+                        deviceInfo[i] = V2.Substring(i * 2, 2); 
+                    }
+                    string errorInfo = string.Format("设备{0}自检返回数据:  ", deviceIndex+1) + string.Join("  ", deviceInfo);
+                    LogHelper.WriteLog(errorInfo);
+                    LogInfo += errorInfo + "\n";
+                    var list=deviceInfo.Reverse().ToList();
+                    string tmpInfo = string.Empty;
+                    for (int i = 0; i < list.Count(); i++)
+                    {
+                        if (list[i]!="11")
+                        {
+                            string info = string.Format("设备{0}  通道{1} 有异常\n", deviceIndex + 1, i + 1);
+                            tmpInfo += info;
+                        }
+                    }
+                    MessageBox.Show(tmpInfo);
+                }
+                 
             }
         }
 
@@ -155,15 +189,12 @@ namespace Hcdz.ModulePcie.ViewModels
 
         private async void OnScanDevice(object obj)
         { 
-		    var result=await	_hcdzClient.ScanDevice(0);
-			if (result)
-			{
-				//MessageBox.Show("设备运行正常!");
-			}
-			else
-			{
-				//MessageBox.Show("设备自检信息异常!");
-			}
+		    var result=await	_hcdzClient.ScanDevice(0);             
+             var result2=await _hcdzClient.ScanDevice(1);
+            if (result&&result2)
+            {
+
+            }
         }
 
         private async void OnReadDma(object obj)
@@ -601,10 +632,11 @@ namespace Hcdz.ModulePcie.ViewModels
 
         private void LoadDeviceChannel()
         {
+            var list = new List<DeviceChannelModel>();
             DeviceChannelModel channel0 = new DeviceChannelModel
             {
                 Id = 1,
-                Name = "通道1",
+                Name = "通道 1",
                 RegAddress = 0x30,
                 DiskPath="Bar1",
                 DeviceNo = 0,
@@ -612,7 +644,7 @@ namespace Hcdz.ModulePcie.ViewModels
             DeviceChannelModel channel1 = new DeviceChannelModel
             {
                 Id = 2,
-                Name = "通道2",
+                Name = "通道 2",
                 RegAddress = 0x34,
                 DiskPath = "Bar2",
                 DeviceNo = 0,
@@ -620,7 +652,7 @@ namespace Hcdz.ModulePcie.ViewModels
             DeviceChannelModel channel2 = new DeviceChannelModel
             {
                 Id = 3,
-                Name = "通道3",
+                Name = "通道 3",
                 RegAddress = 0x38,
                 DiskPath = "Bar3",
                 DeviceNo = 0,
@@ -628,7 +660,7 @@ namespace Hcdz.ModulePcie.ViewModels
             DeviceChannelModel channel3 = new DeviceChannelModel
             {
                 Id = 4,
-                Name = "通道4",
+                Name = "通道 4",
                 RegAddress = 0x40,
                 DiskPath = "Bar4",
                 DeviceNo = 1,
@@ -636,7 +668,7 @@ namespace Hcdz.ModulePcie.ViewModels
             DeviceChannelModel channel4 = new DeviceChannelModel
             {
                 Id = 5,
-                Name = "通道5",
+                Name = "通道 5",
                 RegAddress = 0x44,
                 DiskPath = "Bar5",
                 DeviceNo = 1,
@@ -644,17 +676,18 @@ namespace Hcdz.ModulePcie.ViewModels
             DeviceChannelModel channel5 = new DeviceChannelModel
             {
                 Id = 6,
-                Name = "通道6",
+                Name = "通道 6",
                 RegAddress = 0x48,
                 DiskPath = "Bar6",
                 DeviceNo = 1,
             };
-            _deviceChannelModels.Add(channel0);
-            _deviceChannelModels.Add(channel1);
-            _deviceChannelModels.Add(channel2);
-			_deviceChannelModels.Add(channel3);
-			_deviceChannelModels.Add(channel4);
-			_deviceChannelModels.Add(channel5);
+            list.Add(channel0);
+            list.Add(channel3);
+            list.Add(channel1);
+            list.Add(channel4);
+            list.Add(channel2); 
+            list.Add(channel5); 
+            _deviceChannelModels = new ObservableCollection<DeviceChannelModel>(list);
         }
          
         private void ReadDMA()

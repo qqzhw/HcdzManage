@@ -68,7 +68,11 @@
                 </StackPanel>
             </StackPanel>
         </Border>
-        <Grid  Grid.Row="1" Margin="0,15,0,0">          
+        <Grid  Grid.Row="1" Margin="0,10,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
             <Border  Margin="10,5,10,0"     BorderThickness="1" BorderBrush="#BCE8F1"     CornerRadius="5">
                 <Grid  Margin="10" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
                     <Grid.RowDefinitions>
@@ -88,14 +92,15 @@
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <StackPanel Margin="5,0,0,0" Orientation="Horizontal">
-                                        <Ellipse Width="16" Height="16"  Fill="{Binding IsOpen,Converter={StaticResource colorConvert}}" Margin="5,10,0,0"/>
-                                        <GroupBox MinWidth="530" FontSize="16" HeaderTemplate="{StaticResource headerTemplate}"  Header="{Binding}"   HorizontalAlignment="Center"   Margin="10,5,0,10" VerticalAlignment="Center">
+                                        
+                                        <GroupBox   FontSize="16" HeaderTemplate="{StaticResource headerTemplate}"  Header="{Binding}"   HorizontalAlignment="Center"   Margin="10,5,0,10" VerticalAlignment="Center">
                                             <Border  BorderBrush="#D9EDF7" BorderThickness="1">
-                                                <StackPanel  VerticalAlignment="Center" Margin="0,10,15,10">
+                                                <StackPanel  VerticalAlignment="Center" Margin="0,5,5,5">
                                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" >
-                                                        <Button HorizontalAlignment="Right" Margin="30,0,0,0" Width="60"  Content="打开" Style="{DynamicResource MetroFlatButton}"  Command="{Binding DataContext.OpenChannel ,RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}"
+                                                        <Ellipse Width="16" Height="16"  Fill="{Binding IsOpen,Converter={StaticResource colorConvert}}" Margin="5,2,0,0"/>
+                                                        <Button HorizontalAlignment="Right" Margin="85,0,0,0" Width="56"  Content="打开" Style="{DynamicResource MetroFlatButton}"  Command="{Binding DataContext.OpenChannel ,RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}"
                                          CommandParameter="{Binding}"/>
-														<Button HorizontalAlignment="Right" Margin="20,0,0,0" Width="60"  Content="关闭" Style="{DynamicResource MetroFlatButtonDisable}"  Command="{Binding DataContext.CloseChannel ,RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}" CommandParameter="{Binding}" />
+														<Button HorizontalAlignment="Right" Margin="10,0,0,0" Width="56"  Content="关闭" Style="{DynamicResource MetroFlatButtonDisable}"  Command="{Binding DataContext.CloseChannel ,RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}" CommandParameter="{Binding}" />
                                                     </StackPanel>
                                                     <!--<metro:MetroProgressBar  Margin="10,10,0,0" Value="56" Foreground="#5DA0C7"    Background="#EDEDED" Height="32"/>-->
                                                     <!--<StackPanel Orientation="Horizontal"  Margin="15,2,20,0">
@@ -111,7 +116,7 @@
                             </ItemsControl.ItemTemplate>
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
-                                    <WrapPanel  ItemWidth="590"/>
+                                    <WrapPanel  ItemWidth="285"/>
                                 </ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
                         </ItemsControl>
@@ -119,7 +124,7 @@
                     </Border>
                 </Grid>
             </Border>
-            <!--<Border Grid.Column="1"  Margin="10,5,10,0"     BorderThickness="1" BorderBrush="#BCE8F1"     CornerRadius="5">
+             <Border Grid.Column="1"  Margin="10,5,10,0"     BorderThickness="1" BorderBrush="#BCE8F1"     CornerRadius="5">
                 <Grid  Margin="10" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
                     <Grid.RowDefinitions>
                         <RowDefinition Height="42"/>
@@ -146,10 +151,7 @@
                         IsEnabled="{Binding BtnIsEnabled}"/>
 														<Button HorizontalAlignment="Right" Margin="20,0,0,0" Width="60"  Content="关闭" Style="{DynamicResource MetroFlatButtonDisable}"    Command="{Binding DataContext.CloseChannel ,RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}"  CommandParameter="{Binding}"/>
                                                 </StackPanel>
-                                              --><!--<StackPanel Orientation="Horizontal"  Margin="15,2,20,0">
-                                                   <TextBlock Text="已读大小：" FontSize="14"  Foreground="#333333"/>
-                                                    <TextBlock Margin="2,0,0,0" FontSize="14"  Foreground="#333333" Text="2.3GB" />
-                                                </StackPanel>--><!--
+                                             
 
                                             </StackPanel>
                                         </Border>
@@ -160,10 +162,10 @@
                         </ItemsControl>
                     </Border>
                 </Grid>
-            </Border>-->
+            </Border> 
 
         </Grid>
-        <Border Grid.Row="2" HorizontalAlignment="Left" CornerRadius="5" Margin="10,20,0,10" Width="620" BorderThickness="1" BorderBrush="#BCE8F1">
+        <Border Grid.Row="2" HorizontalAlignment="Left" CornerRadius="5" Margin="10,20,0,10" Width="600" BorderThickness="1" BorderBrush="#BCE8F1">
             <Grid Margin="10">
                 <Grid.RowDefinitions>
                     <RowDefinition />
@@ -177,7 +179,7 @@
                 <TextBlock Text="磁盘空间："   VerticalAlignment="Center"/>
                 <metro:MetroProgressBar Grid.Column="1" HorizontalAlignment="Left" Width="500" Value="{Binding DiskPercent}" Foreground="#5DA0C7"    Background="#EDEDED" Height="32"/>
                 <TextBlock Text="{Binding DiskVal}" Grid.Column="2" Margin="2,0,0,0" VerticalAlignment="Center"/>
-                <TextBlock Grid.Row="1" Text="自检信息："  HorizontalAlignment="Left" Margin="0,5,0,0"/>
+                <TextBlock Grid.Row="1" Text="设备信息："  HorizontalAlignment="Left" Margin="0,5,0,0"/>
                 <TextBlock Grid.Row="1" Text="{Binding DeviceDesc}" Grid.Column="1" Grid.ColumnSpan="2" Margin="0,5,0,0" MinHeight="88"/>
                 <!--<StackPanel Orientation="Horizontal"  VerticalAlignment="Center" Margin="30,0,0,0">
                     <TextBlock Text="传输速率：" FontSize="14"  Foreground="#333333"/>
@@ -186,7 +188,7 @@
             </Grid>
 
         </Border>
-        <Border Grid.Row="2" HorizontalAlignment="Right" MinWidth="550" CornerRadius="5" Margin="0,20,10,10"  BorderThickness="1" BorderBrush="#BCE8F1">
+        <Border Grid.Row="2" HorizontalAlignment="Right"  Width="600" CornerRadius="5" Margin="0,20,10,10"  BorderThickness="1" BorderBrush="#BCE8F1">
             <Grid Margin="10,5,10,0">
                 <ScrollViewer>
                 <TextBox Grid.Row="1" Text="{Binding LogInfo}" BorderBrush="AliceBlue" FontSize="13" BorderThickness="0"  HorizontalAlignment="Left" ScrollViewer.CanContentScroll="True" MinWidth="530" MinLines="8" Margin="0,5,0,0"/>

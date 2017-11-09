@@ -38,7 +38,7 @@ namespace Hcdz.ModulePcie
 		public event Action<string> MessageReceived;
 		public event Action<IEnumerable<string>> LoggedOut; 
 		public event Action<string, string, long,long> ProgressChanged;
-        public event Action<string> NoticeScanByte;
+        public event Action<string,int> NoticeScanByte;
         // Global  
        public  event Action<long> NotifyTotal;
         public event Action<bool> Connected;
@@ -232,9 +232,9 @@ namespace Hcdz.ModulePcie
              {
                          Execute(NotifyFormatTime, total => total(totalTime));
               });
-            _chat.On<string>(ClientEvents.NoticeScanByte, (byteString) =>
+            _chat.On<string,int>(ClientEvents.NoticeScanByte, (byteString,index) =>
             {
-                Execute(NoticeScanByte, t => t(byteString));
+                Execute(NoticeScanByte, t => t(byteString,index));
             });
         }
 

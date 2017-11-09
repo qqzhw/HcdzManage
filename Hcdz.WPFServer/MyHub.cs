@@ -396,7 +396,10 @@ namespace Hcdz.WPFServer
         public bool ScanDevice(int deviceIndex)
         {
             PCIE_Device dev = PCIE_DeviceList.TheDeviceList().Get(deviceIndex);
-
+            if (dev==null)
+            {
+                return false;
+            }
             if (dev.WDCScan_DMAContigBufLock() != 0)
             {
                 //MessageBox.Show(("分配报告内存失败"));
@@ -429,16 +432,16 @@ namespace Hcdz.WPFServer
            dev.WriteBAR0(0, 0x28, 1);
             Thread.Sleep(1000);
             dev.WriteBAR0(0, 0x10, 1);
-           
+            
 
             //启动DMA
             //       //dma wr 使能
             byte[] tmpResult = new Byte[1024];
             Marshal.Copy(dev.pScanWbuffer, tmpResult, 0, 1024);
-            Clients.Client(Context.ConnectionId).NoticeScanByte(CommonHelper.ByteToString(tmpResult));
+            Clients.Client(Context.ConnectionId).NoticeScanByte(CommonHelper.ByteToString(tmpResult),deviceIndex);
            
-            dev.WriteBAR0(0, 0x28, 0);
-           
+            dev.WriteBAR0(0, 0x28, 0); 
+            dev.WriteBAR0(0, 0x10, 0);
             return true;
         }
 
@@ -614,6 +617,7 @@ namespace Hcdz.WPFServer
             for (int i = 0; i < devices.Count; i++)
             {
                 var dev = (PCIE_Device)devices[i];
+                dev.WriteBAR0(0, 0x28, 0);
                 dev.WriteBAR0(0, 0x10, 0);
                 dev.Status = 0;
             } 

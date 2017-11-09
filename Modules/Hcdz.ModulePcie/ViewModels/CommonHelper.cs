@@ -40,18 +40,17 @@ namespace Hcdz.ModulePcie.ViewModels
             }
             return ByteOut;
         }
-        public static byte[] hexStr2Bytes(string src)
+
+        public static byte[] StrToHexByte(string hexString)
         {
-            int m = 0, n = 0;
-            int l = src.Length / 2;
-            byte[] ret = new byte[l];
-            for (int i = 0; i < l; i++)
-            {
-                m = i * 2 + 1;
-                n = m + 1;
-                //  ret[i] = Byte.decode("0x" + src.substring(i * 2, m) + src.substring(m, n));
-            }
-            return ret;
+            hexString = hexString.Replace(" ", "");
+            if ((hexString.Length % 2) != 0)
+                hexString +=" ";
+            byte[] returnBytes = new byte[hexString.Length / 2];
+            for (int i = 0; i < returnBytes.Length; i++)
+                returnBytes[i] = Convert.ToByte(hexString.Substring(i * 2, 2), 16);
+            return returnBytes;
         }
+
     }
 }
