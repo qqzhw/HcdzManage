@@ -135,6 +135,7 @@
     <Compile Include="ViewModels\DeviceConverter.cs" />
     <Compile Include="ViewModels\DirectoryListModel.cs" />
     <Compile Include="ViewModels\FileDownloadViewModel.cs" />
+    <Compile Include="ViewModels\FormatViewModel.cs" />
     <Compile Include="ViewModels\PcieViewModel.cs" />
     <Compile Include="ViewModels\SettingsViewModel.cs" />
     <Compile Include="ViewModels\TcpClientViewModel.cs" />
@@ -145,6 +146,9 @@
     <Compile Include="Models\CustomWireProtocol.cs" />
     <Compile Include="Views\FileDownloadView.xaml.cs">
       <DependentUpon>FileDownloadView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\FormatView.xaml.cs">
+      <DependentUpon>FormatView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\SettingsView.xaml.cs">
       <DependentUpon>SettingsView.xaml</DependentUpon>
@@ -160,6 +164,10 @@
     <Page Include="Views\FilesView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\FormatView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\HardDriveView.xaml">
       <SubType>Designer</SubType>

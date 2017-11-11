@@ -52,9 +52,11 @@ namespace Hcdz.ModulePcie.ViewModels
             CloseDmaCmd= new DelegateCommand<object>(OnCloseReadDma);
             OpenChannel =new DelegateCommand<DeviceChannelModel>(OnOpenChannel);
             CloseChannel = new DelegateCommand<DeviceChannelModel>(OnCloseChannel);
+            ConnectClick= new DelegateCommand<TcpClientViewModel>(OnConnectTcp);
             SelectedDirCmd = new DelegateCommand<object>(OnLoadSelectDir);
             _deviceChannelModels = new ObservableCollection<DeviceChannelModel>();//主板1 四通道
            // _deviceChannel2 = new ObservableCollection<DeviceChannelModel>();//主板2 通道
+
             _viewModel = new PcieViewModel();
            
            // Stream = new FileStream("D:\\test", FileMode.Append, FileAccess.Write);
@@ -64,6 +66,15 @@ namespace Hcdz.ModulePcie.ViewModels
             _hcdzClient.NotifyTotal += _hcdzClient_NotifyTotal;
             _hcdzClient.NoticeScanByte +=OnNoticeScanByte;
             LoadDeviceChannel();
+        }
+
+        private async  void OnConnectTcp(TcpClientViewModel model)
+        {
+            if (!string.IsNullOrEmpty(model.Ip)&& (model.Port>0&&model.Port<65535))
+            {
+                await _hcdzClient.ConnectTcpServer(model.Ip, model.Port, model.Id);
+            }
+           
         }
 
         private void OnNoticeScanByte(string strByte,int deviceIndex)
@@ -535,6 +546,7 @@ namespace Hcdz.ModulePcie.ViewModels
         public ICommand ScanDeviceCmd { get; private set; }
         public ICommand OpenChannel { get; private set; }
         public ICommand CloseChannel { get; private set; }
+        public ICommand ConnectClick { get; private set; }
         public ICommand SelectedDirCmd { get; private set; }
         public ICommand CloseDmaCmd { get; private set; }
         #endregion

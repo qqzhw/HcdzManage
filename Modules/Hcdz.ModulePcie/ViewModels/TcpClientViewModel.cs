@@ -39,8 +39,8 @@ namespace Hcdz.ModulePcie.ViewModels
             }
         }
 
-        private string _port;
-        public string Port
+        private int _port;
+        public int Port
         {
             get
             {

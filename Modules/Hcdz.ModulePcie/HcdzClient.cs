@@ -467,5 +467,13 @@ namespace Hcdz.ModulePcie
             }
           
         }
+
+        public async Task ConnectTcpServer(string IP, int port, int index)
+        {
+            if (_connection.State == ConnectionState.Connected)
+            {
+                await _chat.Invoke("TcpConnect",IP,port,index);
+            }
+        }
     }
 }

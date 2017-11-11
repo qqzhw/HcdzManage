@@ -52,10 +52,25 @@ namespace Hcdz.ModulePcie.ViewModels
 			CopyNewCmd= new DelegateCommand<object>(OnCopyNew);
 			FileCopyCmd = new DelegateCommand<object>(OnFileCopy);
             FileDownloadCmd = new DelegateCommand<DirectoryInfoModel>(OnDownloadFile);
+            MenuItemCommand= new DelegateCommand<object>(OnMenuCommand);
             Menu = new ObservableCollection<MenuItem>(); 
 			_hcdzClient.ProgressChanged += FileCopyProgressChanged;
             _hcdzClient.Connected += ClientConnected;
             Initializer();
+        }
+
+        private void OnMenuCommand(object obj)
+        {
+            if (SelectedDrive==null)
+                return;
+            var notification = new MessageNotification()
+            {
+                Title = "磁盘格式化",
+                Content = _container.Resolve<FormatView>(new ParameterOverride("name",SelectedDrive.DriveLetter)),
+            };
+            PopupWindows.NormalNotificationRequest.Raise(notification, (callback) => {
+
+            });
         }
 
         private void OnDownloadFile(DirectoryInfoModel model)
@@ -298,7 +313,12 @@ namespace Hcdz.ModulePcie.ViewModels
             } 
         }
         #region 属性
-
+        private DriveInfoModel _selectedDrive;
+         public DriveInfoModel SelectedDrive
+        {
+            get { return _selectedDrive; }
+            set { SetProperty(ref _selectedDrive, value); }
+        }
         private string _sourceFullPath;
         public string SourceFullPath
         {
@@ -364,6 +384,7 @@ namespace Hcdz.ModulePcie.ViewModels
         public ICommand CreateNewCmd { get; private set; }
 		public ICommand FileCopyCmd { get;  set; }
         public ICommand FileDownloadCmd { get; set; }
+        public ICommand MenuItemCommand { get; private set; }
         public ICommand FileZtCmd { get; private set; }
 		public ICommand DeleteCmd { get; private set; }
 		public ICommand FileCutCmd { get; private set; }

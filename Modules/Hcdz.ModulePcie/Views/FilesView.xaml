@@ -754,7 +754,7 @@
         <StackPanel>
         <StackPanel Orientation="Horizontal" Margin="0">
 			<Label Content="远程硬盘" FontFamily="SimSun" VerticalAlignment="Center" Margin="10,0,0,0"/>
-            <ListBox  x:Name="lstDrive" Height="30"  VerticalAlignment="Center" SelectedIndex="0" ItemsSource="{Binding DriveInfoItems}"  HorizontalAlignment="Stretch" >
+                <ListBox  x:Name="lstDrive" Height="30"  VerticalAlignment="Center" SelectedItem="{Binding SelectedDrive}" SelectedIndex="0" ItemsSource="{Binding DriveInfoItems}"  HorizontalAlignment="Stretch" >
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <VirtualizingStackPanel Orientation="Horizontal" />
@@ -772,14 +772,21 @@
                         <i:InvokeCommandAction Command="{Binding SelectedLoadDirCmd}"  CommandParameter="{Binding ElementName=lstDrive,Path=SelectedItem}"/>
                     </i:EventTrigger>
                 </i:Interaction.Triggers>
-            </ListBox>
+                    <!--<ListBox.ContextMenu>
+                        <ContextMenu >
+                            <MenuItem Header="格式化" Command="{Binding MenuItemCommand}" CommandParameter="{Binding ElementName=lstDrive,Path=SelectedValue}" />
+                        </ContextMenu>
+                    </ListBox.ContextMenu>-->
+                     
+                </ListBox>
            
 		</StackPanel>
             <Rectangle Height="1" Margin="0,3,0,1"  Fill="#2471ac"/>
             <StackPanel Orientation="Horizontal">
                 <Label Content="选择路径" VerticalAlignment="Center" Margin="10,0,0,0" FontFamily="SimSun" />
                 <TextBlock Text="{Binding SelectedPath}" Margin="10,0,0,0" FontWeight="Bold" FontFamily="SimSun" FontSize="14"  VerticalAlignment="Center"/>
-                <Button  Width="120" Margin="45,4,0,4" Content="新建文件夹" Style="{DynamicResource MetroFlatButton}"  Command="{Binding CreateNewCmd}" />
+                <Button  Width="120" Margin="45,4,0,4" Content="格式化磁盘" Style="{DynamicResource MetroFlatButton}"  Command="{Binding MenuItemCommand}" />
+                <Button  Width="120" Margin="20,4,0,4" Content="新建文件夹" Style="{DynamicResource MetroFlatButton}"  Command="{Binding CreateNewCmd}" />
                 <Button  Width="120" Margin="20,4,0,4" Content="粘贴"   Style="{DynamicResource MetroFlatButton}"  Command="{Binding CopyNewCmd}" />
                 <StackPanel Orientation="Horizontal" Margin="20,2,0,0" Visibility="{Binding ProgressShow,Converter={StaticResource trueToVisibility}}">
                     <ProgressBar Value="{Binding ProgressValue}"  Width="300" Height="22"   />

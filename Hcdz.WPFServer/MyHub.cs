@@ -18,6 +18,9 @@ using System.Windows.Threading;
 using System.Collections.Concurrent;
 using Hcdz.Framework.Common;
 using Pvirtech.Framework.Common;
+using Pvirtech.TcpSocket.Scs.Client;
+using Pvirtech.TcpSocket.Scs.Communication.EndPoints.Tcp;
+using Pvirtech.TcpSocket.Scs.Communication.Messages;
 
 namespace Hcdz.WPFServer
 {
@@ -28,7 +31,7 @@ namespace Hcdz.WPFServer
         private static DispatcherTimer dispatcherTimer = new DispatcherTimer();
         private static bool DeviceStatus; 
         private static bool IsStop = false;
-        private static ConcurrentQueue<byte[]> concurrentQueue = new ConcurrentQueue<byte[]>();
+        private readonly static List<TcpClientModel> TcpModels = new List<TcpClientModel>();
         static long ReadTotalSize = 0;
         //private static FileStream DeviceFile;
         public MyHub()
@@ -66,11 +69,11 @@ namespace Hcdz.WPFServer
         }
         public bool FormatDrive(string driveName)
         {
-            var dt = DateTime.Now;
+            //var dt = DateTime.Now;
             bool flag= CommonHelper.FormatDrive(driveName);
-            var dt2 = DateTime.Now;
-            TimeSpan ts = dt2 - dt;
-            Clients.Client(Context.ConnectionId).NotifyFormatTime(ts.Milliseconds);
+            //var dt2 = DateTime.Now;
+           // TimeSpan ts = dt2 - dt;
+           // Clients.Client(Context.ConnectionId).NotifyFormatTime(ts.Milliseconds);
             return flag;
         }
         public void CopyFileEx(string sourceFullPath, string targetFullPath)
@@ -158,8 +161,8 @@ namespace Hcdz.WPFServer
 
         public DWORD InitLoad()
         {
-            //PCIE_DeviceList.TheDeviceList().Add(new PCIE_Device(new WD_PCI_SLOT() { dwSlot=3}));
-            //PCIE_DeviceList.TheDeviceList().Add(new PCIE_Device(new WD_PCI_SLOT() { dwSlot = 5 }));
+            TcpModels.Add(new TcpClientModel() { Id = 1 });
+            TcpModels.Add(new TcpClientModel() { Id = 2 });
             var pciDevList = PCIE_DeviceList.TheDeviceList();
 			//GlobalHost.DependencyResolver.Register(typeof(PCIE_DeviceList), () => pciDevList);
 			
@@ -662,5 +665,56 @@ namespace Hcdz.WPFServer
                 dev.WriteBAR0(0, 0x10, 0); 
             }
         }
+
+        #region TCP/IP
+        public bool TcpConnect(string ip,int port,int index=1)
+        {
+            var findItem = TcpModels.Find(o => o.Id == index);
+            if (!findItem.IsConnected)
+            {
+                findItem.IP = ip;
+                findItem.Port = port;
+            }
+            try
+            {
+                //Create a client object to connect a server on 127.0.0.1 (local) IP and listens 10085 TCP port
+                findItem.Client = ScsClientFactory.CreateClient(new ScsTcpEndPoint(ip, port));
+                // client.WireProtocol = new CustomWireProtocol(); //Set custom wire protocol
+                //Register to MessageReceived event to receive messages from server.
+                findItem.Client.MessageReceived += Client_MessageReceived;
+                findItem.Client.Connected += Client_Connected;
+                findItem.Client.Disconnected += Client_Disconnected;
+                findItem.Client.Connect(); //Connect to the server 
+
+                
+                  //Send message to the server
+               // findItem.Client.SendMessage(new ScsTextMessage(messageText, "q1"));
+
+                //client.Disconnect(); //Close connection to server
+            }
+            catch (Exception ex)
+            {
+                findItem.Client.Dispose();
+                LogHelper.ErrorLog(ex,"连接异常!");
+                return false;
+            }
+            return true;
+        }
+
+        private void Client_Disconnected(object sender, EventArgs e)
+        {
+            
+        }
+
+        private void Client_Connected(object sender, EventArgs e)
+        {
+             
+        }
+
+        private void Client_MessageReceived(object sender, MessageEventArgs e)
+        {
+            
+        }
+        #endregion
     }
 }

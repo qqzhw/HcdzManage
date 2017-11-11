@@ -43,7 +43,7 @@ namespace Hcdz.ModulePcie
 		Task<bool> DeviceOpen(int iSelectedIndex); 
 		Task<bool> DeviceClose(int iSelectedIndex);
 		Task<string> InitDeviceInfo(int iSelectedIndex);
-
+        Task ConnectTcpServer(string IP,int port,int index);
         Task<bool> FormatDrive(string driveName);
 		Task CopyFileEx(string sourceFullPath, string targetFullPath);
 
