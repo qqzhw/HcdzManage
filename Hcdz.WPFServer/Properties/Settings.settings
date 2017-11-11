@@ -8,5 +8,11 @@
     <Setting Name="Server" Type="System.String" Scope="User">
       <Value Profile="(Default)">http://localhost:8080</Value>
     </Setting>
+    <Setting Name="IsAutoStart" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="IsAutoConnect" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

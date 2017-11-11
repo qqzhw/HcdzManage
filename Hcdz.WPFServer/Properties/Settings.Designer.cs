@@ -46,5 +46,29 @@ namespace Hcdz.WPFServer.Properties {
                 this["Server"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool IsAutoStart {
+            get {
+                return ((bool)(this["IsAutoStart"]));
+            }
+            set {
+                this["IsAutoStart"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool IsAutoConnect {
+            get {
+                return ((bool)(this["IsAutoConnect"]));
+            }
+            set {
+                this["IsAutoConnect"] = value;
+            }
+        }
     }
 }

@@ -6,6 +6,7 @@ using Prism.Events;
 using Prism.Mvvm;
 using Prism.Regions;
 using Pvirtech.Framework.Common;
+using Pvirtech.TcpSocket.Scs.Client;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -53,7 +54,7 @@ namespace Hcdz.ModulePcie.ViewModels
             CloseChannel = new DelegateCommand<DeviceChannelModel>(OnCloseChannel);
             SelectedDirCmd = new DelegateCommand<object>(OnLoadSelectDir);
             _deviceChannelModels = new ObservableCollection<DeviceChannelModel>();//主板1 四通道
-            _deviceChannel2 = new ObservableCollection<DeviceChannelModel>();//主板2 通道
+           // _deviceChannel2 = new ObservableCollection<DeviceChannelModel>();//主板2 通道
             _viewModel = new PcieViewModel();
            
            // Stream = new FileStream("D:\\test", FileMode.Append, FileAccess.Write);
@@ -98,6 +99,10 @@ namespace Hcdz.ModulePcie.ViewModels
                     string tmpInfo = string.Empty;
                     for (int i = 0; i < list.Count(); i++)
                     {
+                        if (i>2)
+                        {
+                            break;
+                        }
                         if (list[i]!="11")
                         {
                             string info = string.Format("设备{0}  通道{1} 有异常\n", deviceIndex + 1, i + 1);
@@ -172,6 +177,10 @@ namespace Hcdz.ModulePcie.ViewModels
                     DiskVal = ByteFormatter.ToString(drive.AvailableFreeSpace) + " 可用";
                     DiskPercent = 100.0 - (int)(drive.AvailableFreeSpace * 100.0 / drive.TotalSize); 
                 }
+            }
+            if (drives.Count() > 1)
+            {
+                DriveIndex = 1;
             }
         }
 
@@ -371,50 +380,8 @@ namespace Hcdz.ModulePcie.ViewModels
                     });
                 }
                 CloseDMAChannel();
-
             }
-
-            //        else
-            //        {
-            //if (!IsSecOpen)
-            //{
-            //	var result = await _hcdzClient.DeviceOpen(1);
-            //	if (result)
-            //	{
-
-            //		OpenDeviceText1 = "关闭设备";
-            //		IsSecOpen = true;
-            //		DeviceDesc = await _hcdzClient.InitDeviceInfo(1);              
-            //	}
-            //	else
-            //	{
-            //		RadDesktopAlertManager desktop = new RadDesktopAlertManager(AlertScreenPosition.BottomCenter);
-
-            //		desktop.ShowAlert(new RadDesktopAlert()
-            //		{
-            //			Content = "设备连接失败!"
-            //		});
-            //	}
-            //}
-            //else
-            //{
-            //	var flag = await _hcdzClient.DeviceClose(1);
-            //	if (flag)
-            //	{
-            //		OpenDeviceText1 = "连接设备";
-            //		IsSecOpen = false;
-            //	}
-            //	else
-            //	{
-            //		RadDesktopAlertManager desktop = new RadDesktopAlertManager(AlertScreenPosition.BottomCenter);
-
-            //		desktop.ShowAlert(new RadDesktopAlert()
-            //		{
-            //			Content = "设备2断开失败!"
-            //		});
-            //	}
-            //}
-            //} 
+             
         }
 
         private void DispatcherTimer_Tick(object sender, EventArgs e)
@@ -427,9 +394,17 @@ namespace Hcdz.ModulePcie.ViewModels
         }
 
         #region 属性
-        
-       
-
+        private int _driveIndex=-1;
+        public int DriveIndex {
+            get { return _driveIndex; }
+            set { SetProperty(ref _driveIndex, value); }
+        }
+        public ObservableCollection<TcpClientViewModel> _tcpViewModel;
+        public ObservableCollection<TcpClientViewModel> TcpViewModel
+        {
+            get { return _tcpViewModel; }
+            set { SetProperty(ref _tcpViewModel, value); }
+        }
         private PcieViewModel _viewModel;
         public PcieViewModel ViewModel
         {
@@ -589,44 +564,7 @@ namespace Hcdz.ModulePcie.ViewModels
                 }); 
                 return;
             }
-
-            //  queue1 = new ConcurrentQueue<byte[]>();
-            //Thread readThread = new Thread(new ThreadStart(ReadDMA));
-            //readThread.IsBackground = true;
-            //readThread.Start();
-            //Thread writeThread = new Thread(new ThreadStart(WriteDMA));
-            //writeThread.IsBackground = true;
-            //writeThread.Start();
-            //try
-            //{
-            //    DWORD dwStatus = pciDevList.Init();
-            //    if (dwStatus != (DWORD)wdc_err.WD_STATUS_SUCCESS)
-            //    {
-            //        RadDesktopAlert alert = new RadDesktopAlert();
-            //        alert.Content = "加载设备失败!";
-            //        RadWindow.Alert(new DialogParameters
-            //        {
-            //            Content = "加载设备失败！",
-            //            DefaultPromptResultValue = "default name",
-            //            Theme = new Windows8TouchTheme(),
-            //            Header = "提示",
-            //            TopOffset = 30,
-            //        });
-            //        return;
-            //    }
-
-                //foreach (PCIE_Device dev in pciDevList)
-                //    devicesItems.Add(dev);
-                //if (devicesItems.Count > 0)
-                //{
-                //    ViewModel.ShortDesc = devicesItems[0].Name;
-                //}
-           // }
-            //catch (Exception)
-            //{
-            //    MessageBox.Show("初始化设备失败!");                
-            //}
-            
+             
            
         }
 
@@ -688,6 +626,10 @@ namespace Hcdz.ModulePcie.ViewModels
             list.Add(channel2); 
             list.Add(channel5); 
             _deviceChannelModels = new ObservableCollection<DeviceChannelModel>(list);
+            _tcpViewModel = new ObservableCollection<TcpClientViewModel>();
+            _tcpViewModel.Add(new TcpClientViewModel() { Id=1});
+            _tcpViewModel.Add(new TcpClientViewModel() { Id = 2 });
+           // _tcpViewModel = new ObservableCollection<TcpClientViewModel>();
         }
          
         private void ReadDMA()

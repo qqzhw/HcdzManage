@@ -137,6 +137,7 @@
     <Compile Include="ViewModels\FileDownloadViewModel.cs" />
     <Compile Include="ViewModels\PcieViewModel.cs" />
     <Compile Include="ViewModels\SettingsViewModel.cs" />
+    <Compile Include="ViewModels\TcpClientViewModel.cs" />
     <Compile Include="ViewModels\TrueToColorConverter.cs" />
     <Compile Include="Views\ChildView.xaml.cs">
       <DependentUpon>ChildView.xaml</DependentUpon>

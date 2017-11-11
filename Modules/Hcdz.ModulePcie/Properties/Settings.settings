@@ -26,5 +26,8 @@
     <Setting Name="DwonloadUrl" Type="System.String" Scope="User">
       <Value Profile="(Default)">http://localhost:8080/api/download/getbackup?filepath=</Value>
     </Setting>
+    <Setting Name="LocalPath" Type="System.String" Scope="User">
+      <Value Profile="(Default)">D:\\</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

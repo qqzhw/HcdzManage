@@ -109,13 +109,7 @@ namespace HcdzManage.ViewModels
                 IsDefaultShow = true,
                 IsSelected = true,
             });
-            _systemInfos.Add(new SystemInfoViewModel()
-            {
-                Id = "HardDriveView",
-                Title = "磁盘管理",
-                InitMode = InitializationMode.OnDemand,
-                IsDefaultShow = false,
-            });
+          
             _systemInfos.Add(new SystemInfoViewModel()
             {
                 Id = "FilesView",
@@ -127,6 +121,13 @@ namespace HcdzManage.ViewModels
             {
                 Id = "SettingsView",
                 Title = "基本设置",
+                InitMode = InitializationMode.OnDemand,
+                IsDefaultShow = false,
+            });
+            _systemInfos.Add(new SystemInfoViewModel()
+            {
+                Id = "HardDriveView",
+                Title = "磁盘管理",
                 InitMode = InitializationMode.OnDemand,
                 IsDefaultShow = false,
             });

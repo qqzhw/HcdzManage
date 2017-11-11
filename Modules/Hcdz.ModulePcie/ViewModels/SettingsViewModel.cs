@@ -38,7 +38,8 @@ namespace Hcdz.ModulePcie.ViewModels
 			Settings.Default.Bar5 = Bar5;
 			Settings.Default.ServerUrl = SignalrServer;
 			Settings.Default.DwonloadUrl = DownloadUrl;
-			Settings.Default.Save();
+            Settings.Default.LocalPath = LocalPath;
+            Settings.Default.Save();
 		}
 
 		private void Initializer()
@@ -51,10 +52,17 @@ namespace Hcdz.ModulePcie.ViewModels
 			_bar5 = Settings.Default.Bar5;
 			_signalrServer = Settings.Default.ServerUrl;
 			_downloadUrl = Settings.Default.DwonloadUrl;
-		}
-		#region 属性
-
-		private string _bar0;
+            _localPath= Settings.Default.LocalPath;
+        }
+        #region 属性
+        
+        private string  _localPath;
+        public string LocalPath
+        {
+            get { return _localPath; }
+            set { SetProperty(ref _localPath, value); }
+        }
+        private string _bar0;
 		public string Bar0
 		{
 			get { return _bar0; }

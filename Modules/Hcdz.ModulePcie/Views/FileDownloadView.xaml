@@ -4,12 +4,31 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Hcdz.ModulePcie.Views"
+             xmlns:metro="http://metro.pvirtech.com/winfx/xaml/controls"
              xmlns:prism="http://prismlibrary.com/" 
              x:Name="filewindow"
              mc:Ignorable="d"  Width="500" Height="200"
              d:DesignHeight="300" d:DesignWidth="300">
     <Grid>
-        <TextBlock Text="五年级" />
-        <Button Margin="50,50,0,0"   Content="关闭" Width="70" Height="28" Command="{Binding  CloseWindow}"   CommandParameter="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}, Mode=OneWay}"/>
+        <Border  Margin="10,5,10,45"     BorderThickness="1" BorderBrush="#BCE8F1"     CornerRadius="5">
+            <Grid  HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="42"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Border Background="#D9EDF7">
+                    <Grid>
+                        <TextBlock Text="{Binding FileName}" FontSize="16" Foreground="#31708F" VerticalAlignment="Center" Margin="20,0,0,0"/>                       
+                    </Grid>
+                </Border>
+                <Border BorderThickness="1"  BorderBrush="#D9EDF7" Grid.Row="1">
+                    <StackPanel >
+                        <TextBlock Text="{Binding ProgressText}" Margin="20,20,0,0"/>
+                        <metro:MetroProgressBar  Background="#C8EDF7" IsIndeterminate="False" Margin="20,5,20,20"   Value="{Binding ProgressValue}" Height="30" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Border>
+        <Button Margin="0,0,10,10" HorizontalAlignment="Right" Style="{DynamicResource MetroFlatButton}" VerticalAlignment="Bottom"   Content="关闭" Width="70" Height="28" Command="{Binding  CloseWindow}"   CommandParameter="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}, Mode=OneWay}"/>
     </Grid>
 </UserControl>

@@ -45,18 +45,43 @@ namespace Hcdz.ModulePcie.ViewModels
 			//_driveInfoItems = new ObservableCollection<DriveInfo>();
 			DoubleClickCmd= new DelegateCommand<MouseButtonEventArgs>(OnDoubleClickDetail);
 			LoadDirCmd = new DelegateCommand<object>(OnBackDir);
-			SelectedLoadDirCmd = new DelegateCommand<DriveInfo>(OnSelectLoadDir);
+			SelectedLoadDirCmd = new DelegateCommand<DriveInfoModel>(OnSelectLoadDir);
             ListRightMenue = new DelegateCommand<object>(OnRightMenue);
             LoadedCommand = new DelegateCommand<object>(OnLoad);
             CreateNewCmd=new DelegateCommand<object>(OnCreateNew);
 			CopyNewCmd= new DelegateCommand<object>(OnCopyNew);
 			FileCopyCmd = new DelegateCommand<object>(OnFileCopy);
-			Menu = new ObservableCollection<MenuItem>();
-			Initializer();
+            FileDownloadCmd = new DelegateCommand<DirectoryInfoModel>(OnDownloadFile);
+            Menu = new ObservableCollection<MenuItem>(); 
 			_hcdzClient.ProgressChanged += FileCopyProgressChanged;
+            _hcdzClient.Connected += ClientConnected;
+            Initializer();
         }
 
-		private void FileCopyProgressChanged(string source, string destination, long totalFileSize, long totalBytesTransferred)
+        private void OnDownloadFile(DirectoryInfoModel model)
+        {
+            if (model == null)
+                return;
+            var notification = new MessageNotification()
+            {
+                Title = "文件下载",
+                Content = _container.Resolve<FileDownloadView>(new ParameterOverride("fileName", model.FullName)),
+            };
+            PopupWindows.NormalNotificationRequest.Raise(notification, (callback) => {
+
+            });
+        }
+
+        private void ClientConnected(bool flag)
+        {
+            if (flag)
+            {
+                Initializer();
+            }
+          
+        }
+
+        private void FileCopyProgressChanged(string source, string destination, long totalFileSize, long totalBytesTransferred)
 		{
 			double dProgress = (totalBytesTransferred / (double)totalFileSize) * 100.0;
 			//progressBar1.Value = (int)dProgress;
@@ -91,8 +116,14 @@ namespace Hcdz.ModulePcie.ViewModels
 
 		private void InitMenu(DirectoryInfoModel model)
 		{
-		
-			MenuItem mi = new MenuItem()
+            MenuItem mi0 = new MenuItem()
+            {
+                Header = "下载",
+                Command = FileDownloadCmd,
+                CommandParameter = model
+            };
+            Menu.Add(mi0);
+            MenuItem mi = new MenuItem()
 			{
 				Header = "复制",
 				Command =FileCopyCmd,
@@ -100,14 +131,15 @@ namespace Hcdz.ModulePcie.ViewModels
 			};
 			Menu.Add(mi);
 
-			//mi = new MenuItem()
-			//{
-			//	Header = "粘贴",
-			//	Command = FileZtCmd
-			//};
-			//Menu.Add(mi);
+            mi = new MenuItem()
+            {
+                Header = "粘贴",
+                Command = FileZtCmd,
+                CommandParameter = model
+            };
+            Menu.Add(mi);
 
-			mi = new MenuItem()
+            mi = new MenuItem()
 			{
 				Header = "剪切",
 				Command = FileCutCmd,
@@ -121,8 +153,7 @@ namespace Hcdz.ModulePcie.ViewModels
 				Command = DeleteCmd,
                 CommandParameter = model
             };
-			Menu.Add(mi);
-			
+			Menu.Add(mi); 
 
 		}
 
@@ -152,22 +183,11 @@ namespace Hcdz.ModulePcie.ViewModels
 				{
 					parentRow.IsSelected = true;
 					var model = parentRow.DataContext as DirectoryInfoModel;
-                    InitMenu(model);
-                    var notification = new MessageNotification()
+                    if (!model.IsDir)
                     {
-                        Title = "文件下载",
-                        Content = _container.Resolve<FileDownloadView>(new ParameterOverride("fileName", "d:\\ddd")),
-                    };
-                    PopupWindows.NormalNotificationRequest.Raise(notification,(callback)=> {
-                       
-                    });
-                    //using (WebClient client=new WebClient())
-                    //{
-                    //    client.DownloadProgressChanged += Client_DownloadProgressChanged;
-                    //    client.DownloadFileCompleted += Client_DownloadFileCompleted;
-                    //   client.DownloadFileAsync(new Uri(Properties.Settings.Default.DwonloadUrl+"tets.rar"),"deds");
-
-                    //}
+                        InitMenu(model);
+                    }
+                   
                 }
 				else
 				{
@@ -176,16 +196,7 @@ namespace Hcdz.ModulePcie.ViewModels
 				
 			}
 		}
-
-        private void Client_DownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e)
-        {
-            var s = 9;
-        }
-
-        private void Client_DownloadFileCompleted(object sender, System.ComponentModel.AsyncCompletedEventArgs e)
-        {
-            int s = 9;
-        }
+         
 
         private void OnCreateNew(object obj)
         {
@@ -224,8 +235,10 @@ namespace Hcdz.ModulePcie.ViewModels
             }
         }
 
-        private async void OnSelectLoadDir(DriveInfo drive)
+        private async void OnSelectLoadDir(DriveInfoModel drive)
 		{
+            if (drive == null)
+                return;
             IsBusy = true;
 			var items=await List(drive.Name);
             SelectedPath = drive.Name;
@@ -334,12 +347,7 @@ namespace Hcdz.ModulePcie.ViewModels
 			get { return _directoryItems; }
 			set { SetProperty(ref _directoryItems, value); }
 		}
-		private ObservableCollection<DriveInfo>  _driveInfoItems;
-		public ObservableCollection<DriveInfo> DriveInfoItems
-		{
-			get { return _driveInfoItems; }
-			set { SetProperty(ref _driveInfoItems, value); }
-		}
+		
 		private DirectoryInfoModel _selectedItem;
 		public DirectoryInfoModel SelectedItem
 		{
@@ -355,25 +363,62 @@ namespace Hcdz.ModulePcie.ViewModels
         public ICommand LoadedCommand { get; private set; }
         public ICommand CreateNewCmd { get; private set; }
 		public ICommand FileCopyCmd { get;  set; }
-		public ICommand FileZtCmd { get; private set; }
+        public ICommand FileDownloadCmd { get; set; }
+        public ICommand FileZtCmd { get; private set; }
 		public ICommand DeleteCmd { get; private set; }
 		public ICommand FileCutCmd { get; private set; }
 		public ICommand CopyNewCmd { get; private set; }
-		#endregion
+        #endregion
+        private ObservableCollection<DriveInfoModel> driveInfoItems;
+        public ObservableCollection<DriveInfoModel> DriveInfoItems
+        {
+            get { return driveInfoItems; }
+            set { SetProperty(ref driveInfoItems, value); }
+        }
+        public ICommand FormatCmd { get; private set; }
 
-		private async void Initializer()
+       
+        private async void Initializer()
 		{
             IsBusy = true;
             //获取远程磁盘
-            DriveInfo[] drives =await _hcdzClient.GetDrives();
-            if (drives!=null)
-            {
-                DriveInfoItems = new ObservableCollection<DriveInfo>(drives);
-            }
+            //DriveInfo[] drives =await _hcdzClient.GetDrives();
+            //if (drives!=null)
+            //{
+            //    DriveInfoItems = new ObservableCollection<DriveInfo>(drives);
+            //}
+            var models = new ObservableCollection<DriveInfoModel>();
 
+            var drives = await _hcdzClient.GetDrives();
+            if (drives == null)
+                return;
+            foreach (var item in drives)
+            {
+                var drive = new DriveInfoModel()
+                {
+                    AvailableFreeSpace = item.AvailableFreeSpace,
+                    AvailableFreeSpaceText = ByteFormatter.ToString(item.AvailableFreeSpace) + " 可用",
+                    DriveFormat = item.DriveFormat,
+                    DriveType = item.DriveType,
+                    IsReady = item.IsReady,
+                    Name = item.Name,
+                    RootDirectory = item.RootDirectory,
+                    TotalFreeSpace = item.TotalFreeSpace,
+                    TotalFreeSpaceText = ByteFormatter.ToString(item.TotalFreeSpace),
+                    TotalSize = item.TotalSize,
+                    TotalSizeText = "共" + ByteFormatter.ToString(item.TotalSize),
+                    VolumeLabel = string.IsNullOrEmpty(item.VolumeLabel) ? "本地磁盘 " : item.VolumeLabel,
+                    Percent = 100.0 - (int)(item.AvailableFreeSpace * 100.0 / item.TotalSize),
+                    DriveLetter = item.Name.Replace("\\", "")
+                };
+                drive.NameDesc = drive.VolumeLabel + string.Format("({0}:)", item.ToString().Replace(":", "").Replace("\\", ""));
+                models.Add(drive);
+            }
+            DriveInfoItems = models;
             var items = await List();
             if (items != null) 
 		   DirectoryItems = new ObservableCollection<DirectoryInfoModel>(items);
+            SelectedPath = DriveInfoItems.FirstOrDefault()?.Name;
           IsBusy = false;
          
         }

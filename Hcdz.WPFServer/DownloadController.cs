@@ -24,7 +24,11 @@ namespace Nop.Web.Controllers
 			{
 				response = await Task.Run<HttpResponseMessage>(() =>
 				{
-                    filePath = "d:\\testdb.bak";
+                    if (string.IsNullOrEmpty(filePath))
+                    {
+                      return  new HttpResponseMessage(HttpStatusCode.OK);
+                    }
+                    //filePath = "d:\\testdb.bak";
                     //var directory = new DirectoryInfo(filePath);
                     //   var files = File.OpenRead(filePath);
                     //	var lastCreatedFile = files.OrderByDescending(f => f.CreationTime).FirstOrDefault();

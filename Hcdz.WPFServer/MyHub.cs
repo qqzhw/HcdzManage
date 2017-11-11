@@ -59,9 +59,9 @@ namespace Hcdz.WPFServer
             return base.OnDisconnected(stopCalled);
         }
 
-        public DriveInfo[] GetDrives()
+        public IEnumerable<DriveInfo> GetDrives()
         {
-            DriveInfo[] drives = DriveInfo.GetDrives();
+            var drives = DriveInfo.GetDrives().Skip(1);
             return drives;
         }
         public bool FormatDrive(string driveName)
@@ -86,14 +86,14 @@ namespace Hcdz.WPFServer
 
         public async Task<List<DirectoryInfoModel>> GetFileList(string path = "")
         {
-            DriveInfo[] drives = DriveInfo.GetDrives();
+            var drives = DriveInfo.GetDrives().Skip(1);
             FileSystemInfo[] dirFileitems = null;
             var list = new List<DirectoryInfoModel>();
             await Task.Run(() =>
             {
                 if (string.IsNullOrEmpty(path))
                 {
-                    path = drives[0].Name;
+                    path = drives.First().Name;
                     DirectoryInfo dirInfo = new DirectoryInfo(path);//根目录				
                     dirFileitems = dirInfo.GetFileSystemInfos("*", SearchOption.TopDirectoryOnly);
                 }
@@ -432,9 +432,9 @@ namespace Hcdz.WPFServer
            dev.WriteBAR0(0, 0x28, 1);
             Thread.Sleep(1000);            
             dev.WriteBAR0(0, 0x10, 1);
-          
-            dev.WriteBAR0(0, 0x28, 0);
+            Thread.Sleep(200); 
             dev.WriteBAR0(0, 0x10, 0);
+            dev.WriteBAR0(0, 0x28, 0);
             //启动DMA
             //       //dma wr 使能
             byte[] tmpResult = new Byte[1024];
@@ -447,6 +447,14 @@ namespace Hcdz.WPFServer
 
         public string OnReadDma(string dvireName, int dataSize, int deviceIndex)
         {
+            var findDrive = DriveInfo.GetDrives().FirstOrDefault(o => o.Name == dvireName);
+            if (findDrive != null)
+            {
+                if (findDrive.AvailableFreeSpace < 1024 * 1024 * 1024.0)
+                {
+
+                }
+            }
             ReadTotalSize = 0;
             PCIE_Device dev = PCIE_DeviceList.TheDeviceList().Get(deviceIndex);
             if (dev == null)
@@ -496,13 +504,14 @@ namespace Hcdz.WPFServer
             {
                 Directory.CreateDirectory(dir);
             }
+           
             var filePath = Path.Combine(dir, dt);
             dev.DeviceFile = new FileStream(filePath, FileMode.Append, FileAccess.Write);
             dev.StartWrDMA(0);
-            
-            //Thread readThread = new Thread(new ParameterizedThreadStart(p => OnWriteDMA(dev)));
-            //readThread.IsBackground = true;
-            //readThread.Start();
+
+            Thread readThread = new Thread(new ParameterizedThreadStart(p => OnScanDrive(dev,dvireName,deviceIndex)));
+            readThread.IsBackground = true;
+            readThread.Start();
 
             //Thread nonParameterThread = new Thread(new ParameterizedThreadStart(p => NonParameterRun(dev, dvireName, dataSize, deviceIndex)));
             //nonParameterThread.Start();
@@ -522,7 +531,20 @@ namespace Hcdz.WPFServer
             return string.Empty;
         }
 
-       
+        private void OnScanDrive(PCIE_Device dev, string dvireName, int deviceIndex)
+        {
+            while (!IsStop)
+            {
+                var findDrive = DriveInfo.GetDrives().FirstOrDefault(o => o.Name == dvireName);
+                if (findDrive != null)
+                {
+                    if (findDrive.AvailableFreeSpace < 1024 * 1024 * 1024.0)
+                    {
+                        dev.DeviceFile.SetLength(0);
+                    }
+                }
+            }
+        }
 
         private void NonParameterRun(PCIE_Device dev,string dvireName,int dataSize,int deviceIndex)
         {
@@ -558,8 +580,15 @@ namespace Hcdz.WPFServer
             IsStop = false;
             while (!IsStop)
             {
-
-                  byte[] tmpResult = new Byte[wrDMASize];
+                //var findDrive = DriveInfo.GetDrives().FirstOrDefault(o => o.Name == dvireName);
+                //if (findDrive != null)
+                //{
+                //    if (findDrive.AvailableFreeSpace < 1024 * 1024 * 256.0)
+                //    {
+                //        dev.DeviceFile.SetLength(0);
+                //    }
+                //}
+                byte[] tmpResult = new Byte[wrDMASize];
                 Marshal.Copy(dev.pWbuffer, tmpResult, 0, wrDMASize);
                 dev.DeviceFile.Write(tmpResult, 0, wrDMASize);
                 dev.DeviceFile.Flush();
@@ -617,7 +646,7 @@ namespace Hcdz.WPFServer
             for (int i = 0; i < devices.Count; i++)
             {
                 var dev = (PCIE_Device)devices[i];
-                dev.WriteBAR0(0, 0x28, 0);
+                //dev.WriteBAR0(0, 0x28, 0);
                 dev.WriteBAR0(0, 0x10, 0);
                 dev.Status = 0;
             } 

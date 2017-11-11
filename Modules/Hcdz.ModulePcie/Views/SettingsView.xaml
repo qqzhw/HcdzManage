@@ -58,8 +58,13 @@
 									<Label Content="  服务端地址"  VerticalAlignment="Center" Margin="5,0,0,0"/>
 									<TextBox  Margin="2,0,0,0" Text="{Binding SignalrServer}"  Width="200" />
 								</StackPanel>
-								<StackPanel Orientation="Horizontal"  Margin="20,10,0,0">
-									<Label Content="文件下载地址"  VerticalAlignment="Center" Margin="5,0,0,0"/>
+                                <StackPanel Orientation="Horizontal"  Margin="20,10,0,0">
+                                    <Label Content="默认下载目录"  VerticalAlignment="Center" Margin="5,0,0,0"/>
+                                    <TextBox  Margin="2,0,0,0" Text="{Binding LocalPath}" Width="300" />
+                                 
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal"  Margin="20,10,0,0">
+									<Label Content="远程下载地址"  VerticalAlignment="Center" Margin="5,0,0,0"/>
 									<TextBox  Margin="2,0,0,0" Text="{Binding DownloadUrl}" Width="360" />
                                     <Button  Margin="20,0,0,0" VerticalAlignment="Center" Width="80"  Content="保存" Style="{DynamicResource MetroFlatButton}"  Command="{Binding SaveCommand}" />
 
@@ -81,7 +86,7 @@
 				</Grid.RowDefinitions>
 				<Border Background="#D9EDF7">
 					<Grid>
-						<TextBlock Text="以太网数据测试" FontSize="16" Foreground="#31708F" VerticalAlignment="Center" Margin="20,0,0,0"/>
+						<TextBlock Text="以太网TCP/IP数据测试" FontSize="16" Foreground="#31708F" VerticalAlignment="Center" Margin="20,0,0,0"/>
 					 
 					</Grid>
 				</Border>

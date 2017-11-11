@@ -19,6 +19,7 @@ using System.Reflection;
 using System.ComponentModel;
 using Hcdz.WPFServer.Properties;
 using Pvirtech.Framework.Common;
+using Microsoft.Win32;
 
 namespace Hcdz.WPFServer
 {
@@ -33,25 +34,69 @@ namespace Hcdz.WPFServer
 		public MainWindow()
 		{
 			InitializeComponent();
-			Init();
-			//LogHelper.WriteLog("ddd");
+			Init(); 
+          
         }
 
 		private void Init()
 		{
 			ServerURI = Settings.Default.Server;
-			txtLicence.Text = Properties.Settings.Default.License;
-			txtServer.Text = Properties.Settings.Default.Server;
-		}
+			txtLicence.Text = Settings.Default.License;
+			txtServer.Text = Settings.Default.Server;
+            chkReg.IsChecked = Settings.Default.IsAutoStart;
+            chkService.IsChecked= Settings.Default.IsAutoConnect;
+            if (Settings.Default.IsAutoConnect)
+            {
+                InitStart();
+            }
+            
+        }
 
 		private void ButtonStart_Click(object sender, RoutedEventArgs e)
-		{
-			WriteToConsole("Starting server...");
-			ButtonStart.IsEnabled = false;
-			Task.Run(() => StartServer());
+		{ 
+            InitStart();
 		}
+        /// <summary>  
+        /// 在注册表中添加、删除开机自启动键值  
+        /// </summary>  
+        private   void SetAutoBootStart(bool isAutoBoot)
+        {
+            try
+            {
+                string execPath = Assembly.GetExecutingAssembly().Location; 
+                RegistryKey rk = Registry.LocalMachine;
+                RegistryKey rk2 = rk.CreateSubKey("Software\\Microsoft\\Windows\\CurrentVersion\\Run");
+                if (isAutoBoot)
+                {
+                    rk2.SetValue("hcdzServer", execPath);
+                    Settings.Default.IsAutoStart = true; 
+                    //  Console.WriteLine(string.Format("[注册表操作]添加注册表键值：path = {0}, key = {1}, value = {2} 成功", rk2.Name, "TuniuAutoboot", execPath));
+                }
+                else
+                {
+                    rk2.DeleteValue("hcdzServer", false);
+                    Settings.Default.IsAutoStart = false;                   
+                    //  Console.WriteLine(string.Format("[注册表操作]删除注册表键值：path = {0}, key = {1} 成功", rk2.Name, "TuniuAutoboot"));
+                }
+                Settings.Default.Save();
+                rk2.Close();
+                rk.Close(); 
+            }
+            catch (Exception ex)
+            {
+               LogHelper.ErrorLog(ex,string.Format("[注册表操作]向注册表写开机启动信息失败\n  Exception: {0}", ex.Message));               
+            }
+        }
+    
+ 
+       private void InitStart()
+        {
+            WriteToConsole("Starting server...");
+            ButtonStart.IsEnabled = false;
+            Task.Run(() => StartServer());
+        }
 
-		private void ButtonStop_Click(object sender, RoutedEventArgs e)
+        private void ButtonStop_Click(object sender, RoutedEventArgs e)
 		{
 			SignalR.Dispose();
 			Close();
@@ -101,9 +146,34 @@ namespace Hcdz.WPFServer
 
 		private void ButtonSave_Click(object sender, RoutedEventArgs e)
 		{
-			Properties.Settings.Default.License = txtLicence.Text.Trim();
-			Properties.Settings.Default.Server = txtServer.Text.Trim();
-			Properties.Settings.Default.Save();
+			Settings.Default.License = txtLicence.Text.Trim();
+			Settings.Default.Server = txtServer.Text.Trim();
+			Settings.Default.Save();
 		}
-	}
+
+        private void CheckBox_Checked(object sender, RoutedEventArgs e)
+        {
+            if (chkReg.IsChecked==true)
+            {
+                SetAutoBootStart(true);
+            }
+            else
+            {
+                SetAutoBootStart(false);
+            }
+        }
+
+        private void ServiceChecked(object sender, RoutedEventArgs e)
+        {
+            Settings.Default.IsAutoConnect = chkService.IsChecked.Value; 
+            Settings.Default.Save();
+        }
+
+        private void Window_Closing(object sender, CancelEventArgs e)
+        {
+
+        }
+
+        
+    }
 }
