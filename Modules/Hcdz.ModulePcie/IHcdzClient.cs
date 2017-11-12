@@ -20,6 +20,7 @@ namespace Hcdz.ModulePcie
 		event Action<string, string, long, long> ProgressChanged;
         event Action<long> NotifyTotal;
         event Action<string,int> NoticeScanByte;
+        event Action<bool, int> NoticeTcpConnect;
         event Action<int> NotifyFormatTime;
         bool IsConnected { get; set; }
 		string SourceUrl { get; }
@@ -43,7 +44,8 @@ namespace Hcdz.ModulePcie
 		Task<bool> DeviceOpen(int iSelectedIndex); 
 		Task<bool> DeviceClose(int iSelectedIndex);
 		Task<string> InitDeviceInfo(int iSelectedIndex);
-        Task ConnectTcpServer(string IP,int port,int index);
+        Task ConnectTcpServer(string fileDir,string IP,int port,int index);
+        Task CloseTcpServer(int index);
         Task<bool> FormatDrive(string driveName);
 		Task CopyFileEx(string sourceFullPath, string targetFullPath);
 

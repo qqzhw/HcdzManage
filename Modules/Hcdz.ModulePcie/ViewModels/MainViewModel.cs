@@ -53,6 +53,7 @@ namespace Hcdz.ModulePcie.ViewModels
             OpenChannel =new DelegateCommand<DeviceChannelModel>(OnOpenChannel);
             CloseChannel = new DelegateCommand<DeviceChannelModel>(OnCloseChannel);
             ConnectClick= new DelegateCommand<TcpClientViewModel>(OnConnectTcp);
+            CloseClick=new DelegateCommand<TcpClientViewModel>(OnCloseTcp);
             SelectedDirCmd = new DelegateCommand<object>(OnLoadSelectDir);
             _deviceChannelModels = new ObservableCollection<DeviceChannelModel>();//主板1 四通道
            // _deviceChannel2 = new ObservableCollection<DeviceChannelModel>();//主板2 通道
@@ -65,14 +66,29 @@ namespace Hcdz.ModulePcie.ViewModels
 			_hcdzClient.Connect();
             _hcdzClient.NotifyTotal += _hcdzClient_NotifyTotal;
             _hcdzClient.NoticeScanByte +=OnNoticeScanByte;
+            _hcdzClient.NoticeTcpConnect +=NoticeTcpConnect;
             LoadDeviceChannel();
+        }
+
+        private async void OnCloseTcp(TcpClientViewModel model)
+        {
+            await   _hcdzClient.CloseTcpServer(model.Id);
+        }
+
+        private void NoticeTcpConnect(bool arg, int index)
+        {
+            var findItem = TcpViewModel.FirstOrDefault(o => o.Id == index);
+            findItem.IsConnected = arg;
+            findItem.MessageText += arg == true ? "TCP连接成功！\n" : "TCP连接断开！\n";
+            findItem.BtnIsEnabled = arg == true ? false : true;
         }
 
         private async  void OnConnectTcp(TcpClientViewModel model)
         {
             if (!string.IsNullOrEmpty(model.Ip)&& (model.Port>0&&model.Port<65535))
             {
-                await _hcdzClient.ConnectTcpServer(model.Ip, model.Port, model.Id);
+                model.FileDir = SelectedDsik;
+                await _hcdzClient.ConnectTcpServer(SelectedDsik,model.Ip, model.Port, model.Id);
             }
            
         }
@@ -189,10 +205,10 @@ namespace Hcdz.ModulePcie.ViewModels
                     DiskPercent = 100.0 - (int)(drive.AvailableFreeSpace * 100.0 / drive.TotalSize); 
                 }
             }
-            if (drives.Count() > 1)
-            {
-                DriveIndex = 1;
-            }
+            //if (drives.Count() > 1)
+            //{
+            //    DriveIndex = 1;
+            //}
         }
 
         private async void OnCloseChannel(DeviceChannelModel model)
@@ -547,6 +563,7 @@ namespace Hcdz.ModulePcie.ViewModels
         public ICommand OpenChannel { get; private set; }
         public ICommand CloseChannel { get; private set; }
         public ICommand ConnectClick { get; private set; }
+        public ICommand CloseClick { get; private set; }
         public ICommand SelectedDirCmd { get; private set; }
         public ICommand CloseDmaCmd { get; private set; }
         #endregion

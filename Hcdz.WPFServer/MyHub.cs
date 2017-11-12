@@ -21,6 +21,7 @@ using Pvirtech.Framework.Common;
 using Pvirtech.TcpSocket.Scs.Client;
 using Pvirtech.TcpSocket.Scs.Communication.EndPoints.Tcp;
 using Pvirtech.TcpSocket.Scs.Communication.Messages;
+using Pvirtech.TcpSocket.Scs.Communication;
 
 namespace Hcdz.WPFServer
 {
@@ -667,23 +668,33 @@ namespace Hcdz.WPFServer
         }
 
         #region TCP/IP
-        public bool TcpConnect(string ip,int port,int index=1)
+        public bool TcpConnect(string fileDir, string ip,int port,int index=1)
         {
             var findItem = TcpModels.Find(o => o.Id == index);
             if (!findItem.IsConnected)
             {
                 findItem.IP = ip;
                 findItem.Port = port;
+                findItem.FileDir = fileDir;
+                var dt = DateTime.Now.ToString("yyyyMMddHHmmss");
+                var dir = fileDir + "Wan" + index.ToString();
+                if (!Directory.Exists(dir))
+                {
+                    Directory.CreateDirectory(dir);
+                }
+                findItem.TcpStream = new FileStream(dir + "\\" + dt, FileMode.Append, FileAccess.Write);
             }
             try
             {
+
                 //Create a client object to connect a server on 127.0.0.1 (local) IP and listens 10085 TCP port
                 findItem.Client = ScsClientFactory.CreateClient(new ScsTcpEndPoint(ip, port));
                 // client.WireProtocol = new CustomWireProtocol(); //Set custom wire protocol
                 //Register to MessageReceived event to receive messages from server.
-                findItem.Client.MessageReceived += Client_MessageReceived;
-                findItem.Client.Connected += Client_Connected;
-                findItem.Client.Disconnected += Client_Disconnected;
+                
+                findItem.Client.MessageReceived +=(s,e)=>Client_MessageReceived(s,e,findItem);
+                findItem.Client.Connected +=(s,e)=>Client_Connected(s,e,index);
+                findItem.Client.Disconnected += (s,e)=>Client_Disconnected(s,e,index);
                 findItem.Client.Connect(); //Connect to the server 
 
                 
@@ -701,18 +712,39 @@ namespace Hcdz.WPFServer
             return true;
         }
 
-        private void Client_Disconnected(object sender, EventArgs e)
+        public void CloseTcpConnect(int index)
         {
-            
+            var findItem = TcpModels.Find(o => o.Id == index);
+            findItem.Client.Disconnect();
+             findItem.TcpStream.Flush();
+            findItem.TcpStream.Close();
+            findItem.TcpStream.Dispose();
+        }
+        private void Client_Disconnected(object sender, EventArgs e,int index)
+        {
+            Clients.Client(Context.ConnectionId).NoticeTcpConnect(false, index);
         }
 
-        private void Client_Connected(object sender, EventArgs e)
+        private void Client_Connected(object sender, EventArgs e,int index)
         {
+            var client = sender as  IScsClient;
+             if (client.CommunicationState==CommunicationStates.Connected) 
+             {
+                Clients.Client(Context.ConnectionId).NoticeTcpConnect(true, index);
+             }
              
         }
 
-        private void Client_MessageReceived(object sender, MessageEventArgs e)
+        private void Client_MessageReceived(object sender, MessageEventArgs e, TcpClientModel  model)
         {
+            var message = e.Message as ScsTextMessage;
+            if (message == null)
+            {
+                return;
+            }
+             
+            //var bytes = CommonHelper.StrToHexByte(message.Text);
+            //model.TcpStream.Write(bytes,0,bytes.Length);
             
         }
         #endregion

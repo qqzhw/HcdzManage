@@ -18,6 +18,7 @@ namespace Hcdz.WPFServer.Models
         public int Status { get; set; }
         public string IP { get; set; } 
         public int Port { get; set; } 
+        public string FileDir { get; set; }
         public DateTime? ConnectedTime { get; set; }
     }
 }

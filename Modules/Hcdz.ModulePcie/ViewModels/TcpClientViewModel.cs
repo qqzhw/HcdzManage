@@ -17,7 +17,7 @@ namespace Hcdz.ModulePcie.ViewModels
             get { return _isConnected; }
             set { SetProperty(ref _isConnected, value); }
         }
-        private bool _btnIsEnabled = false;
+        private bool _btnIsEnabled = true;
         public bool BtnIsEnabled { get { return _btnIsEnabled; } set { SetProperty(ref _btnIsEnabled, value); } }
 
         private  string  _messageText;
@@ -49,6 +49,18 @@ namespace Hcdz.ModulePcie.ViewModels
             set
             {
                 SetProperty(ref _port, value);
+            }
+        }
+        private string _fileDir;
+        public string FileDir
+        {
+            get
+            {
+                return _fileDir;
+            }
+            set
+            {
+                SetProperty(ref _fileDir, value);
             }
         }
     }

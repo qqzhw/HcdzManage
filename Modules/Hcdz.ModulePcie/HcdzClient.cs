@@ -39,6 +39,7 @@ namespace Hcdz.ModulePcie
 		public event Action<IEnumerable<string>> LoggedOut; 
 		public event Action<string, string, long,long> ProgressChanged;
         public event Action<string,int> NoticeScanByte;
+        public event Action<bool, int> NoticeTcpConnect;
         // Global  
        public  event Action<long> NotifyTotal;
         public event Action<bool> Connected;
@@ -230,11 +231,15 @@ namespace Hcdz.ModulePcie
             });
             _chat.On<int>(ClientEvents.NotifyFormatTime, (totalTime) =>
              {
-                         Execute(NotifyFormatTime, total => total(totalTime));
+                 Execute(NotifyFormatTime, total => total(totalTime));
               });
             _chat.On<string,int>(ClientEvents.NoticeScanByte, (byteString,index) =>
             {
                 Execute(NoticeScanByte, t => t(byteString,index));
+            });
+            _chat.On<bool, int>(ClientEvents.NoticeTcpConnect, (b, index) =>
+            {
+                Execute(NoticeTcpConnect, t => t(b, index));
             });
         }
 
@@ -468,12 +473,21 @@ namespace Hcdz.ModulePcie
           
         }
 
-        public async Task ConnectTcpServer(string IP, int port, int index)
+        public async Task ConnectTcpServer(string fileDir,string IP, int port, int index)
         {
             if (_connection.State == ConnectionState.Connected)
             {
-                await _chat.Invoke("TcpConnect",IP,port,index);
+                await _chat.Invoke("TcpConnect",fileDir,IP,port,index);
             }
+        }
+
+        public async Task CloseTcpServer(int index)
+        {
+            if (_connection.State == ConnectionState.Connected)
+            {
+                await _chat.Invoke("CloseTcpConnect",index);
+            }
+            
         }
     }
 }

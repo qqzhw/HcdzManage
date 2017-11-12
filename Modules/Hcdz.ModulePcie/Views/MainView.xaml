@@ -150,11 +150,11 @@
                                                 <TextBox  x:Name="txtIp" Text="{Binding Ip}" Width="180" VerticalAlignment="Center" />
                                                 <Label Content="端口号" VerticalAlignment="Center" Margin="10,0,0,0"/>
                                                 <TextBox Width="60" Text="{Binding Port}" Height="26" VerticalAlignment="Center"  x:Name="txtPort"/>
-                                                <Button  Height="28" VerticalAlignment="Center" Margin="30,0,0,0" Width="60"  Content="连接" Style="{DynamicResource MetroFlatButton}" Command="{Binding DataContext.ConnectClick ,RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}"  CommandParameter="{Binding}"/>
-                                                <Button Height="28" Margin="10,0,0,0" Width="60"  Content="断开" Style="{DynamicResource MetroFlatButtonDisable}" Command="{Binding DataContext.CloseClick ,RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}" />
+                                                <Button  Height="28" VerticalAlignment="Center" IsEnabled="{Binding BtnIsEnabled}" Margin="30,0,0,0" Width="60"  Content="连接" Style="{DynamicResource MetroFlatButton}" Command="{Binding DataContext.ConnectClick ,RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}"  CommandParameter="{Binding}"/>
+                                                <Button Height="28" Margin="10,0,0,0" Width="60"  Content="断开" Style="{DynamicResource MetroFlatButtonDisable}" Command="{Binding DataContext.CloseClick ,RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}"  CommandParameter="{Binding}"/>
                                             </StackPanel>
                                             <ScrollViewer  Grid.Row="1" Margin="15,0,0,0">
-                                                <TextBox Width="auto"  x:Name="txtMsg" MinHeight="100"   BorderBrush="#2471ac"  ScrollViewer.CanContentScroll="True" IsReadOnly="True"  TextWrapping="Wrap"/>
+                                                <TextBox Width="auto"  x:Name="txtMsg" MinHeight="100" Text="{Binding MessageText}"  BorderBrush="#2471ac"  ScrollViewer.CanContentScroll="True" IsReadOnly="True"  TextWrapping="Wrap"/>
                                             </ScrollViewer>
                                         </Grid>
                                     </Border>

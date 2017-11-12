@@ -15,6 +15,7 @@
         public static readonly string NotifyTotalSize = "NotifyTotal";
         public static readonly string NotifyFormatTime = "NotifyFormatTime";
         public static readonly string NoticeScanByte = "NoticeScanByte";
-
+        public static readonly string NoticeTcpConnect = "NoticeTcpConnect";
+         
     }
 }
