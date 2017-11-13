@@ -489,5 +489,13 @@ namespace Hcdz.ModulePcie
             }
             
         }
+
+        public async Task DeleteFile(string filePath)
+        {
+            if (_connection.State == ConnectionState.Connected)
+            {
+                await _chat.Invoke("DeleteFile", filePath);
+            }
+        }
     }
 }

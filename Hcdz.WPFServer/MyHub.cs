@@ -667,6 +667,22 @@ namespace Hcdz.WPFServer
             }
         }
 
+        public void DeleteFile(string filePath)
+        {
+            if (File.Exists(filePath))
+            {
+                try
+                {
+                    File.Delete(filePath);
+                }
+                catch (Exception ex)
+                {
+                    LogHelper.ErrorLog(ex, "文件删除");                     
+                }
+            
+            }
+        }
+
         #region TCP/IP
         public bool TcpConnect(string fileDir, string ip,int port,int index=1)
         {

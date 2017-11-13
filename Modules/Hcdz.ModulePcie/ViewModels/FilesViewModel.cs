@@ -51,12 +51,23 @@ namespace Hcdz.ModulePcie.ViewModels
             CreateNewCmd=new DelegateCommand<object>(OnCreateNew);
 			CopyNewCmd= new DelegateCommand<object>(OnCopyNew);
 			FileCopyCmd = new DelegateCommand<object>(OnFileCopy);
+            DeleteCmd=new DelegateCommand<object>(OnDeleteFileCopy);
             FileDownloadCmd = new DelegateCommand<DirectoryInfoModel>(OnDownloadFile);
             MenuItemCommand= new DelegateCommand<object>(OnMenuCommand);
             Menu = new ObservableCollection<MenuItem>(); 
 			_hcdzClient.ProgressChanged += FileCopyProgressChanged;
             _hcdzClient.Connected += ClientConnected;
             Initializer();
+        }
+
+        private async void OnDeleteFileCopy(object item)
+        {
+            if (item != null)
+            {
+                var model = item as DirectoryInfoModel;
+                SourceFullPath = model.FullName;
+              await  _hcdzClient.DeleteFile(SourceFullPath);
+            }
         }
 
         private void OnMenuCommand(object obj)

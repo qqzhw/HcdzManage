@@ -54,6 +54,6 @@ namespace Hcdz.ModulePcie
         Task OpenOrCloseChannel(DeviceChannelModel model);
 		Task<bool> ScanDevice(int index);
         Task CloseScanDevice();
-
+        Task DeleteFile(string filePath);
     }
 }
