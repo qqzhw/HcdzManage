@@ -11,6 +11,7 @@ using Prism.Regions;
 using Pvirtech.Framework;
 using Pvirtech.Framework.Core;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -42,7 +43,8 @@ namespace HcdzManage.ViewModels
             _moduleManager = moduleManager;
             _serviceLocator = serviceLocator;
             CustomPopupRequest = new InteractionRequest<INotification>();
-            CustomPopupCommand = new DelegateCommand(RaiseCustomPopup);          
+            CustomPopupCommand = new DelegateCommand(RaiseCustomPopup);
+            InitLoadSetting();
         }
         public DelegateCommand<object[]> SelectedCommand { get; private set; }
         private ObservableCollection<SystemInfoViewModel> _systemInfos;
@@ -58,7 +60,39 @@ namespace HcdzManage.ViewModels
         /// </summary>
         public void InitLoadSetting()
         {
-           
+            FileStream objReader = new FileStream("f:\\dd2",FileMode.Open,FileAccess.Read);
+            BinaryReader br = new BinaryReader(objReader);
+            string sLine = "";
+            ArrayList LineList = new ArrayList();
+            var array = new byte[16];
+            int index = 0;
+            while (objReader.Read(array, 0, 16)>0)
+            {
+                index++;
+                //objReader.Read(array, 0, 16);
+                //objReader.Seek(16, SeekOrigin.Begin);
+                //objReader.Read(array, 0, 16);
+                // sLine = objReader.a
+                if (sLine != null && !sLine.Equals(""))
+                    LineList.Add(sLine);
+            }
+            objReader.Close();
+            String str = @"f:\\dd2";
+            using (FileStream fsWriter = new FileStream(str + @"\opencv-3.0.exe", FileMode.Create, FileAccess.Write))
+            {
+
+                using (FileStream fsReader = new FileStream(str + @"\opencv-2.4.9.exe", FileMode.Open, FileAccess.Read))
+                {
+                    byte[] bytes = new byte[1024 * 4];//4kB是合适的；
+                    int readNum;
+                    while ((readNum = fsReader.Read(bytes, 0, bytes.Length)) != 0)//小于说明读完了
+                    {
+                        fsWriter.Write(bytes, 0, readNum);
+                    }
+
+
+                }//suing reader
+            }//using writer
         }
 
         [InjectionMethod]
