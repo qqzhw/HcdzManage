@@ -513,12 +513,12 @@ namespace Hcdz.WPFServer
             dev.DeviceFile = new FileStream(filePath, FileMode.Append, FileAccess.Write);
             dev.StartWrDMA(0);
 
-            Thread readThread = new Thread(new ParameterizedThreadStart(p => OnScanDrive(dev,dvireName,deviceIndex)));
-            readThread.IsBackground = true;
-            readThread.Start();
-
-            //Thread nonParameterThread = new Thread(new ParameterizedThreadStart(p => NonParameterRun(dev, dvireName, dataSize, deviceIndex)));
-            //nonParameterThread.Start();
+            //Thread readThread = new Thread(new ParameterizedThreadStart(p =>);
+            //readThread.IsBackground = true;
+            //readThread.Start();
+            Task.Factory.StartNew(new Action(() => OnScanDrive(dev, dvireName, deviceIndex)));
+                //Thread nonParameterThread = new Thread(new ParameterizedThreadStart(p => NonParameterRun(dev, dvireName, dataSize, deviceIndex)));
+                //nonParameterThread.Start();
             Task.Factory.StartNew(new Action(()=>NonParameterRun(dev, dvireName, dataSize, deviceIndex))).ContinueWith(t=> {
                 //foreach (var item in list)
                 //{
@@ -537,14 +537,19 @@ namespace Hcdz.WPFServer
 
         private void OnScanDrive(PCIE_Device dev, string dvireName, int deviceIndex)
         {
-            while (!IsStop)
+            while (true)
             {
+                Thread.Sleep(10);
                 var findDrive = DriveInfo.GetDrives().FirstOrDefault(o => o.Name == dvireName);
                 if (findDrive != null)
                 {
-                    if (findDrive.AvailableFreeSpace < 1024 * 1024 * 1024.0)
+                    if (findDrive.AvailableFreeSpace < 1024 * 1024 * 1024.0*10)
                     {
-                        dev.DeviceFile.SetLength(0);
+                        if (dev.Status>0)
+                        {
+                            dev.DeviceFile.SetLength(0);
+                        }                     
+                        
                     }
                 }
             }
@@ -754,14 +759,14 @@ namespace Hcdz.WPFServer
         private void Client_MessageReceived(object sender, MessageEventArgs e, TcpClientModel  model)
         {
             var message = e.Message as ScsTextMessage;
+            var byteArray = System.Text.Encoding.Default.GetBytes(message.Text);
+           // var b1 = System.Text.Encoding.ASCII.GetBytes(message.Text);
             if (message == null)
-            {
+            { 
                 return;
-            }
-             
-            //var bytes = CommonHelper.StrToHexByte(message.Text);
-            //model.TcpStream.Write(bytes,0,bytes.Length);
-            
+            } 
+             model.TcpStream.Write(byteArray, 0, byteArray.Length);   
+            model.TcpStream.Flush();
         }
         #endregion
     }

@@ -120,7 +120,7 @@ namespace Hcdz.ModulePcie.ViewModels
                         deviceInfo[i] = V2.Substring(i * 2, 2); 
                     }
                     string errorInfo = string.Format("设备{0}自检返回数据:  ", deviceIndex+1) + string.Join("  ", deviceInfo);
-                    LogHelper.WriteLog(errorInfo);
+                    LogHelper.WriteLog("设备{0}自检返回数据: "+strByte);
                     LogInfo += errorInfo + "\n";
                     var list=deviceInfo.Reverse().ToList();
                     string tmpInfo = string.Empty;
