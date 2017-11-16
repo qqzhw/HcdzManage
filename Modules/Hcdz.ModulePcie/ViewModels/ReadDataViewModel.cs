@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Threading;
 
 namespace Hcdz.ModulePcie.ViewModels
 {
@@ -18,6 +19,7 @@ namespace Hcdz.ModulePcie.ViewModels
     {
         private readonly IUnityContainer _container;
         private readonly IServiceLocator _serviceLocator;
+        private DispatcherTimer dispatcherTimer;
         private long readtotal = 0;
         private long totalSize = 0;
         public ReadDataViewModel(IUnityContainer container, IServiceLocator serviceLocator, string fileName)
@@ -27,7 +29,19 @@ namespace Hcdz.ModulePcie.ViewModels
             CloseWindow = new DelegateCommand<object>(OnCloseWindow);
             FileName = fileName;
             _progresstext = "正在解析并存储通道数据...";
+            dispatcherTimer = new DispatcherTimer(DispatcherPriority.Background);
+            dispatcherTimer = new DispatcherTimer(DispatcherPriority.Background)
+            {
+                Interval = TimeSpan.FromSeconds(1)
+            };
+            dispatcherTimer.Tick += DispatcherTimer_Tick;
             Init();
+
+        }
+
+        private void DispatcherTimer_Tick(object sender, EventArgs e)
+        {
+            ProgressValue =(int) (readtotal / totalSize);
         }
 
         private void Init()
@@ -48,6 +62,7 @@ namespace Hcdz.ModulePcie.ViewModels
             dicFiles.Add(6, new FileStream(Properties.Settings.Default.LocalPath + "\\Bar6\\" + name, FileMode.Append, FileAccess.Write));
             using (FileStream fsReader = new FileStream(FileName, FileMode.Open, FileAccess.Read))
             {
+                dispatcherTimer.Start();
                 totalSize = fsReader.Length;
                 byte[] bytes = new byte[16];//4kB是合适的；
                 int readNum;
@@ -98,6 +113,7 @@ namespace Hcdz.ModulePcie.ViewModels
 
         private void OnCloseWindow(object obj)
         {
+            dispatcherTimer.Stop();
             var window = obj as Window;
             window.Close();
         }
