@@ -41,7 +41,7 @@ namespace Hcdz.ModulePcie.ViewModels
 
         private void DispatcherTimer_Tick(object sender, EventArgs e)
         {
-            ProgressValue =(int) (readtotal / totalSize);
+            ProgressValue =(int) (readtotal / totalSize)*100;
         }
 
         private void Init()
@@ -53,13 +53,20 @@ namespace Hcdz.ModulePcie.ViewModels
                 Properties.Settings.Default.LocalPath += "\\";
             }
             var saveFilePath = Properties.Settings.Default.LocalPath + name;
+            var dir1 = CreateDir("Bar1") + name;
+             var dir2 =CreateDir("Bar2")+name;
+            var dir3 = CreateDir("Bar3") + name;
+            var dir4 = CreateDir("Bar4") + name;
+            var dir5 = CreateDir("Bar5") + name;
+            var dir6 = CreateDir("Bar6") + name; 
+          
             Dictionary<int, FileStream> dicFiles = new Dictionary<int, FileStream>();
-            dicFiles.Add(1,new FileStream(Properties.Settings.Default.LocalPath+"\\Bar1\\"+name,FileMode.Append,FileAccess.Write));
-            dicFiles.Add(2, new FileStream(Properties.Settings.Default.LocalPath + "\\Bar2\\" + name, FileMode.Append, FileAccess.Write));
-            dicFiles.Add(3, new FileStream(Properties.Settings.Default.LocalPath + "\\Bar3\\" + name, FileMode.Append, FileAccess.Write));
-            dicFiles.Add(4, new FileStream(Properties.Settings.Default.LocalPath + "\\Bar4\\" + name, FileMode.Append, FileAccess.Write));
-            dicFiles.Add(5, new FileStream(Properties.Settings.Default.LocalPath + "\\Bar5\\" + name, FileMode.Append, FileAccess.Write));
-            dicFiles.Add(6, new FileStream(Properties.Settings.Default.LocalPath + "\\Bar6\\" + name, FileMode.Append, FileAccess.Write));
+            dicFiles.Add(1,new FileStream(dir1,FileMode.Append,FileAccess.Write));
+            dicFiles.Add(2, new FileStream(dir2, FileMode.Append, FileAccess.Write));
+            dicFiles.Add(3, new FileStream(dir3, FileMode.Append, FileAccess.Write));
+            dicFiles.Add(4, new FileStream(dir4 + name, FileMode.Append, FileAccess.Write));
+            dicFiles.Add(5, new FileStream(dir5, FileMode.Append, FileAccess.Write));
+            dicFiles.Add(6, new FileStream(dir6, FileMode.Append, FileAccess.Write));
             using (FileStream fsReader = new FileStream(FileName, FileMode.Open, FileAccess.Read))
             {
                 dispatcherTimer.Start();
@@ -80,11 +87,20 @@ namespace Hcdz.ModulePcie.ViewModels
                 }              
             }
         }
+        private string CreateDir(string directory)
+        {
+            var dir = Properties.Settings.Default.LocalPath + string.Format("\\{0}\\", directory);
+            if (!Directory.Exists(dir))
+            {
+                Directory.CreateDirectory(dir);
+            }
+            return dir;
+        }
         private void WriteFile(byte[] result, Dictionary<int, FileStream> dicts)
         {
             var channelNo = result[8];
-            var item = dicts[channelNo];
-            if (item == null)
+            var item = dicts.Keys.FirstOrDefault(o=>o==channelNo);
+            if (item==0)
                 return;
             byte[] trueValue = new byte[8];
             for (int i = 0; i < 8; i++)
@@ -96,8 +112,8 @@ namespace Hcdz.ModulePcie.ViewModels
             // result[15] = 0;
             //var bt = result.Take(8).ToArray();
             //   item.FileByte.AddRange(bt);
-            item.Write(trueValue, 0, 8);
-            //  item.Stream.Flush();            
+            dicts[item].Write(trueValue, 0, 8);
+            dicts[item].Flush();            
         }
         //private void Client_DownloadFileCompleted(object sender, AsyncCompletedEventArgs e)
         //{
