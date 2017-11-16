@@ -137,6 +137,7 @@
     <Compile Include="ViewModels\FileDownloadViewModel.cs" />
     <Compile Include="ViewModels\FormatViewModel.cs" />
     <Compile Include="ViewModels\PcieViewModel.cs" />
+    <Compile Include="ViewModels\ReadDataViewModel.cs" />
     <Compile Include="ViewModels\SettingsViewModel.cs" />
     <Compile Include="ViewModels\TcpClientViewModel.cs" />
     <Compile Include="ViewModels\TrueToColorConverter.cs" />
@@ -149,6 +150,9 @@
     </Compile>
     <Compile Include="Views\FormatView.xaml.cs">
       <DependentUpon>FormatView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\ReadDataView.xaml.cs">
+      <DependentUpon>ReadDataView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\SettingsView.xaml.cs">
       <DependentUpon>SettingsView.xaml</DependentUpon>
@@ -192,6 +196,10 @@
       <DependentUpon>MainView.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="Views\ReadDataView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\SettingsView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

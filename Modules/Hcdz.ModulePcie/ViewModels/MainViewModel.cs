@@ -1,4 +1,5 @@
-﻿using Hcdz.PcieLib;
+﻿using Hcdz.ModulePcie.Views;
+using Hcdz.PcieLib;
 using Microsoft.Practices.ServiceLocation;
 using Microsoft.Practices.Unity;
 using Prism.Commands;
@@ -6,6 +7,7 @@ using Prism.Events;
 using Prism.Mvvm;
 using Prism.Regions;
 using Pvirtech.Framework.Common;
+using Pvirtech.Framework.Interactivity;
 using Pvirtech.TcpSocket.Scs.Client;
 using System;
 using System.Collections.Generic;
@@ -28,7 +30,8 @@ namespace Hcdz.ModulePcie.ViewModels
 		private readonly IRegionManager _regionManager;
 		private readonly IServiceLocator _serviceLocator;
 		private readonly IHcdzClient  _hcdzClient;
-		private DispatcherTimer dispatcherTimer; 
+		private DispatcherTimer dispatcherTimer;
+        private DispatcherTimer timer;
         long total = 0;
        // private FileStream Stream;
 		public MainViewModel(IUnityContainer container, IEventAggregator eventAggregator, IRegionManager regionManager, IServiceLocator serviceLocator, IHcdzClient hcdzClient)
@@ -54,6 +57,7 @@ namespace Hcdz.ModulePcie.ViewModels
             CloseChannel = new DelegateCommand<DeviceChannelModel>(OnCloseChannel);
             ConnectClick= new DelegateCommand<TcpClientViewModel>(OnConnectTcp);
             CloseClick=new DelegateCommand<TcpClientViewModel>(OnCloseTcp);
+            LocalDataJxCmd = new DelegateCommand<object>(OnLocalDataRead);
             SelectedDirCmd = new DelegateCommand<object>(OnLoadSelectDir);
             _deviceChannelModels = new ObservableCollection<DeviceChannelModel>();//主板1 四通道
            // _deviceChannel2 = new ObservableCollection<DeviceChannelModel>();//主板2 通道
@@ -68,6 +72,43 @@ namespace Hcdz.ModulePcie.ViewModels
             _hcdzClient.NoticeScanByte +=OnNoticeScanByte;
             _hcdzClient.NoticeTcpConnect +=NoticeTcpConnect;
             LoadDeviceChannel();
+            InitRefresh();
+        }
+
+        /// <summary>
+        /// 本地数据读取，按通道存储
+        /// </summary>
+        /// <param name="obj"></param>
+        private void OnLocalDataRead(object obj)
+        {
+            var openFileDialog = new Microsoft.Win32.OpenFileDialog();
+            
+            var result = openFileDialog.ShowDialog();
+            if (result == true)
+            {
+                var fileName = openFileDialog.FileName;
+                var notification = new MessageNotification()
+                {
+                    Title = "数据解析",
+                    Content = _container.Resolve<ReadDataView>(new ParameterOverride("fileName", fileName)),
+                };
+                PopupWindows.NormalNotificationRequest.Raise(notification, (callback) => {
+
+                });
+            }
+        }
+
+        private void InitRefresh()
+        {
+            timer = new DispatcherTimer(DispatcherPriority.Background);
+            timer.Interval = TimeSpan.FromSeconds(5);
+            timer.Tick += Timer_Tick;
+            timer.Start();
+        }
+
+        private  void Timer_Tick(object sender, EventArgs e)
+        {
+            OnLoadSelectDir(SelectedDsik);
         }
 
         private async void OnCloseTcp(TcpClientViewModel model)
@@ -159,7 +200,6 @@ namespace Hcdz.ModulePcie.ViewModels
 		{
 			DriveInfo[] drives =await _hcdzClient.GetDrives();
 			DriveInfoItems = new ObservableCollection<DriveInfo>(drives);
-
 			
 		}
 
@@ -564,6 +604,7 @@ namespace Hcdz.ModulePcie.ViewModels
         public ICommand CloseChannel { get; private set; }
         public ICommand ConnectClick { get; private set; }
         public ICommand CloseClick { get; private set; }
+        public ICommand LocalDataJxCmd { get; private set; }
         public ICommand SelectedDirCmd { get; private set; }
         public ICommand CloseDmaCmd { get; private set; }
         #endregion

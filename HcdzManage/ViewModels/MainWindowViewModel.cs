@@ -44,7 +44,7 @@ namespace HcdzManage.ViewModels
             _serviceLocator = serviceLocator;
             CustomPopupRequest = new InteractionRequest<INotification>();
             CustomPopupCommand = new DelegateCommand(RaiseCustomPopup);
-            InitLoadSetting();
+           // InitLoadSetting();
         }
         public DelegateCommand<object[]> SelectedCommand { get; private set; }
         private ObservableCollection<SystemInfoViewModel> _systemInfos;

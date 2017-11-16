@@ -65,7 +65,7 @@ namespace Hcdz.WPFServer
 
         public IEnumerable<DriveInfo> GetDrives()
         {
-            var drives = DriveInfo.GetDrives().Skip(1);
+            var drives = DriveInfo.GetDrives().Skip(2);
             return drives;
         }
         public bool FormatDrive(string driveName)
@@ -90,7 +90,7 @@ namespace Hcdz.WPFServer
 
         public async Task<List<DirectoryInfoModel>> GetFileList(string path = "")
         {
-            var drives = DriveInfo.GetDrives().Skip(1);
+            var drives = DriveInfo.GetDrives().Skip(2);
             FileSystemInfo[] dirFileitems = null;
             var list = new List<DirectoryInfoModel>();
             await Task.Run(() =>
