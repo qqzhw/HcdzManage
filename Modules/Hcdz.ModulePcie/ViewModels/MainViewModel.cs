@@ -1,6 +1,5 @@
 ﻿using Hcdz.ModulePcie.Views;
-using Hcdz.PcieLib;
-using Microsoft.Practices.ServiceLocation;
+ using Microsoft.Practices.ServiceLocation;
 using Microsoft.Practices.Unity;
 using Prism.Commands;
 using Prism.Events;
@@ -42,7 +41,7 @@ namespace Hcdz.ModulePcie.ViewModels
 			_serviceLocator = serviceLocator;
 			_hcdzClient = hcdzClient;
 			 
-            devicesItems = new ObservableCollection<PCIE_Device>();
+            //devicesItems = new ObservableCollection<PCIE_Device>();
             dispatcherTimer = new DispatcherTimer(DispatcherPriority.Background)
             {
                 Interval = TimeSpan.FromSeconds(1)
@@ -478,12 +477,12 @@ namespace Hcdz.ModulePcie.ViewModels
             get { return _viewModel; }
             set { SetProperty(ref _viewModel,value); }
         }
-        private ObservableCollection<PCIE_Device> devicesItems;
-        public ObservableCollection<PCIE_Device> DevicesItems
-        {
-            get { return devicesItems; }
-            set { SetProperty(ref devicesItems, value); }
-        }
+        //private ObservableCollection<PCIE_Device> devicesItems;
+        //public ObservableCollection<PCIE_Device> DevicesItems
+        //{
+        //    get { return devicesItems; }
+        //    set { SetProperty(ref devicesItems, value); }
+        //}
         private bool _isOpen;
         public bool IsOpen { get { return _isOpen; } set { SetProperty(ref _isOpen, value); } }
 		private bool  _btnIsEnabled=false;

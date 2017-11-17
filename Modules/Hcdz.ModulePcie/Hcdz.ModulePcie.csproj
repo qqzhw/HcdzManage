@@ -237,10 +237,6 @@
       <Project>{0ED0A62F-34E7-45A8-9AAF-F307ECFCE255}</Project>
       <Name>Hcdz.Framework</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Hcdz.PcieLib\Hcdz.PcieLib.csproj">
-      <Project>{bfaf95f6-c68f-4cbf-bb2e-06bbf625e907}</Project>
-      <Name>Hcdz.PcieLib</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\Pvirtech.Metro\Pvirtech.Metro.csproj">
       <Project>{1a8f5e0b-5ea8-4c04-9f1b-1482d08f878a}</Project>
       <Name>Pvirtech.Metro</Name>

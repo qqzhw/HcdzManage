@@ -1,5 +1,4 @@
-﻿using Hcdz.PcieLib;
-using Prism.Mvvm;
+﻿using Prism.Mvvm;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -107,6 +106,6 @@ namespace Hcdz.ModulePcie.ViewModels
             get { return _regAddress; }
             set { SetProperty(ref _regAddress, value); }
         }
-        public PCIE_Device Device { get; set; }
+       // public PCIE_Device Device { get; set; }
     }
 }

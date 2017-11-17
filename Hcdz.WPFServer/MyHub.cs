@@ -174,6 +174,7 @@ namespace Hcdz.WPFServer
                 DWORD dwStatus = pciDevList.Init(Settings.Default.License);
                 if (dwStatus != (DWORD)wdc_err.WD_STATUS_SUCCESS)
                 {
+                    LogHelper.WriteLog(string.Format("设备初始化异常，错误码：{0}", dwStatus));
                     return dwStatus;
                 }
 				LogHelper.WriteLog(string.Format("总发现{0}张设备卡", pciDevList.Count));
