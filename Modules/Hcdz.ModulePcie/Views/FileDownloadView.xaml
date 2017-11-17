@@ -3,12 +3,18 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
              xmlns:local="clr-namespace:Hcdz.ModulePcie.Views"
              xmlns:metro="http://metro.pvirtech.com/winfx/xaml/controls"
              xmlns:prism="http://prismlibrary.com/" 
              x:Name="filewindow"
              mc:Ignorable="d"  Width="500" Height="200"
-             d:DesignHeight="300" d:DesignWidth="300">
+             d:DesignHeight="300" d:DesignWidth="300" >
+    <i:Interaction.Triggers>
+        <i:EventTrigger EventName="Loaded">
+            <i:InvokeCommandAction Command="{Binding LoadCmd}"  />
+        </i:EventTrigger> 
+    </i:Interaction.Triggers>
     <Grid>
         <Border  Margin="10,5,10,45"     BorderThickness="1" BorderBrush="#BCE8F1"     CornerRadius="5">
             <Grid  HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
@@ -23,7 +29,10 @@
                 </Border>
                 <Border BorderThickness="1"  BorderBrush="#D9EDF7" Grid.Row="1">
                     <StackPanel >
-                        <TextBlock Text="{Binding ProgressText}" Margin="20,20,0,0"/>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{Binding ProgressText}" Margin="20,20,0,0"/>
+                            <TextBlock Text="{Binding RateText}" Margin="5,20,0,0"/>
+                        </StackPanel>                      
                         <metro:MetroProgressBar  Background="#C8EDF7" IsIndeterminate="False" Margin="20,5,20,20"   Value="{Binding ProgressValue}" Height="30" />
                     </StackPanel>
                 </Border>

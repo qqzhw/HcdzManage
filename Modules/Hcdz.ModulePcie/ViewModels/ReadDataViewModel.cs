@@ -20,28 +20,38 @@ namespace Hcdz.ModulePcie.ViewModels
         private readonly IUnityContainer _container;
         private readonly IServiceLocator _serviceLocator;
         private DispatcherTimer dispatcherTimer;
-        private long readtotal = 0;
+        private long readSize = 0;
+        private long tmpSize = 0;
         private long totalSize = 0;
         public ReadDataViewModel(IUnityContainer container, IServiceLocator serviceLocator, string fileName)
         {
             _container = container;
             _serviceLocator = serviceLocator;
             CloseWindow = new DelegateCommand<object>(OnCloseWindow);
-            FileName = fileName;
-            _progresstext = "正在解析并存储通道数据...";
+            ScanDataCmd = new DelegateCommand(OnScanData);
+            FileName = fileName; 
             dispatcherTimer = new DispatcherTimer(DispatcherPriority.Background);
             dispatcherTimer = new DispatcherTimer(DispatcherPriority.Background)
             {
                 Interval = TimeSpan.FromSeconds(1)
             };
             dispatcherTimer.Tick += DispatcherTimer_Tick;
-            Init();
+           
 
+        }
+
+        private void OnScanData()
+        {
+            BtnIsEnable = false;
+            _progresstext = "正在解析并存储通道数据...";
+            Init();
         }
 
         private void DispatcherTimer_Tick(object sender, EventArgs e)
         {
-            ProgressValue =(int) (readtotal*100 / totalSize);
+            RateText = string.Format("{0}MB/s", ((readSize - tmpSize) / 1048576.0).ToString("f2"));
+            tmpSize = readSize;            
+            ProgressValue =(int) (readSize* 100 / totalSize);
         }
 
         private void Init()
@@ -74,10 +84,9 @@ namespace Hcdz.ModulePcie.ViewModels
                 byte[] bytes = new byte[16];//4kB是合适的；
                 int readNum;
                 while ((readNum = fsReader.Read(bytes, 0, bytes.Length)) != 0)//小于说明读完了
-                {
-                    //   fsWriter.Write(bytes, 0, readNum);
+                {                   
                     WriteFile(bytes, dicFiles);
-                    readtotal += 16;
+                    readSize += 16;
                 }
                 foreach (var item in dicFiles)
                 {
@@ -147,12 +156,19 @@ namespace Hcdz.ModulePcie.ViewModels
             get { return _progresstext; }
             set { SetProperty(ref _progresstext, value); }
         }
-        private bool _progressShow = false;
-        public bool ProgressShow
+        private bool _btnIsEnable = true;
+        public bool  BtnIsEnable
         {
-            get { return _progressShow; }
-            set { SetProperty(ref _progressShow, value); }
+            get { return _btnIsEnable; }
+            set { SetProperty(ref _btnIsEnable, value); }
+        }
+        private string _ratetext;
+        public string RateText
+        {
+            get { return _ratetext; }
+            set { SetProperty(ref _ratetext, value); }
         }
         public ICommand CloseWindow { get; private set; }
+        public ICommand ScanDataCmd { get; private set; }
     }
 }

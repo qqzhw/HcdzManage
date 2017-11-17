@@ -34,7 +34,7 @@ namespace Nop.Web.Controllers
                     //	var lastCreatedFile = files.OrderByDescending(f => f.CreationTime).FirstOrDefault();
                     var filestream = File.OpenRead(filePath);
 					var fileResponse = new HttpResponseMessage(HttpStatusCode.OK);
-					fileResponse.Content = new StreamContent(filestream);
+					fileResponse.Content = new StreamContent(filestream, 1024*1024); //1M（1024*1024）
 					fileResponse.Content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
 					return fileResponse;
 				});

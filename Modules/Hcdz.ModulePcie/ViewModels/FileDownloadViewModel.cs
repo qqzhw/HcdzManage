@@ -13,6 +13,7 @@ using System.Windows.Input;
 using System.ComponentModel;
 using System.Threading;
 using System.Windows;
+using System.Windows.Threading;
 
 namespace Hcdz.ModulePcie.ViewModels
 {
@@ -20,13 +21,33 @@ namespace Hcdz.ModulePcie.ViewModels
     {
         private readonly IUnityContainer _container; 
         private readonly IServiceLocator _serviceLocator;
+        private DispatcherTimer dispatcherTimer;
+        private long dataSize=0;
+        private long currentSize=0;
         public FileDownloadViewModel(IUnityContainer  container, IServiceLocator  serviceLocator,string fileName)
         {
             _container = container;
             _serviceLocator = serviceLocator;
             CloseWindow= new    DelegateCommand<object>(OnCloseWindow);
+            LoadCmd = new DelegateCommand(OnLoad);
             FileName = fileName;
             _progresstext = "正在下载...";
+            dispatcherTimer = new DispatcherTimer(DispatcherPriority.Background);
+            dispatcherTimer = new DispatcherTimer(DispatcherPriority.Background)
+            {
+                Interval = TimeSpan.FromSeconds(1)
+            };
+            dispatcherTimer.Tick += DispatcherTimer_Tick;
+        }
+
+        private void DispatcherTimer_Tick(object sender, EventArgs e)
+        {
+            RateText = string.Format("{0}MB/s", ((currentSize-dataSize) / 1048576.0).ToString("f2"));
+            dataSize = currentSize;
+        }
+
+        private void OnLoad()
+        {
             Init();
         }
 
@@ -45,16 +66,19 @@ namespace Hcdz.ModulePcie.ViewModels
                 client.DownloadFileCompleted += Client_DownloadFileCompleted;
                 client.DownloadFileAsync(new Uri(Properties.Settings.Default.DwonloadUrl + FileName), saveFilePath);
             }
+            dispatcherTimer.Start();
         }
 
         private void Client_DownloadFileCompleted(object sender, AsyncCompletedEventArgs e)
         {
+            RateText = string.Empty;
             ProgressText = "下载完毕！";
-            
+            dispatcherTimer.Stop();
         }
 
         private void Client_DownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e)
         {
+            currentSize = e.BytesReceived;
             ProgressText =string.Format("正在下载...{0}%" , e.ProgressPercentage.ToString());
             ProgressValue = e.ProgressPercentage;
         }
@@ -78,6 +102,12 @@ namespace Hcdz.ModulePcie.ViewModels
             get { return _progresstext; }
             set { SetProperty(ref _progresstext, value); }
         }
+        private string _ratetext;
+        public string  RateText
+        {
+            get { return _ratetext; }
+            set { SetProperty(ref _ratetext, value); }
+        }
         private bool _progressShow = false;
         public bool ProgressShow
         {
@@ -85,5 +115,6 @@ namespace Hcdz.ModulePcie.ViewModels
             set { SetProperty(ref _progressShow, value); }
         }
         public ICommand CloseWindow { get; private set; }
+        public ICommand LoadCmd { get; private set; }
     }
 }

@@ -19,6 +19,7 @@
                 <Border Background="#D9EDF7">
                     <Grid>
                         <TextBlock Text="{Binding FileName}" FontSize="16" Foreground="#31708F" VerticalAlignment="Center" Margin="20,0,0,0"/>
+                        <Button   Margin="0,0,20,0" IsEnabled="{Binding BtnIsEnable}" HorizontalAlignment="Right" VerticalAlignment="Center" Width="80"  Content="开始解析" Style="{DynamicResource MetroFlatButton}"  Command="{Binding ScanDataCmd}"/>
                     </Grid>
                 </Border>
                 <Border BorderThickness="1"  BorderBrush="#D9EDF7" Grid.Row="1">
