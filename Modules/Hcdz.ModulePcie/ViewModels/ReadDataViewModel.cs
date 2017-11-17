@@ -41,7 +41,7 @@ namespace Hcdz.ModulePcie.ViewModels
 
         private void DispatcherTimer_Tick(object sender, EventArgs e)
         {
-            ProgressValue =(int) (readtotal / totalSize)*100;
+            ProgressValue =(int) (readtotal*100 / totalSize);
         }
 
         private void Init()
