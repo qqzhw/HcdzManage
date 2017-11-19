@@ -23,9 +23,19 @@
                     </Grid>
                 </Border>
                 <Border BorderThickness="1"  BorderBrush="#D9EDF7" Grid.Row="1">
-                    <StackPanel >
-                        <TextBlock Text="{Binding ProgressText}" Margin="20,20,0,0"/>
-                        <metro:MetroProgressBar  Background="#C8EDF7" IsIndeterminate="False" Margin="20,5,20,20"   Value="{Binding ProgressValue}" Height="30" />
+                    <StackPanel > 
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{Binding ProgressText}" Margin="20,20,0,0"/>
+                            <TextBlock Text="{Binding RateText}" Margin="5,20,0,0"/>
+                        </StackPanel>
+                        <Grid >
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <metro:MetroProgressBar  Background="#C8EDF7" IsIndeterminate="False" Margin="20,5,5,20"   Value="{Binding ProgressValue}" Height="30" />
+                            <TextBlock Grid.Column="1" Margin="0,10,5,0" Text="{Binding ProgressValue,StringFormat=({0}%)}"/>
+                        </Grid>
                     </StackPanel>
                 </Border>
             </Grid>

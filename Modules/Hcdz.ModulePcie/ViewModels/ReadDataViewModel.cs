@@ -23,6 +23,7 @@ namespace Hcdz.ModulePcie.ViewModels
         private long readSize = 0;
         private long tmpSize = 0;
         private long totalSize = 0;
+        private bool IsClose = false;
         public ReadDataViewModel(IUnityContainer container, IServiceLocator serviceLocator, string fileName)
         {
             _container = container;
@@ -43,7 +44,7 @@ namespace Hcdz.ModulePcie.ViewModels
         private void OnScanData()
         {
             BtnIsEnable = false;
-            _progresstext = "正在解析并存储通道数据...";
+            ProgressText = "正在解析并存储通道数据...";            
             Init();
         }
 
@@ -77,6 +78,11 @@ namespace Hcdz.ModulePcie.ViewModels
             dicFiles.Add(4, new FileStream(dir4 + name, FileMode.Append, FileAccess.Write));
             dicFiles.Add(5, new FileStream(dir5, FileMode.Append, FileAccess.Write));
             dicFiles.Add(6, new FileStream(dir6, FileMode.Append, FileAccess.Write));
+            Task.Run(() => ReadData(dicFiles));
+          
+        }
+        private void ReadData(Dictionary<int, FileStream> dicFiles)
+        {
             using (FileStream fsReader = new FileStream(FileName, FileMode.Open, FileAccess.Read))
             {
                 dispatcherTimer.Start();
@@ -84,16 +90,20 @@ namespace Hcdz.ModulePcie.ViewModels
                 byte[] bytes = new byte[16];//4kB是合适的；
                 int readNum;
                 while ((readNum = fsReader.Read(bytes, 0, bytes.Length)) != 0)//小于说明读完了
-                {                   
+                {
                     WriteFile(bytes, dicFiles);
-                    readSize += 16;
+                    readSize +=16;
+                    if (IsClose)
+                    {
+                        break;
+                    }
                 }
                 foreach (var item in dicFiles)
                 {
                     item.Value.Flush();
                     item.Value.Close();
                     item.Value.Dispose();
-                }              
+                }
             }
         }
         private string CreateDir(string directory)
@@ -105,24 +115,37 @@ namespace Hcdz.ModulePcie.ViewModels
             }
             return dir;
         }
-        private void WriteFile(byte[] result, Dictionary<int, FileStream> dicts)
+        private void WriteFile(byte[] tmpResult, Dictionary<int, FileStream> dicts)
         {
-            var channelNo = result[8];
-            var item = dicts.Keys.FirstOrDefault(o=>o==channelNo);
-            if (item==0)
-                return;
-            byte[] trueValue = new byte[8];
-            for (int i = 0; i < 8; i++)
-            {
-                trueValue[i] = result[i];
+            //var bytes = tmpResult.Length /16;
+            //for (int i = 0; i < bytes; i++)
+            //{
+            //    var index = i * 16;
+            //    byte[] result = new byte[16];
+            //    for (int j = 0; j < 16; j++)
+            //    {
+            //        result[j] = tmpResult[index + j];
+            //    }
+                if (tmpResult[15] == 1)
+                {
+                    var channelNo = tmpResult[8];
+                    var item = dicts.Keys.FirstOrDefault(o => o == channelNo);
+                    if (item == 0)
+                        return;
+                //byte[] trueValue = new byte[8];
+                //for (int k = 0; k < 8; i++)
+                //{
+                //    trueValue[k] = result[k];
+                //} 
+                 tmpResult[8] = 0;
+                    // result[15] = 0;
+                    // var bt = result.Take(8).ToArray();
+                    //   item.FileByte.AddRange(bt);
+                    dicts[item].Write(tmpResult, 0, 8);
+                    dicts[item].Flush();
+                //}
             }
-
-            // result[8] = 0;
-            // result[15] = 0;
-            //var bt = result.Take(8).ToArray();
-            //   item.FileByte.AddRange(bt);
-            dicts[item].Write(trueValue, 0, 8);
-            dicts[item].Flush();            
+           
         }
         //private void Client_DownloadFileCompleted(object sender, AsyncCompletedEventArgs e)
         //{
@@ -138,6 +161,7 @@ namespace Hcdz.ModulePcie.ViewModels
 
         private void OnCloseWindow(object obj)
         {
+            IsClose = true;
             dispatcherTimer.Stop();
             var window = obj as Window;
             window.Close();
