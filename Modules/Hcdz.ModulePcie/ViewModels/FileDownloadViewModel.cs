@@ -24,6 +24,7 @@ namespace Hcdz.ModulePcie.ViewModels
         private DispatcherTimer dispatcherTimer;
         private long dataSize=0;
         private long currentSize=0;
+        private WebClient client;
         public FileDownloadViewModel(IUnityContainer  container, IServiceLocator  serviceLocator,string fileName)
         {
             _container = container;
@@ -51,21 +52,22 @@ namespace Hcdz.ModulePcie.ViewModels
             Init();
         }
 
-        private  void Init()
+        private void Init()
         {
             var index = FileName.LastIndexOf("\\");
-            var name = FileName.Substring(index+1, FileName.Length - index-1);
+            var name = FileName.Substring(index + 1, FileName.Length - index - 1);
             if (!Properties.Settings.Default.LocalPath.EndsWith("\\"))
             {
                 Properties.Settings.Default.LocalPath += "\\";
             }
-            var saveFilePath = Properties.Settings.Default.LocalPath+name;
-            using (WebClient client = new WebClient())
-            {
-                client.DownloadProgressChanged += Client_DownloadProgressChanged;
-                client.DownloadFileCompleted += Client_DownloadFileCompleted;
-                client.DownloadFileAsync(new Uri(Properties.Settings.Default.DwonloadUrl + FileName), saveFilePath);
-            }
+            var saveFilePath = Properties.Settings.Default.LocalPath + name;
+            client = new WebClient();
+
+            client.DownloadProgressChanged += Client_DownloadProgressChanged;
+            client.DownloadFileCompleted += Client_DownloadFileCompleted;
+            client.DownloadFileAsync(new Uri(Properties.Settings.Default.DwonloadUrl + FileName), saveFilePath);
+
+
             dispatcherTimer.Start();
         }
 
@@ -74,6 +76,7 @@ namespace Hcdz.ModulePcie.ViewModels
             RateText = string.Empty;
             ProgressText = "下载完毕！";
             dispatcherTimer.Stop();
+            client.Dispose();
         }
 
         private void Client_DownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e)
@@ -86,6 +89,9 @@ namespace Hcdz.ModulePcie.ViewModels
         private void OnCloseWindow(object obj)
         {
             var window = obj as Window;
+            dispatcherTimer.Stop();
+            client.CancelAsync();
+            client.Dispose();
             window.Close();
         }
         public string FileName { get; set; }

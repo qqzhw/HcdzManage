@@ -44,9 +44,9 @@ namespace Hcdz.WPFServer.Models
 			ByteStrings = InString.Split(" ".ToCharArray());
 			byte[] ByteOut;
 			ByteOut = new byte[ByteStrings.Length - 1];
-			for (int i = 0; i == ByteStrings.Length - 1; i++)
+			for (int i = 0; i <ByteStrings.Length - 1; i++)
 			{
-				ByteOut[i] = Convert.ToByte(("0x" + ByteStrings[i]));
+				ByteOut[i] = Convert.ToByte(("0x" + ByteStrings[i]),16);
 			}
 			return ByteOut;
 		}

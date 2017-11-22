@@ -318,7 +318,7 @@ namespace Hcdz.ModulePcie
 			return null;
 		}
         public async  Task<DriveInfo[]> GetDrives()
-        {
+        { 
             if (_connection.State == ConnectionState.Connected)
             {
                 var items =await  _chat.Invoke<DriveInfo[]>("GetDrives");

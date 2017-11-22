@@ -60,7 +60,7 @@ namespace Hcdz.WPFServer
             Application.Current.Dispatcher.Invoke(() =>
                 ((MainWindow)Application.Current.MainWindow).WriteToConsole("Client disconnected: " + Context.ConnectionId));
             DeviceClose(0);
-            return base.OnDisconnected(stopCalled);
+            return base.OnDisconnected(true);
         }
 
         public IEnumerable<DriveInfo> GetDrives()
@@ -738,7 +738,7 @@ namespace Hcdz.WPFServer
         {
             var findItem = TcpModels.Find(o => o.Id == index);
             findItem.Client.Disconnect();
-             findItem.TcpStream.Flush();
+           //  findItem.TcpStream.Flush();
             findItem.TcpStream.Close();
             findItem.TcpStream.Dispose();
         }
@@ -760,7 +760,7 @@ namespace Hcdz.WPFServer
         private void Client_MessageReceived(object sender, MessageEventArgs e, TcpClientModel  model)
         {
             var message = e.Message as ScsTextMessage;
-            var byteArray = System.Text.Encoding.UTF8.GetBytes(message.Text);
+            var byteArray = System.Text.Encoding.Unicode.GetBytes(message.Text);
             // var b1 = System.Text.Encoding.ASCII.GetBytes(message.Text);
             var str = string.Empty;
             byte[] byteOut = new byte[byteArray.Length];
@@ -768,18 +768,22 @@ namespace Hcdz.WPFServer
             //{
             //    ByteOut[i] = Convert.ToByte(("0x" + ByteStrings[i]));
             //}
+            var ss = CommonHelper.ByteToString(byteArray);
+            var bb = CommonHelper.StrToHexByte(ss);
+            var bb2 = CommonHelper.StringToByte(ss);
             var list = new byte[byteArray.Length];
             for (int i = 0; i < byteArray.Length; i++)
             {
-              // str+= Convert.ToString(byteArray[i], 16);
-              
-                byteOut[i] = Convert.ToByte(Convert.ToString(byteArray[i], 16),16);
+
+                str += Convert.ToString(byteArray[i], 16);
+
+               // byteOut[i] = byte.Parse("57", System.Globalization.NumberStyles.AllowHexSpecifier);// Convert.ToByte("0x"+Convert.ToString(byteArray[i], 16),16);
             }            
             if (message == null)
             { 
                 return;
             } 
-            model.TcpStream.Write(byteOut, 0, byteArray.Length);   
+            model.TcpStream.Write(byteArray, 0, byteArray.Length);   
             model.TcpStream.Flush();
         }
         #endregion

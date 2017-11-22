@@ -198,6 +198,8 @@ namespace Hcdz.ModulePcie.ViewModels
         private async void LoadData()
 		{
 			DriveInfo[] drives =await _hcdzClient.GetDrives();
+            if (drives == null)
+                return;
 			DriveInfoItems = new ObservableCollection<DriveInfo>(drives);
 			
 		}
