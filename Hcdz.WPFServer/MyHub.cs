@@ -693,6 +693,8 @@ namespace Hcdz.WPFServer
         public bool TcpConnect(string fileDir, string ip,int port,int index=1)
         {
             var findItem = TcpModels.Find(o => o.Id == index);
+            if (findItem == null)
+                return false;
             if (!findItem.IsConnected)
             {
                 findItem.IP = ip;
@@ -737,6 +739,8 @@ namespace Hcdz.WPFServer
         public void CloseTcpConnect(int index)
         {
             var findItem = TcpModels.Find(o => o.Id == index);
+            if (findItem == null)
+                return;
             findItem.Client.Disconnect();
            //  findItem.TcpStream.Flush();
             findItem.TcpStream.Close();
