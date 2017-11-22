@@ -233,17 +233,25 @@ namespace Hcdz.ModulePcie.ViewModels
             {
                 return;
             }
-            DriveInfo[] drives = await _hcdzClient.GetDrives();
-			if (drives == null)
-				return;
-            foreach (var drive in drives)
+            try
             {
-                if (drive.Name.Contains(dirPath.ToString()))
+                DriveInfo[] drives = await _hcdzClient.GetDrives();
+                if (drives == null)
+                    return;
+                foreach (var drive in drives)
                 {
-                    DiskVal = ByteFormatter.ToString(drive.AvailableFreeSpace) + " 可用";
-                    DiskPercent = 100.0 - (int)(drive.AvailableFreeSpace * 100.0 / drive.TotalSize); 
+                    if (drive.Name.Contains(dirPath.ToString()))
+                    {
+                        DiskVal = ByteFormatter.ToString(drive.AvailableFreeSpace) + " 可用";
+                        DiskPercent = 100.0 - (int)(drive.AvailableFreeSpace * 100.0 / drive.TotalSize);
+                    }
                 }
             }
+            catch (Exception ex)
+            {
+ 
+            }
+           
             //if (drives.Count() > 1)
             //{
             //    DriveIndex = 1;

@@ -721,7 +721,7 @@ namespace Hcdz.WPFServer
 
                 
                   //Send message to the server
-               // findItem.Client.SendMessage(new ScsTextMessage(messageText, "q1"));
+                findItem.Client.SendMessage(new ScsTextMessage("3F", "q1"));
 
                 //client.Disconnect(); //Close connection to server
             }
@@ -760,13 +760,26 @@ namespace Hcdz.WPFServer
         private void Client_MessageReceived(object sender, MessageEventArgs e, TcpClientModel  model)
         {
             var message = e.Message as ScsTextMessage;
-            var byteArray = System.Text.Encoding.Default.GetBytes(message.Text);
-           // var b1 = System.Text.Encoding.ASCII.GetBytes(message.Text);
+            var byteArray = System.Text.Encoding.UTF8.GetBytes(message.Text);
+            // var b1 = System.Text.Encoding.ASCII.GetBytes(message.Text);
+            var str = string.Empty;
+            byte[] byteOut = new byte[byteArray.Length];
+            //for (int i = 0; i == ByteStrings.Length - 1; i++)
+            //{
+            //    ByteOut[i] = Convert.ToByte(("0x" + ByteStrings[i]));
+            //}
+            var list = new byte[byteArray.Length];
+            for (int i = 0; i < byteArray.Length; i++)
+            {
+              // str+= Convert.ToString(byteArray[i], 16);
+              
+                byteOut[i] = Convert.ToByte(Convert.ToString(byteArray[i], 16),16);
+            }            
             if (message == null)
             { 
                 return;
             } 
-             model.TcpStream.Write(byteArray, 0, byteArray.Length);   
+            model.TcpStream.Write(byteOut, 0, byteArray.Length);   
             model.TcpStream.Flush();
         }
         #endregion

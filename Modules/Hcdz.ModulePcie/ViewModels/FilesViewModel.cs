@@ -52,11 +52,17 @@ namespace Hcdz.ModulePcie.ViewModels
 			CopyNewCmd= new DelegateCommand<object>(OnCopyNew);
 			FileCopyCmd = new DelegateCommand<object>(OnFileCopy);
             DeleteCmd=new DelegateCommand<object>(OnDeleteFileCopy);
+            RefreshCmd = new DelegateCommand<object>(OnFileRefresh);
             FileDownloadCmd = new DelegateCommand<DirectoryInfoModel>(OnDownloadFile);
             MenuItemCommand= new DelegateCommand<object>(OnMenuCommand);
             Menu = new ObservableCollection<MenuItem>(); 
 			_hcdzClient.ProgressChanged += FileCopyProgressChanged;
             _hcdzClient.Connected += ClientConnected;
+            Initializer();
+        }
+
+        private void OnFileRefresh(object obj)
+        {
             Initializer();
         }
 
@@ -179,7 +185,13 @@ namespace Hcdz.ModulePcie.ViewModels
 				Command = DeleteCmd,
                 CommandParameter = model
             };
-			Menu.Add(mi); 
+            mi = new MenuItem()
+            {
+                Header = "刷新",
+                Command = DeleteCmd,
+                CommandParameter = model
+            };
+            Menu.Add(mi); 
 
 		}
 
@@ -398,7 +410,8 @@ namespace Hcdz.ModulePcie.ViewModels
         public ICommand MenuItemCommand { get; private set; }
         public ICommand FileZtCmd { get; private set; }
 		public ICommand DeleteCmd { get; private set; }
-		public ICommand FileCutCmd { get; private set; }
+        public ICommand RefreshCmd { get; private set; }
+        public ICommand FileCutCmd { get; private set; }
 		public ICommand CopyNewCmd { get; private set; }
         #endregion
         private ObservableCollection<DriveInfoModel> driveInfoItems;

@@ -158,13 +158,13 @@ namespace HcdzManage.ViewModels
                 InitMode = InitializationMode.OnDemand,
                 IsDefaultShow = false,
             });
-            _systemInfos.Add(new SystemInfoViewModel()
-            {
-                Id = "HardDriveView",
-                Title = "磁盘管理",
-                InitMode = InitializationMode.OnDemand,
-                IsDefaultShow = false,
-            });
+            //_systemInfos.Add(new SystemInfoViewModel()
+            //{
+            //    Id = "HardDriveView",
+            //    Title = "磁盘管理",
+            //    InitMode = InitializationMode.OnDemand,
+            //    IsDefaultShow = false,
+            //});
         }
 
         private void RaiseCustomPopup()
