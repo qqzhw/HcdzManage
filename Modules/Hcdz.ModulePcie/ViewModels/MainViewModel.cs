@@ -294,11 +294,11 @@ namespace Hcdz.ModulePcie.ViewModels
             var network = await _hcdzClient.GetNetWork();
             if (network)
             {
-                LogInfo += "网络连接正常!";
+                LogInfo += "网络连接正常!\n";
             }
             else
             {
-                LogInfo += "网络连接异常!";
+                LogInfo += "网络连接异常!\n";
             }
         }
 

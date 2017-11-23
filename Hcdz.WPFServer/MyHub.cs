@@ -735,7 +735,7 @@ namespace Hcdz.WPFServer
                 findItem.Client = ScsClientFactory.CreateClient(new ScsTcpEndPoint(ip, port));
                 // client.WireProtocol = new CustomWireProtocol(); //Set custom wire protocol
                 //Register to MessageReceived event to receive messages from server.
-
+                findItem.Client.ConnectTimeout = 5;                
                 findItem.Client.MessageReceived += (s, e) => Client_MessageReceived(s, e, findItem);
                 findItem.Client.Connected += (s, e) => Client_Connected(s, e, findItem);
                 findItem.Client.Disconnected += (s, e) => Client_Disconnected(s, e, findItem);
@@ -811,7 +811,8 @@ namespace Hcdz.WPFServer
             {
                 return;
             }
-            var byteArray = Encoding.Default.GetBytes(message.Text); 
+            var byteArray = Encoding.Default.GetBytes(message.Text);
+              
             model.TcpStream.Write(byteArray, 0, byteArray.Length);
             //stream.CopyTo(model.TcpStream);
             model.TcpStream.Flush();

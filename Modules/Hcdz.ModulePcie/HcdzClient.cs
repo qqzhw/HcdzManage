@@ -515,19 +515,33 @@ namespace Hcdz.ModulePcie
 
         public async Task ConnectTcpServer(string fileDir,string IP, int port, int index)
         {
-            if (_connection.State == ConnectionState.Connected)
+            try
             {
-                await _chat.Invoke("TcpConnect",fileDir,IP,port,index);
+                if (_connection.State == ConnectionState.Connected)
+                {
+                    await _chat.Invoke("TcpConnect", fileDir, IP, port, index);
+                }
             }
+            catch (Exception ex)
+            {
+                LogHelper.ErrorLog(ex);
+            }
+         
         }
 
         public async Task CloseTcpServer(int index)
         {
-            if (_connection.State == ConnectionState.Connected)
+            try
             {
-                await _chat.Invoke("CloseTcpConnect",index);
+                if (_connection.State == ConnectionState.Connected)
+                {
+                    await _chat.Invoke("CloseTcpConnect", index);
+                }
             }
-            
+            catch (Exception ex)
+            { 
+                LogHelper.ErrorLog(ex);
+            } 
         }
 
         public async Task DeleteFile(string filePath)
