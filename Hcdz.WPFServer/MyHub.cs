@@ -31,11 +31,11 @@ namespace Hcdz.WPFServer
         private readonly static List<DeviceChannelModel> DeviceChannelModels = new List<DeviceChannelModel>();        
         private static bool DeviceStatus;
         private static bool IsStop = false;
-        private static DateTime oldTime=DateTime.Now;
-        private static DispatcherTimer dispatcherTimer = new DispatcherTimer()
-        {
-            Interval = TimeSpan.FromSeconds(60)        
-        };        
+         
+        //private static DispatcherTimer dispatcherTimer = new DispatcherTimer()
+        //{
+        //    Interval = TimeSpan.FromSeconds(60)        
+        //};        
         private readonly static List<TcpClientModel> TcpModels = new List<TcpClientModel>()
         {  new TcpClientModel() { Id = 1 },       new TcpClientModel() { Id = 2 }
         };
@@ -43,18 +43,14 @@ namespace Hcdz.WPFServer
         public MyHub()
         {
            
-            if (!dispatcherTimer.IsEnabled)
-            {
-                dispatcherTimer.Tick += DispatcherTimer_Tick;
-                dispatcherTimer.Start();
-            }
+            //if (!dispatcherTimer.IsEnabled)
+            //{
+            //    dispatcherTimer.Tick += DispatcherTimer_Tick;
+            //    dispatcherTimer.Start();
+            //}
         }
 
-        private void DispatcherTimer_Tick(object sender, EventArgs e)
-        {
-            oldTime = DateTime.Now;
-        }
-
+       
         public void Send(string name, string message)
         {
             Clients.All.addMessage(name, message);
@@ -730,7 +726,7 @@ namespace Hcdz.WPFServer
                 {
                     Directory.CreateDirectory(dir);
                 }
-                findItem.TcpStream = new FileStream(dir + "\\" + dt, FileMode.Append, FileAccess.Write);
+              //  findItem.TcpStream = new FileStream(dir + "\\" + dt, FileMode.Append, FileAccess.Write);
             }
             try
             {
@@ -789,12 +785,21 @@ namespace Hcdz.WPFServer
 
         private void Client_MessageReceived(object sender, MessageEventArgs e, TcpClientModel model)
         {
-            var dt = (DateTime.Now - oldTime).TotalSeconds;
+            var dt = (DateTime.Now - model.ConnectedTime).TotalSeconds;
             if (dt>59)
             { 
                 var fileName = DateTime.Now.ToString("yyyyMMddHHmmss");
                 var dir = model.FileDir + "Wan" + model.Id.ToString();
                 model.TcpStream = new FileStream(dir + "\\" + fileName, FileMode.Append, FileAccess.Write);
+                model.ConnectedTime = DateTime.Now;
+            }
+            else
+            {
+                if (model.TcpStream == null)
+                {
+                    model.TcpStream = new FileStream(model.FileDir + "\\" + DateTime.Now.ToString("yyyyMMddHHmmss"), FileMode.Append, FileAccess.Write);
+                }
+               
             }
             var message = e.Message as ScsTextMessage;
             // var byteArray = System.Text.Encoding.Default.GetBytes(message.Text);

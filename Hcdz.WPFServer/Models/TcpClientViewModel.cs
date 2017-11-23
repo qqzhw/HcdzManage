@@ -11,6 +11,10 @@ namespace Hcdz.WPFServer.Models
 {
     public class TcpClientModel
     {
+        public TcpClientModel()
+        {
+            ConnectedTime = DateTime.Now;
+        }
         public int Id { get; set; }
         [JsonIgnore]
         public IScsClient Client { get; set; }
@@ -23,6 +27,6 @@ namespace Hcdz.WPFServer.Models
         public int Port { get; set; } 
         public long DataSize { get; set; }
         public string FileDir { get; set; }
-        public DateTime? ConnectedTime { get; set; }
+        public DateTime ConnectedTime { get; set; }
     }
 }

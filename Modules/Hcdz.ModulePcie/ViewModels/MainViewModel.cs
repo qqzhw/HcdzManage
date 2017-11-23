@@ -78,7 +78,7 @@ namespace Hcdz.ModulePcie.ViewModels
         private void NoticeTcpData(TcpClientViewModel model)
         {
             var findItem = TcpViewModel.FirstOrDefault(o => o.Id == model.Id);
-            findItem.CurrentSize+= findItem.DataSize;
+            findItem.CurrentSize+= model.DataSize;
             findItem.IsBegin = true;
         }
 
