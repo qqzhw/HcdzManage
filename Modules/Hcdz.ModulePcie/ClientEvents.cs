@@ -16,6 +16,8 @@
         public static readonly string NotifyFormatTime = "NotifyFormatTime";
         public static readonly string NoticeScanByte = "NoticeScanByte";
         public static readonly string NoticeTcpConnect = "NoticeTcpConnect";
-         
+        public static readonly string NoticeTcpData = "NoticeTcpData";
+        
+
     }
 }

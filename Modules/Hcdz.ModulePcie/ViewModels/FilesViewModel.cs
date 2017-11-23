@@ -348,7 +348,12 @@ namespace Hcdz.ModulePcie.ViewModels
             get { return _sourceFullPath; }
             set { SetProperty(ref _sourceFullPath, value); }
         }
-
+        private string _enableValue;
+        public string EnableValue
+        {
+            get { return _enableValue; }
+            set { SetProperty(ref _enableValue, value); }
+        }
         private string _selectedPath;
         public string SelectedPath
         {
@@ -464,8 +469,8 @@ namespace Hcdz.ModulePcie.ViewModels
             if (items != null) 
 		   DirectoryItems = new ObservableCollection<DirectoryInfoModel>(items);
             SelectedPath = DriveInfoItems.FirstOrDefault()?.Name;
-          IsBusy = false;
-         
+            EnableValue = DriveInfoItems.FirstOrDefault()?.AvailableFreeSpaceText;
+          IsBusy = false;         
         }
         /// <summary>
         /// 远程获取文件目录及文件

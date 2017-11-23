@@ -1,4 +1,5 @@
-﻿using Pvirtech.TcpSocket.Scs.Client;
+﻿using Newtonsoft.Json;
+using Pvirtech.TcpSocket.Scs.Client;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -11,13 +12,16 @@ namespace Hcdz.WPFServer.Models
     public class TcpClientModel
     {
         public int Id { get; set; }
+        [JsonIgnore]
         public IScsClient Client { get; set; }
         public bool IsConnected { get; set; }
+        [JsonIgnore]
         public FileStream TcpStream { get; set; } 
         public string MessageText { get; set; } 
         public int Status { get; set; }
         public string IP { get; set; } 
         public int Port { get; set; } 
+        public long DataSize { get; set; }
         public string FileDir { get; set; }
         public DateTime? ConnectedTime { get; set; }
     }

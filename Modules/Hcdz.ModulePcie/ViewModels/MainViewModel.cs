@@ -59,8 +59,8 @@ namespace Hcdz.ModulePcie.ViewModels
             LocalDataJxCmd = new DelegateCommand<object>(OnLocalDataRead);
             SelectedDirCmd = new DelegateCommand<object>(OnLoadSelectDir);
             _deviceChannelModels = new ObservableCollection<DeviceChannelModel>();//主板1 四通道
-           // _deviceChannel2 = new ObservableCollection<DeviceChannelModel>();//主板2 通道
-
+                                                                                  // _deviceChannel2 = new ObservableCollection<DeviceChannelModel>();//主板2 通道
+            _tcpViewModel = new ObservableCollection<TcpClientViewModel>();
             _viewModel = new PcieViewModel();
            
            // Stream = new FileStream("D:\\test", FileMode.Append, FileAccess.Write);
@@ -70,8 +70,16 @@ namespace Hcdz.ModulePcie.ViewModels
             _hcdzClient.NotifyTotal += _hcdzClient_NotifyTotal;
             _hcdzClient.NoticeScanByte +=OnNoticeScanByte;
             _hcdzClient.NoticeTcpConnect +=NoticeTcpConnect;
+            _hcdzClient.NoticeTcpData +=NoticeTcpData;
             LoadDeviceChannel();
             InitRefresh();
+        }
+
+        private void NoticeTcpData(TcpClientViewModel model)
+        {
+            var findItem = TcpViewModel.FirstOrDefault(o => o.Id == model.Id);
+            findItem.CurrentSize+= findItem.DataSize;
+            findItem.IsBegin = true;
         }
 
         /// <summary>
@@ -115,12 +123,12 @@ namespace Hcdz.ModulePcie.ViewModels
             await   _hcdzClient.CloseTcpServer(model.Id);
         }
 
-        private void NoticeTcpConnect(bool arg, int index)
+        private void NoticeTcpConnect(bool arg, TcpClientViewModel model)
         {
-            var findItem = TcpViewModel.FirstOrDefault(o => o.Id == index);
-            findItem.IsConnected = arg;
-            findItem.MessageText += arg == true ? "TCP连接成功！\n" : "TCP连接断开！\n";
-            findItem.BtnIsEnabled = arg == true ? false : true;
+            var findItem = TcpViewModel.FirstOrDefault(o => o.Id == model.Id);
+            findItem.IsConnected = model.IsConnected;
+            findItem.MessageText += model.IsConnected == true ? "TCP连接成功！\n" : "TCP连接断开！\n";
+            findItem.BtnIsEnabled = model.IsConnected == true ? false : true;
         }
 
         private async  void OnConnectTcp(TcpClientViewModel model)
@@ -149,7 +157,7 @@ namespace Hcdz.ModulePcie.ViewModels
                 var findItem = barList.FirstOrDefault(o => o != 63);
                 if (findItem==0)
                 {
-                    MessageBox.Show("设备所有通道运行正常!");
+                    MessageBox.Show(string.Format("设备{0}所有通道运行正常!",deviceIndex+1));
                 }
                 else
                 {
@@ -176,7 +184,11 @@ namespace Hcdz.ModulePcie.ViewModels
                             tmpInfo += info;
                         }
                     }
-                    MessageBox.Show(tmpInfo);
+                    if (!string.IsNullOrEmpty(tmpInfo))
+                    {
+                        MessageBox.Show(tmpInfo);
+                    }
+                   
                 }
                  
             }
@@ -186,15 +198,13 @@ namespace Hcdz.ModulePcie.ViewModels
         {
             DeviceDesc = string.Empty;
             BtnIsEnabled = true;
-            dispatcherTimer.Stop();
+           // dispatcherTimer.Stop();
             TextRate = "0.00MB/s";
             total = 0;
             OpenDeviceText = "连接设备";
             IsOpen = false;
         }
-
-       
-
+         
         private async void LoadData()
 		{
 			DriveInfo[] drives =await _hcdzClient.GetDrives();
@@ -211,6 +221,7 @@ namespace Hcdz.ModulePcie.ViewModels
 				LoadData();//加载基本信息
 				OnLoadSelectDir(_selectedDsik); 
 				Initializer();
+                InitTcpClient();
                 _hcdzClient.Connection.Closed += Connection_Closed;
             }
         }
@@ -223,7 +234,7 @@ namespace Hcdz.ModulePcie.ViewModels
 		private async void OnCloseReadDma(object obj)
         {
               BtnIsEnabled = true;
-             dispatcherTimer.Stop();
+             //dispatcherTimer.Stop();
             TextRate = "0.00MB/s";
               total = 0;
              await  _hcdzClient.CloseDma();
@@ -280,6 +291,15 @@ namespace Hcdz.ModulePcie.ViewModels
             {
 
             }
+            var network = await _hcdzClient.GetNetWork();
+            if (network)
+            {
+                LogInfo += "网络连接正常!";
+            }
+            else
+            {
+                LogInfo += "网络连接异常!";
+            }
         }
 
         private async void OnReadDma(object obj)
@@ -298,7 +318,7 @@ namespace Hcdz.ModulePcie.ViewModels
                 BtnIsEnabled = true;
                 return;
             }
-            dispatcherTimer.Start();
+           
             int dma = 16;
             var dmaSize = SelectedDMA.Content.ToString();
             int.TryParse(dmaSize.TrimEnd('K'), out dma);
@@ -467,6 +487,20 @@ namespace Hcdz.ModulePcie.ViewModels
                 TextRate = text;
                 total = 0;
             });
+            foreach (var item in TcpViewModel)
+            {
+                if (item.IsBegin)
+                {
+                    item.RateText = string.Format("速率{0}MB/s", ((item.CurrentSize - item.DataSize) / 1048576.0).ToString("f2"));
+                    item.DataSize = item.CurrentSize;                   
+                }
+                else
+                {
+                    item.RateText =string.Empty;
+                    item.DataSize = 0;
+                    item.CurrentSize = 0;
+                }
+            }
         }
 
         #region 属性
@@ -705,12 +739,20 @@ namespace Hcdz.ModulePcie.ViewModels
             list.Add(channel2); 
             list.Add(channel5); 
             _deviceChannelModels = new ObservableCollection<DeviceChannelModel>(list);
-            _tcpViewModel = new ObservableCollection<TcpClientViewModel>();
-            _tcpViewModel.Add(new TcpClientViewModel() { Id=1});
-            _tcpViewModel.Add(new TcpClientViewModel() { Id = 2 });
-           // _tcpViewModel = new ObservableCollection<TcpClientViewModel>();
+            //_tcpViewModel = new ObservableCollection<TcpClientViewModel>();
+            //_tcpViewModel.Add(new TcpClientViewModel() { Id=1});
+            //_tcpViewModel.Add(new TcpClientViewModel() { Id = 2 });
+            dispatcherTimer.Start();
         }
-         
+
+        private async void InitTcpClient()
+        {
+            var clients = await _hcdzClient.GetAllTcpClients();
+            if (clients == null)
+                return;
+            TcpViewModel = new ObservableCollection<TcpClientViewModel>(clients);
+        }
+
         private void ReadDMA()
 		{
 			//while (!IsCompleted)

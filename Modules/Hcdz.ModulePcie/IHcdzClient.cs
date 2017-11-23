@@ -20,7 +20,9 @@ namespace Hcdz.ModulePcie
 		event Action<string, string, long, long> ProgressChanged;
         event Action<long> NotifyTotal;
         event Action<string,int> NoticeScanByte;
-        event Action<bool, int> NoticeTcpConnect;
+        event Action<bool, TcpClientViewModel> NoticeTcpConnect;
+        event Action<TcpClientViewModel> NoticeTcpData;
+        
         event Action<int> NotifyFormatTime;
         bool IsConnected { get; set; }
 		string SourceUrl { get; }
@@ -38,7 +40,7 @@ namespace Hcdz.ModulePcie
 
 		Task<List<DirectoryInfoModel>> GetFileList(string path);
         Task<DriveInfo[]> GetDrives();
-
+        Task<List<TcpClientViewModel>> GetAllTcpClients();
         Task<DWORD> InitializerDevice();
 
 		Task<bool> DeviceOpen(int iSelectedIndex); 
@@ -55,5 +57,6 @@ namespace Hcdz.ModulePcie
 		Task<bool> ScanDevice(int index);
         Task CloseScanDevice();
         Task DeleteFile(string filePath);
+        Task<bool>  GetNetWork();
     }
 }

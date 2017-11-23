@@ -63,5 +63,55 @@ namespace Hcdz.ModulePcie.ViewModels
                 SetProperty(ref _fileDir, value);
             }
         }
+        private long _dataSize;
+        public long DataSize
+        {
+            get
+            {
+                return _dataSize;
+            }
+            set
+            {
+                SetProperty(ref _dataSize, value);
+            }
+        }
+        public long _rateSize;
+        public long RateSize
+        {
+            get
+            {
+                return _rateSize;
+            }
+            set
+            {
+                SetProperty(ref _rateSize, value);
+            }
+        }
+        public long _currentSize;
+        public long CurrentSize
+        {
+            get
+            {
+                return _currentSize;
+            }
+            set
+            {
+                SetProperty(ref _currentSize, value);
+            }
+        }
+        public int TimeIndex { get; set; }
+        public bool IsBegin { get; set; }
+        public string _rateText;
+        public string RateText
+        {
+            get
+            {
+                return _rateText;
+            }
+            set
+            {
+                SetProperty(ref _rateText, value);
+            }
+        }
     }
 }

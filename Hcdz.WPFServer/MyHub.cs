@@ -30,14 +30,15 @@ namespace Hcdz.WPFServer
         private readonly static Dictionary<PCIE_Device, List<DeviceChannelModel>> DeviceChannelList = new Dictionary<PCIE_Device, List<DeviceChannelModel>>();
         private readonly static List<DeviceChannelModel> DeviceChannelModels = new List<DeviceChannelModel>();
         private static DispatcherTimer dispatcherTimer = new DispatcherTimer();
-        private static bool DeviceStatus; 
+        private static bool DeviceStatus;
         private static bool IsStop = false;
-        private readonly static List<TcpClientModel> TcpModels = new List<TcpClientModel>();
-        static long ReadTotalSize = 0;
+        private readonly static List<TcpClientModel> TcpModels = new List<TcpClientModel>()
+        {  new TcpClientModel() { Id = 1 },       new TcpClientModel() { Id = 2 }
+        };
         //private static FileStream DeviceFile;
         public MyHub()
         {
-           
+
         }
         public void Send(string name, string message)
         {
@@ -71,11 +72,16 @@ namespace Hcdz.WPFServer
         public bool FormatDrive(string driveName)
         {
             //var dt = DateTime.Now;
-            bool flag= CommonHelper.FormatDrive(driveName);
+            bool flag = CommonHelper.FormatDrive(driveName);
             //var dt2 = DateTime.Now;
-           // TimeSpan ts = dt2 - dt;
-           // Clients.Client(Context.ConnectionId).NotifyFormatTime(ts.Milliseconds);
+            // TimeSpan ts = dt2 - dt;
+            // Clients.Client(Context.ConnectionId).NotifyFormatTime(ts.Milliseconds);
             return flag;
+        }
+
+        public bool GetNetWork()
+        {
+            return CommonHelper.IsConnected();
         }
         public void CopyFileEx(string sourceFullPath, string targetFullPath)
         {
@@ -162,12 +168,10 @@ namespace Hcdz.WPFServer
 
         public DWORD InitLoad()
         {
-            TcpModels.Add(new TcpClientModel() { Id = 1 });
-            TcpModels.Add(new TcpClientModel() { Id = 2 });
             var pciDevList = PCIE_DeviceList.TheDeviceList();
-			//GlobalHost.DependencyResolver.Register(typeof(PCIE_DeviceList), () => pciDevList);
-			
-			try
+            //GlobalHost.DependencyResolver.Register(typeof(PCIE_DeviceList), () => pciDevList);
+
+            try
             {
                 if (DeviceStatus)
                     return 0;
@@ -177,66 +181,66 @@ namespace Hcdz.WPFServer
                     LogHelper.WriteLog(string.Format("设备初始化异常，错误码：{0}", dwStatus));
                     return dwStatus;
                 }
-				LogHelper.WriteLog(string.Format("总发现{0}张设备卡", pciDevList.Count));
-				DeviceStatus = true;
+                LogHelper.WriteLog(string.Format("总发现{0}张设备卡", pciDevList.Count));
+                DeviceStatus = true;
                 return dwStatus;
 
             }
             catch (Exception ex)
             {
-				LogHelper.ErrorLog(ex);
+                LogHelper.ErrorLog(ex);
                 return 1000;
             }
-		
+
         }
 
         /* Open a handle to a device */
         public bool DeviceOpen(int iSelectedIndex)
         {
-			LogHelper.WriteLog(string.Format("连接第{0}张板卡",iSelectedIndex+1));
-            DWORD dwStatus=0;
+            LogHelper.WriteLog(string.Format("连接第{0}张板卡", iSelectedIndex + 1));
+            DWORD dwStatus = 0;
             var devices = PCIE_DeviceList.TheDeviceList();
             PCIE_Device device = PCIE_DeviceList.TheDeviceList().Get(iSelectedIndex);
             if (device == null)
                 return false;
-			/* Open a handle to the device */
-			try
-			{
+            /* Open a handle to the device */
+            try
+            {
                 for (int i = 0; i < devices.Count; i++)
                 {
                     var dev = devices.Get(i);
-                    if (dev!=null)
+                    if (dev != null)
                     {
                         dwStatus = dev.Open();
                         if (dwStatus != (DWORD)wdc_err.WD_STATUS_SUCCESS)
                         {
                             string str = "打开设备: 连接设备失败 (" + dev.ToString(false) + ")\n";
                             Clients.Client(Context.ConnectionId).NoticeMessage(str);
-                            LogHelper.WriteLog(str); 
+                            LogHelper.WriteLog(str);
                         }
-                    } 
+                    }
                 }
                 Clients.Client(Context.ConnectionId).NoticeMessage("已成功连接设备!\n");
-				if (dwStatus>0)
-				{
-					return false;
-				}
-				return true;
-			}
-			catch (Exception ex)
-			{
-				LogHelper.ErrorLog(ex, "DeviceOpen");
+                if (dwStatus > 0)
+                {
+                    return false;
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                LogHelper.ErrorLog(ex, "DeviceOpen");
                 Clients.Client(Context.ConnectionId).NoticeMessage(ex.Message + " open\n");
                 return false;
-			}
-          
+            }
+
         }
 
         /* Close handle to a NEWAMD86 device */
         public bool DeviceClose(int iSelectedIndex)
         {
             //pBoard->pci_e.WriteBAR0(0, 0x10, regval);
-            LogHelper.WriteLog(string.Format("断开第{0}张板卡", iSelectedIndex+1));
+            LogHelper.WriteLog(string.Format("断开第{0}张板卡", iSelectedIndex + 1));
             var devices = PCIE_DeviceList.TheDeviceList();
             PCIE_Device device = PCIE_DeviceList.TheDeviceList().Get(iSelectedIndex);
             bool bStatus = false;
@@ -251,7 +255,7 @@ namespace Hcdz.WPFServer
                     if (dev != null)
                     {
                         if (dev.Handle != IntPtr.Zero && !(bStatus = dev.Close()))
-                        { 
+                        {
                             string str = "断开设备: 关闭设备失败 (" + dev.ToString(false) + ")";
                             Clients.Client(Context.ConnectionId).NoticeMessage(str);
                             LogHelper.WriteLog(str);
@@ -262,23 +266,23 @@ namespace Hcdz.WPFServer
                             dev.ppwDma = IntPtr.Zero;
                             dev.pReportWrBuffer = IntPtr.Zero;
                             dev.pReportWrDMA = IntPtr.Zero;
-                            dev.pWbuffer = IntPtr.Zero; 
+                            dev.pWbuffer = IntPtr.Zero;
                             bStatus = true;
                         }
                     }
                     if (bStatus)
                     {
-                        Clients.Client(Context.ConnectionId).NoticeMessage(string.Format("已成功断开设备{0}!\n",i+1));
-                    } 
+                        Clients.Client(Context.ConnectionId).NoticeMessage(string.Format("已成功断开设备{0}!\n", i + 1));
+                    }
                 }
-				return bStatus;
+                return bStatus;
             }
             catch (Exception ex)
             {
                 LogHelper.ErrorLog(ex, "DeviceClose");
-                Clients.Client(Context.ConnectionId).NoticeMessage(ex.Message+"close \n");
+                Clients.Client(Context.ConnectionId).NoticeMessage(ex.Message + "close \n");
             }
-			return false;
+            return false;
         }
 
         public string InitDeviceInfo(int index)
@@ -291,7 +295,7 @@ namespace Hcdz.WPFServer
             {
                 var item = PCIE_DeviceList.TheDeviceList().Get(i);
                 DeviceChannelList.Add(item, AddChannel(i));
-            }         
+            }
             DWORD outData = 0;
             device.ReadBAR0(0, 0x00, ref outData);
             if ((outData & 0x10) == 0x10)
@@ -401,7 +405,7 @@ namespace Hcdz.WPFServer
         public bool ScanDevice(int deviceIndex)
         {
             PCIE_Device dev = PCIE_DeviceList.TheDeviceList().Get(deviceIndex);
-            if (dev==null)
+            if (dev == null)
             {
                 return false;
             }
@@ -428,25 +432,24 @@ namespace Hcdz.WPFServer
             dev.WriteBAR0(0, 0x4, (uint)ppwDma.Page[0].pPhysicalAddr);		//wr_addr low
             dev.WriteBAR0(0, 0x8, (uint)(ppwDma.Page[0].pPhysicalAddr >> 32));	//wr_addr high
             dev.WriteBAR0(0, 0xC, (UInt32)1024);           //dma wr size
-            //dev.WriteBAR0(0, 0x30, 1);
-            //Thread.Sleep(10);
-            //dev.WriteBAR0(0, 0x34, 1);
-            //Thread.Sleep(10);
-            //dev.WriteBAR0(0, 0x38, 1);
-            //Thread.Sleep(10);
-           dev.WriteBAR0(0, 0x28, 1);
-            Thread.Sleep(1000);            
+                                                           //dev.WriteBAR0(0, 0x30, 1);
+                                                           //Thread.Sleep(10);
+                                                           //dev.WriteBAR0(0, 0x34, 1);
+                                                           //Thread.Sleep(10);
+                                                           //dev.WriteBAR0(0, 0x38, 1);
+                                                           //Thread.Sleep(10);
+            dev.WriteBAR0(0, 0x28, 1);
+            Thread.Sleep(1000);
             dev.WriteBAR0(0, 0x10, 1);
-            Thread.Sleep(200); 
+            Thread.Sleep(200);
             dev.WriteBAR0(0, 0x10, 0);
             dev.WriteBAR0(0, 0x28, 0);
             //启动DMA
             //       //dma wr 使能
             byte[] tmpResult = new Byte[1024];
             Marshal.Copy(dev.pScanWbuffer, tmpResult, 0, 1024);
-            Clients.Client(Context.ConnectionId).NoticeScanByte(CommonHelper.ByteToString(tmpResult),deviceIndex);
-            
-          
+            Clients.Client(Context.ConnectionId).NoticeScanByte(CommonHelper.ByteToString(tmpResult), deviceIndex);
+             
             return true;
         }
 
@@ -460,7 +463,7 @@ namespace Hcdz.WPFServer
 
                 }
             }
-            ReadTotalSize = 0;
+            
             PCIE_Device dev = PCIE_DeviceList.TheDeviceList().Get(deviceIndex);
             if (dev == null)
             {
@@ -469,7 +472,7 @@ namespace Hcdz.WPFServer
             }
             if (dev.Status == 1)
                 return "正在读取数据...";
-            Clients.Client(Context.ConnectionId).NoticeMessage(string.Format("正在读取设备{0}数据...\n",deviceIndex+1 ));
+            Clients.Client(Context.ConnectionId).NoticeMessage(string.Format("正在读取设备{0}数据...\n", deviceIndex + 1));
             dev.FPGAReset(0);
             if (dev.WDC_DMAContigBufLock() != 0)
             {
@@ -504,12 +507,12 @@ namespace Hcdz.WPFServer
             //    }
 
             //}
-            var dir = Path.Combine(dvireName, "device"+deviceIndex.ToString());
+            var dir = Path.Combine(dvireName, "device" + deviceIndex.ToString());
             if (!Directory.Exists(dir))
             {
                 Directory.CreateDirectory(dir);
             }
-           
+
             var filePath = Path.Combine(dir, dt);
             dev.DeviceFile = new FileStream(filePath, FileMode.Append, FileAccess.Write);
             dev.StartWrDMA(0);
@@ -518,9 +521,10 @@ namespace Hcdz.WPFServer
             //readThread.IsBackground = true;
             //readThread.Start();
             Task.Factory.StartNew(new Action(() => OnScanDrive(dev, dvireName, deviceIndex)));
-                //Thread nonParameterThread = new Thread(new ParameterizedThreadStart(p => NonParameterRun(dev, dvireName, dataSize, deviceIndex)));
-                //nonParameterThread.Start();
-            Task.Factory.StartNew(new Action(()=>NonParameterRun(dev, dvireName, dataSize, deviceIndex))).ContinueWith(t=> {
+            //Thread nonParameterThread = new Thread(new ParameterizedThreadStart(p => NonParameterRun(dev, dvireName, dataSize, deviceIndex)));
+            //nonParameterThread.Start();
+            Task.Factory.StartNew(new Action(() => NonParameterRun(dev, dvireName, dataSize, deviceIndex))).ContinueWith(t =>
+            {
                 //foreach (var item in list)
                 //{
                 //    if (item.Stream == null)
@@ -544,19 +548,19 @@ namespace Hcdz.WPFServer
                 var findDrive = DriveInfo.GetDrives().FirstOrDefault(o => o.Name == dvireName);
                 if (findDrive != null)
                 {
-                    if (findDrive.AvailableFreeSpace < 1024 * 1024 * 1024.0*10)
+                    if (findDrive.AvailableFreeSpace < 1024 * 1024 * 1024.0 * 10)
                     {
-                        if (dev.Status>0)
+                        if (dev.Status > 0)
                         {
                             dev.DeviceFile.SetLength(0);
-                        }                     
-                        
+                        }
+
                     }
                 }
             }
         }
 
-        private void NonParameterRun(PCIE_Device dev,string dvireName,int dataSize,int deviceIndex)
+        private void NonParameterRun(PCIE_Device dev, string dvireName, int dataSize, int deviceIndex)
         {
             int wrDMASize = dataSize * 1024; //16kb
             dev.WriteBAR0(0, 0x60, 1);		//中断屏蔽
@@ -572,20 +576,21 @@ namespace Hcdz.WPFServer
             dev.WriteBAR0(0, 0xC, (UInt32)wrDMASize);           //dma wr size
 
             //dev.WriteBAR0(0, 56, 1);
-           // dev.WriteBAR0(0, 48, 1);
-           
+            // dev.WriteBAR0(0, 48, 1);
+
             var list = DeviceChannelList[dev];
             //foreach (var item in list)
             //{
             //   dev.WriteBAR0(0, item.RegAddress, item.IsOpen == true ? (UInt32)1 : 0);             
             //} 
-            Parallel.ForEach(list, item => {
+            Parallel.ForEach(list, item =>
+            {
                 dev.WriteBAR0(0, item.RegAddress, item.IsOpen == true ? (UInt32)1 : 0);
             });
             Thread.Sleep(1000);
             //启动DMA
             dev.WriteBAR0(0, 0x10, 1);          //dma wr 使能
-            
+
             dev.Status = 1;
             IsStop = false;
             while (!IsStop)
@@ -603,10 +608,10 @@ namespace Hcdz.WPFServer
                 dev.DeviceFile.Write(tmpResult, 0, wrDMASize);
                 dev.DeviceFile.Flush();
                 // concurrentQueue.Enqueue(tmpResult);
-               // DWORD lpNumberOfBytesWritten = 0;
+                // DWORD lpNumberOfBytesWritten = 0;
                 //  PCIE_Device.WriteFile(dev.DeviceFile.SafeFileHandle.DangerousGetHandle(),ref dev.pWbuffer, (uint)dataSize * 1024, out lpNumberOfBytesWritten, null);
                 // Stream.Write(tmpResult, 0, tmpResult.Length);
-                 
+
                 //var bytes = tmpResult.Length /16;
                 //for (int i = 0; i < bytes; i++)
                 //{
@@ -624,43 +629,43 @@ namespace Hcdz.WPFServer
 
                 // ReadTotalSize = wrDMASize;
                 Clients.Client(Context.ConnectionId).NotifyTotal(wrDMASize);
-                
+
                 dev.WriteBAR0(0, 0x10, 1);//执行下次读取 
             }
             dev.WriteBAR0(0, 0x10, 0);
         }
-        private void WriteFile(byte[] result,List<DeviceChannelModel> channelModels)
+        private void WriteFile(byte[] result, List<DeviceChannelModel> channelModels)
         {
             var channelNo = result[8];
             var item = channelModels.Find(o => o.Id == channelNo);
             if (item == null)
-             return;
-                byte[] trueValue = new byte[8];
+                return;
+            byte[] trueValue = new byte[8];
             for (int i = 0; i < 8; i++)
             {
                 trueValue[i] = result[i];
             }
 
-           // result[8] = 0;
-           // result[15] = 0;
-			//var bt = result.Take(8).ToArray();
-         //   item.FileByte.AddRange(bt);
-           item.Stream?.Write(trueValue, 0, 8);
-          //  item.Stream.Flush();            
+            // result[8] = 0;
+            // result[15] = 0;
+            //var bt = result.Take(8).ToArray();
+            //   item.FileByte.AddRange(bt);
+            item.Stream?.Write(trueValue, 0, 8);
+            //  item.Stream.Flush();            
         }
-       
+
         public void CloseDma()
         {
             IsStop = true;
-           var devices = PCIE_DeviceList.TheDeviceList();
+            var devices = PCIE_DeviceList.TheDeviceList();
             for (int i = 0; i < devices.Count; i++)
             {
                 var dev = (PCIE_Device)devices[i];
                 //dev.WriteBAR0(0, 0x28, 0);
                 dev.WriteBAR0(0, 0x10, 0);
                 dev.Status = 0;
-            } 
-          
+            }
+
         }
         public void CloseScanDevice()
         {
@@ -669,7 +674,7 @@ namespace Hcdz.WPFServer
             {
                 var dev = (PCIE_Device)devices[i];
                 dev.WriteBAR0(0, 0x28, 0);
-                dev.WriteBAR0(0, 0x10, 0); 
+                dev.WriteBAR0(0, 0x10, 0);
             }
         }
 
@@ -683,14 +688,18 @@ namespace Hcdz.WPFServer
                 }
                 catch (Exception ex)
                 {
-                    LogHelper.ErrorLog(ex, "文件删除");                     
+                    LogHelper.ErrorLog(ex, "文件删除");
                 }
-            
+
             }
         }
 
         #region TCP/IP
-        public bool TcpConnect(string fileDir, string ip,int port,int index=1)
+        public List<TcpClientModel> GetTcpModels()
+        {
+            return TcpModels;
+        }
+        public bool TcpConnect(string fileDir, string ip, int port, int index = 1)
         {
             var findItem = TcpModels.Find(o => o.Id == index);
             if (findItem == null)
@@ -715,22 +724,22 @@ namespace Hcdz.WPFServer
                 findItem.Client = ScsClientFactory.CreateClient(new ScsTcpEndPoint(ip, port));
                 // client.WireProtocol = new CustomWireProtocol(); //Set custom wire protocol
                 //Register to MessageReceived event to receive messages from server.
-                
-                findItem.Client.MessageReceived +=(s,e)=>Client_MessageReceived(s,e,findItem);
-                findItem.Client.Connected +=(s,e)=>Client_Connected(s,e,index);
-                findItem.Client.Disconnected += (s,e)=>Client_Disconnected(s,e,index);
+
+                findItem.Client.MessageReceived += (s, e) => Client_MessageReceived(s, e, findItem);
+                findItem.Client.Connected += (s, e) => Client_Connected(s, e, findItem);
+                findItem.Client.Disconnected += (s, e) => Client_Disconnected(s, e, findItem);
                 findItem.Client.Connect(); //Connect to the server 
 
-                
-                  //Send message to the server
-                findItem.Client.SendMessage(new ScsTextMessage("3F", "q1"));
+
+                //Send message to the server
+                //findItem.Client.SendMessage(new ScsTextMessage("3F", "q1"));
 
                 //client.Disconnect(); //Close connection to server
             }
             catch (Exception ex)
             {
                 findItem.Client.Dispose();
-                LogHelper.ErrorLog(ex,"连接异常!");
+                LogHelper.ErrorLog(ex, "连接异常!");
                 return false;
             }
             return true;
@@ -742,53 +751,45 @@ namespace Hcdz.WPFServer
             if (findItem == null)
                 return;
             findItem.Client.Disconnect();
-           //  findItem.TcpStream.Flush();
+            //  findItem.TcpStream.Flush();
             findItem.TcpStream.Close();
             findItem.TcpStream.Dispose();
         }
-        private void Client_Disconnected(object sender, EventArgs e,int index)
+        private void Client_Disconnected(object sender, EventArgs e, TcpClientModel model)
         {
-            Clients.Client(Context.ConnectionId).NoticeTcpConnect(false, index);
+            model.IsConnected = false;
+            Clients.Client(Context.ConnectionId).NoticeTcpConnect(false, model);
         }
 
-        private void Client_Connected(object sender, EventArgs e,int index)
+        private void Client_Connected(object sender, EventArgs e, TcpClientModel model)
         {
-            var client = sender as  IScsClient;
-             if (client.CommunicationState==CommunicationStates.Connected) 
-             {
-                Clients.Client(Context.ConnectionId).NoticeTcpConnect(true, index);
-             }
-             
+            var client = sender as IScsClient;
+            if (client.CommunicationState == CommunicationStates.Connected)
+            {
+                model.IsConnected = true;
+                Clients.Client(Context.ConnectionId).NoticeTcpConnect(true, model);
+            }
+
         }
 
-        private void Client_MessageReceived(object sender, MessageEventArgs e, TcpClientModel  model)
+        private void Client_MessageReceived(object sender, MessageEventArgs e, TcpClientModel model)
         {
             var message = e.Message as ScsTextMessage;
-            var byteArray = System.Text.Encoding.Unicode.GetBytes(message.Text);
-            // var b1 = System.Text.Encoding.ASCII.GetBytes(message.Text);
-            var str = string.Empty;
-            byte[] byteOut = new byte[byteArray.Length];
-            //for (int i = 0; i == ByteStrings.Length - 1; i++)
-            //{
-            //    ByteOut[i] = Convert.ToByte(("0x" + ByteStrings[i]));
-            //}
-            var ss = CommonHelper.ByteToString(byteArray);
-            var bb = CommonHelper.StrToHexByte(ss);
-            var bb2 = CommonHelper.StringToByte(ss);
-            var list = new byte[byteArray.Length];
-            for (int i = 0; i < byteArray.Length; i++)
-            {
-
-                str += Convert.ToString(byteArray[i], 16);
-
-               // byteOut[i] = byte.Parse("57", System.Globalization.NumberStyles.AllowHexSpecifier);// Convert.ToByte("0x"+Convert.ToString(byteArray[i], 16),16);
-            }            
+            // var byteArray = System.Text.Encoding.Default.GetBytes(message.Text);
+            // var b1 = System.Text.Encoding.ASCII.GetBytes(message.Text); 
+            //var ss = CommonHelper.ByteToString(byteArray);
+            //var bb = CommonHelper.StrToHexByte(ss);
+            //var bb2 = CommonHelper.StringToByte(ss); 
             if (message == null)
-            { 
+            {
                 return;
-            } 
-            model.TcpStream.Write(byteArray, 0, byteArray.Length);   
+            }
+            var byteArray = Encoding.Default.GetBytes(message.Text); 
+            model.TcpStream.Write(byteArray, 0, byteArray.Length);
+            //stream.CopyTo(model.TcpStream);
             model.TcpStream.Flush();
+            model.DataSize = byteArray.Length;
+            Clients.All.NoticeTcpData(model);
         }
         #endregion
     }

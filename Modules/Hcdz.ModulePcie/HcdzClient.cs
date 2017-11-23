@@ -39,7 +39,8 @@ namespace Hcdz.ModulePcie
 		public event Action<IEnumerable<string>> LoggedOut; 
 		public event Action<string, string, long,long> ProgressChanged;
         public event Action<string,int> NoticeScanByte;
-        public event Action<bool, int> NoticeTcpConnect;
+        public event Action<bool, TcpClientViewModel> NoticeTcpConnect;
+        public event  Action<TcpClientViewModel> NoticeTcpData;
         // Global  
        public  event Action<long> NotifyTotal;
         public event Action<bool> Connected;
@@ -237,10 +238,14 @@ namespace Hcdz.ModulePcie
             {
                 Execute(NoticeScanByte, t => t(byteString,index));
             });
-            _chat.On<bool, int>(ClientEvents.NoticeTcpConnect, (b, index) =>
+            _chat.On<bool, TcpClientViewModel>(ClientEvents.NoticeTcpConnect, (b, model) =>
             {
-                Execute(NoticeTcpConnect, t => t(b, index));
+                Execute(NoticeTcpConnect, t => t(b, model));
             });
+            _chat.On<TcpClientViewModel>(ClientEvents.NoticeTcpData, (model) =>
+            {
+                Execute(NoticeTcpData, t => t(model));
+            });        
         }
 
     private async void OnDisconnected()
@@ -310,51 +315,37 @@ namespace Hcdz.ModulePcie
 		}
 		public async Task<List<DirectoryInfoModel>> GetFileList(string path = "")
 		{
-			if (_connection.State == ConnectionState.Connected)
-			{
-				var items=await _chat.Invoke<List<DirectoryInfoModel>>("GetFileList",path);
-				return items;
-			}
+            try
+            {
+                if (_connection.State == ConnectionState.Connected)
+                {
+                    var items = await _chat.Invoke<List<DirectoryInfoModel>>("GetFileList", path);
+                    return items;
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.ErrorLog(ex);               
+            } 
 			return null;
 		}
         public async  Task<DriveInfo[]> GetDrives()
-        { 
-            if (_connection.State == ConnectionState.Connected)
+        {
+            try
             {
-                var items =await  _chat.Invoke<DriveInfo[]>("GetDrives");
-                return items;
+                if (_connection.State == ConnectionState.Connected)
+                {
+                    var items = await _chat.Invoke<DriveInfo[]>("GetDrives");
+                    return items;
+                }
             }
+            catch (Exception ex)
+            { 
+            }
+           
             return null;
         }
-
-
-
-        //public async Task<IList<UserInfo>> GetUserByDeptID(int departmentId)
-        //{
-        //	if (_connection.State == ConnectionState.Connected)
-        //	{
-        //		var result = await _chat.Invoke<IList<UserInfo>>("GetUserByDeptId", departmentId);
-        //		return result;
-        //	}
-        //	else
-        //	{
-        //		return null;
-        //	}
-        //}
-
-        //public async Task<IList<DepartmentInfo>> GetOnlineDepartment()
-        //{
-        //	if (_connection.State == ConnectionState.Connected)
-        //	{
-        //		var result = await _chat.Invoke<IList<DepartmentInfo>>("GetOnlineDepartments");
-        //		return result;
-        //	}
-        //	else
-        //	{
-        //		return null;
-        //	}
-        //}
-
+         
         public async Task<bool> SendMessage(object message)
 		{
 			try
@@ -384,37 +375,65 @@ namespace Hcdz.ModulePcie
 
 		public async Task<bool> DeviceOpen(int iSelectedIndex)
 		{
-			if (_connection.State == ConnectionState.Connected)
-			{
-				return await _chat.Invoke<bool>("DeviceOpen",iSelectedIndex);
-			}
+            try
+            {
+                if (_connection.State == ConnectionState.Connected)
+                {
+                    return await _chat.Invoke<bool>("DeviceOpen", iSelectedIndex);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.ErrorLog(ex);
+            } 
 			return false;
 		}
 
 		public async Task<bool> DeviceClose(int iSelectedIndex)
 		{
-			if (_connection.State == ConnectionState.Connected)
-			{
-				return await _chat.Invoke<bool>("DeviceClose",iSelectedIndex);
-			}
+            try
+            {
+                if (_connection.State == ConnectionState.Connected)
+                {
+                    return await _chat.Invoke<bool>("DeviceClose", iSelectedIndex);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.ErrorLog(ex);
+            }			
 			return false;
 		}
 
 		public async Task<string> InitDeviceInfo(int iSelectedIndex)
 		{
-			if (_connection.State == ConnectionState.Connected)
-			{
-				return await _chat.Invoke<string>("InitDeviceInfo", iSelectedIndex);
-			}
+            try
+            {
+                if (_connection.State == ConnectionState.Connected)
+                {
+                    return await _chat.Invoke<string>("InitDeviceInfo", iSelectedIndex);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.ErrorLog(ex);
+            }			
 			return string.Empty; 
 		}
 
         public async Task<bool> FormatDrive(string driveName)
         {
-            if (_connection.State == ConnectionState.Connected)
+            try
             {
-                return await _chat.Invoke<bool>("FormatDrive", driveName);
+                if (_connection.State == ConnectionState.Connected)
+                {
+                    return await _chat.Invoke<bool>("FormatDrive", driveName);
+                }
             }
+            catch (Exception ex)
+            {
+                LogHelper.ErrorLog(ex);                
+            }           
             return false;
         }
 
@@ -428,10 +447,17 @@ namespace Hcdz.ModulePcie
 
         public async Task<string> OnReadDma(string driveName, int dataSize, int deviceIndex)
         {
-            if (_connection.State == ConnectionState.Connected)
+            try
             {
-               return  await _chat.Invoke<string>("OnReadDma", driveName, dataSize,deviceIndex);
+                if (_connection.State == ConnectionState.Connected)
+                {
+                    return await _chat.Invoke<string>("OnReadDma", driveName, dataSize, deviceIndex);
+                }
             }
+            catch (Exception ex)
+            { 
+                LogHelper.ErrorLog(ex);
+            }          
             return "内存错误";
         }
          
@@ -457,10 +483,17 @@ namespace Hcdz.ModulePcie
 		/// <returns></returns>
 		public async Task<bool> ScanDevice(int deviceIndex)
 		{
-			if (_connection.State == ConnectionState.Connected)
-			{
-				return await _chat.Invoke<bool>("ScanDevice", deviceIndex);
-			}
+            try
+            {
+                if (_connection.State == ConnectionState.Connected)
+                {
+                    return await _chat.Invoke<bool>("ScanDevice", deviceIndex);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.ErrorLog(ex);
+            }		
 			return false;
 		}
 
@@ -492,10 +525,50 @@ namespace Hcdz.ModulePcie
 
         public async Task DeleteFile(string filePath)
         {
-            if (_connection.State == ConnectionState.Connected)
+            try
             {
-                await _chat.Invoke("DeleteFile", filePath);
+                if (_connection.State == ConnectionState.Connected)
+                {
+                    await _chat.Invoke("DeleteFile", filePath);
+                }
             }
+            catch (Exception ex)
+            {
+                LogHelper.ErrorLog(ex);
+            }
+            
+        }
+
+        public async Task<List<TcpClientViewModel>> GetAllTcpClients()
+        {
+            try
+            {
+                if (_connection.State == ConnectionState.Connected)
+                {
+                  return  await _chat.Invoke<List<TcpClientViewModel>>("GetTcpModels");
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.ErrorLog(ex);
+            }
+            return null;
+        }
+
+        public async Task<bool> GetNetWork()
+        {
+            try
+            {
+                if (_connection.State == ConnectionState.Connected)
+                {
+                    return await _chat.Invoke<bool>("GetNetWork");
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.ErrorLog(ex);
+            }
+            return false;
         }
     }
 }
