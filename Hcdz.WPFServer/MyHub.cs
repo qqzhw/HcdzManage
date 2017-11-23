@@ -32,6 +32,7 @@ namespace Hcdz.WPFServer
         private static DispatcherTimer dispatcherTimer = new DispatcherTimer();
         private static bool DeviceStatus;
         private static bool IsStop = false;
+        private static DateTime OldTime;
         private readonly static List<TcpClientModel> TcpModels = new List<TcpClientModel>()
         {  new TcpClientModel() { Id = 1 },       new TcpClientModel() { Id = 2 }
         };
@@ -773,7 +774,7 @@ namespace Hcdz.WPFServer
         }
 
         private void Client_MessageReceived(object sender, MessageEventArgs e, TcpClientModel model)
-        {
+        { 
             var message = e.Message as ScsTextMessage;
             // var byteArray = System.Text.Encoding.Default.GetBytes(message.Text);
             // var b1 = System.Text.Encoding.ASCII.GetBytes(message.Text); 

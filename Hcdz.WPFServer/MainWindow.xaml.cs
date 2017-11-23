@@ -66,20 +66,38 @@ namespace Hcdz.WPFServer
                 string execPath = Assembly.GetExecutingAssembly().Location; 
                 RegistryKey rk = Registry.LocalMachine;
                 RegistryKey rk2 = rk.CreateSubKey("Software\\Microsoft\\Windows\\CurrentVersion\\Run");
+                RegistryKey rk0 = rk.CreateSubKey("SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Run");
                 if (isAutoBoot)
                 {
-                    rk2.SetValue("hcdzServer", execPath);
-                    Settings.Default.IsAutoStart = true; 
+                    if (Environment.Is64BitOperatingSystem)
+                    {
+                        rk0.SetValue("hcdzServer", execPath);
+                        Settings.Default.IsAutoStart = true;
+                    }
+                    else
+                    {
+                        rk2.SetValue("hcdzServer", execPath);
+                        Settings.Default.IsAutoStart = true;
+                    }
                     //  Console.WriteLine(string.Format("[注册表操作]添加注册表键值：path = {0}, key = {1}, value = {2} 成功", rk2.Name, "TuniuAutoboot", execPath));
                 }
                 else
                 {
-                    rk2.DeleteValue("hcdzServer", false);
-                    Settings.Default.IsAutoStart = false;                   
+                    if (Environment.Is64BitOperatingSystem)
+                    {
+                        rk0.DeleteValue("hcdzServer", false);
+                        Settings.Default.IsAutoStart = false;
+                    }
+                    else
+                    {
+                        rk2.DeleteValue("hcdzServer", false);
+                        Settings.Default.IsAutoStart = false;
+                    }
                     //  Console.WriteLine(string.Format("[注册表操作]删除注册表键值：path = {0}, key = {1} 成功", rk2.Name, "TuniuAutoboot"));
                 }
                 Settings.Default.Save();
                 rk2.Close();
+                rk0.Close();
                 rk.Close(); 
             }
             catch (Exception ex)
