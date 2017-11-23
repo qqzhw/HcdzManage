@@ -366,10 +366,17 @@ namespace Hcdz.ModulePcie
 
         public async Task<UInt32> InitializerDevice()
         {
-            if (_connection.State == ConnectionState.Connected)
+            try
             {
-                return await _chat.Invoke<UInt32>("InitLoad");
+                if (_connection.State == ConnectionState.Connected)
+                {
+                    return await _chat.Invoke<UInt32>("InitLoad");
+                }
             }
+            catch (Exception ex)
+            {
+                LogHelper.ErrorLog(ex);
+            } 
             return 1000;
         }
 

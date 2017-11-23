@@ -742,7 +742,7 @@ namespace Hcdz.ModulePcie.ViewModels
             //_tcpViewModel = new ObservableCollection<TcpClientViewModel>();
             //_tcpViewModel.Add(new TcpClientViewModel() { Id=1});
             //_tcpViewModel.Add(new TcpClientViewModel() { Id = 2 });
-            dispatcherTimer.Start();
+            dispatcherTimer.Start(); 
         }
 
         private async void InitTcpClient()

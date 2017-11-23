@@ -28,19 +28,33 @@ namespace Hcdz.WPFServer
     public class MyHub : Hub
     {
         private readonly static Dictionary<PCIE_Device, List<DeviceChannelModel>> DeviceChannelList = new Dictionary<PCIE_Device, List<DeviceChannelModel>>();
-        private readonly static List<DeviceChannelModel> DeviceChannelModels = new List<DeviceChannelModel>();
-        private static DispatcherTimer dispatcherTimer = new DispatcherTimer();
+        private readonly static List<DeviceChannelModel> DeviceChannelModels = new List<DeviceChannelModel>();        
         private static bool DeviceStatus;
         private static bool IsStop = false;
-        private static DateTime OldTime;
+        private static DateTime oldTime=DateTime.Now;
+        private static DispatcherTimer dispatcherTimer = new DispatcherTimer()
+        {
+            Interval = TimeSpan.FromSeconds(60)        
+        };        
         private readonly static List<TcpClientModel> TcpModels = new List<TcpClientModel>()
         {  new TcpClientModel() { Id = 1 },       new TcpClientModel() { Id = 2 }
         };
         //private static FileStream DeviceFile;
         public MyHub()
         {
-
+           
+            if (!dispatcherTimer.IsEnabled)
+            {
+                dispatcherTimer.Tick += DispatcherTimer_Tick;
+                dispatcherTimer.Start();
+            }
         }
+
+        private void DispatcherTimer_Tick(object sender, EventArgs e)
+        {
+            oldTime = DateTime.Now;
+        }
+
         public void Send(string name, string message)
         {
             Clients.All.addMessage(name, message);
@@ -774,7 +788,14 @@ namespace Hcdz.WPFServer
         }
 
         private void Client_MessageReceived(object sender, MessageEventArgs e, TcpClientModel model)
-        { 
+        {
+            var dt = (DateTime.Now - oldTime).TotalSeconds;
+            if (dt>59)
+            { 
+                var fileName = DateTime.Now.ToString("yyyyMMddHHmmss");
+                var dir = model.FileDir + "Wan" + model.Id.ToString();
+                model.TcpStream = new FileStream(dir + "\\" + fileName, FileMode.Append, FileAccess.Write);
+            }
             var message = e.Message as ScsTextMessage;
             // var byteArray = System.Text.Encoding.Default.GetBytes(message.Text);
             // var b1 = System.Text.Encoding.ASCII.GetBytes(message.Text); 
@@ -789,6 +810,7 @@ namespace Hcdz.WPFServer
             model.TcpStream.Write(byteArray, 0, byteArray.Length);
             //stream.CopyTo(model.TcpStream);
             model.TcpStream.Flush();
+          
             model.DataSize = byteArray.Length;
             Clients.All.NoticeTcpData(model);
         }
