@@ -31,26 +31,71 @@ namespace Hcdz.WPFServer
         private readonly static List<DeviceChannelModel> DeviceChannelModels = new List<DeviceChannelModel>();        
         private static bool DeviceStatus;
         private static bool IsStop = false;
-         
-        //private static DispatcherTimer dispatcherTimer = new DispatcherTimer()
-        //{
-        //    Interval = TimeSpan.FromSeconds(60)        
-        //};        
+        private static long readSize=0;
+        private static long tcpReadSize = 0;
+        //private static DispatcherTimer dispatcherTimer;
         private readonly static List<TcpClientModel> TcpModels = new List<TcpClientModel>()
         {  new TcpClientModel() { Id = 1 },       new TcpClientModel() { Id = 2 }
         };
+        private static Action _onPushM;
+        private static readonly object lockObj = new object();
+         
         //private static FileStream DeviceFile;
         public MyHub()
         {
-           
-            //if (!dispatcherTimer.IsEnabled)
-            //{
-            //    dispatcherTimer.Tick += DispatcherTimer_Tick;
-            //    dispatcherTimer.Start();
-            //}
+
+            ActiveEvent();
+        }
+        private   void ActiveEvent()
+        { 
+            lock (lockObj)
+            {
+                if (_onPushM == null)
+                {
+                    if (_onPushM != null) return;
+                    _onPushM = PushMessage;
+                    MainWindow.CurrentWindow.OnPush += PushMessage;
+                }
+            } 
+            // _mqService.OnPushM += PushMessage;
+            // _mqService.OnPush -= PushMessage;
+            // _mqService.OnPush += PushMessage;
+            //OnPushM= _mqService.OnPush;
         }
 
-       
+        private async void PushMessage()
+        {
+
+            await Task.Run(() =>
+            {
+                if (readSize > 0)
+                {
+                    Clients.Client(Context.ConnectionId).NotifyTotal(readSize);
+                    readSize = 0;
+                }
+            });
+            
+            await Task.Run(() =>
+            {
+                foreach (var item in TcpModels)
+                {
+                    if (item.DataSize > 0)
+                    {
+                        Clients.All.NoticeTcpData(item);
+                    }
+                    item.DataSize = 0;
+                }
+            });
+
+
+        }
+
+        private   void DispatcherTimer_Tick(object sender, EventArgs e)
+        {
+           
+            
+        }
+
         public void Send(string name, string message)
         {
             Clients.All.addMessage(name, message);
@@ -88,6 +133,20 @@ namespace Hcdz.WPFServer
             // TimeSpan ts = dt2 - dt;
             // Clients.Client(Context.ConnectionId).NotifyFormatTime(ts.Milliseconds);
             return flag;
+        }
+        public  DriveInfoModel GetSingleDrive(string driveName="")
+        {
+            DriveInfoModel model = new DriveInfoModel();
+             var item = DriveInfo.GetDrives().FirstOrDefault(o => o.Name == driveName);
+            if (item!=null)
+            {
+                model.AvailableFreeSpace = item.AvailableFreeSpace;
+                model.DriveFormat = item.DriveFormat;
+                model.Name = item.Name;
+                model.TotalFreeSpace = item.TotalFreeSpace;
+                model.TotalSize = item.TotalSize;
+            }
+            return model;
         }
 
         public bool GetNetWork()
@@ -250,6 +309,7 @@ namespace Hcdz.WPFServer
         /* Close handle to a NEWAMD86 device */
         public bool DeviceClose(int iSelectedIndex)
         {
+            readSize = 0;
             //pBoard->pci_e.WriteBAR0(0, 0x10, regval);
             LogHelper.WriteLog(string.Format("断开第{0}张板卡", iSelectedIndex + 1));
             var devices = PCIE_DeviceList.TheDeviceList();
@@ -466,14 +526,14 @@ namespace Hcdz.WPFServer
 
         public string OnReadDma(string dvireName, int dataSize, int deviceIndex)
         {
-            var findDrive = DriveInfo.GetDrives().FirstOrDefault(o => o.Name == dvireName);
-            if (findDrive != null)
-            {
-                if (findDrive.AvailableFreeSpace < 1024 * 1024 * 1024.0)
-                {
+            //var findDrive = DriveInfo.GetDrives().FirstOrDefault(o => o.Name == dvireName);
+            //if (findDrive != null)
+            //{
+            //    if (findDrive.AvailableFreeSpace < 1024 * 1024 * 1024.0)
+            //    {
 
-                }
-            }
+            //    }
+            //}
             
             PCIE_Device dev = PCIE_DeviceList.TheDeviceList().Get(deviceIndex);
             if (dev == null)
@@ -639,7 +699,8 @@ namespace Hcdz.WPFServer
                 //}
 
                 // ReadTotalSize = wrDMASize;
-                Clients.Client(Context.ConnectionId).NotifyTotal(wrDMASize);
+                readSize += wrDMASize;
+               // Clients.Client(Context.ConnectionId).NotifyTotal(wrDMASize);
 
                 dev.WriteBAR0(0, 0x10, 1);//执行下次读取 
             }
@@ -676,6 +737,7 @@ namespace Hcdz.WPFServer
                 dev.WriteBAR0(0, 0x10, 0);
                 dev.Status = 0;
             }
+            readSize = 0;
 
         }
         public void CloseScanDevice()
@@ -758,16 +820,20 @@ namespace Hcdz.WPFServer
 
         public void CloseTcpConnect(int index)
         {
+          
             var findItem = TcpModels.Find(o => o.Id == index);
             if (findItem == null)
-                return;
+                return; 
             findItem.Client.Disconnect();
             //  findItem.TcpStream.Flush();
             findItem.TcpStream.Close();
             findItem.TcpStream.Dispose();
+            findItem.DataSize = 0;
+            findItem.IsConnected = false;
         }
         private void Client_Disconnected(object sender, EventArgs e, TcpClientModel model)
         {
+            model.DataSize = 0;
             model.IsConnected = false;
             Clients.Client(Context.ConnectionId).NoticeTcpConnect(false, model);
         }
@@ -786,7 +852,7 @@ namespace Hcdz.WPFServer
         private void Client_MessageReceived(object sender, MessageEventArgs e, TcpClientModel model)
         {
             var dt = (DateTime.Now - model.ConnectedTime).TotalSeconds;
-            if (dt>59)
+            if (dt>10)
             { 
                 var fileName = DateTime.Now.ToString("yyyyMMddHHmmss");
                 var dir = model.FileDir + "Wan" + model.Id.ToString();
@@ -816,9 +882,9 @@ namespace Hcdz.WPFServer
             model.TcpStream.Write(byteArray, 0, byteArray.Length);
             //stream.CopyTo(model.TcpStream);
             model.TcpStream.Flush();
-          
-            model.DataSize = byteArray.Length;
-            Clients.All.NoticeTcpData(model);
+             
+            model.DataSize += byteArray.Length;
+            
         }
         #endregion
     }

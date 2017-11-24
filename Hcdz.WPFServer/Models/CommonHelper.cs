@@ -84,6 +84,7 @@ namespace Hcdz.WPFServer.Models
             } 
          
         }
+        
 
         #region 利用API方式获取网络链接状态
         private static int NETWORK_ALIVE_LAN = 0x00000001;

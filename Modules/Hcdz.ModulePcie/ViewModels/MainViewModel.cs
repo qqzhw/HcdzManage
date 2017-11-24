@@ -31,7 +31,7 @@ namespace Hcdz.ModulePcie.ViewModels
 		private readonly IHcdzClient  _hcdzClient;
 		private DispatcherTimer dispatcherTimer;
         private DispatcherTimer timer;
-        long total = 0;
+        
        // private FileStream Stream;
 		public MainViewModel(IUnityContainer container, IEventAggregator eventAggregator, IRegionManager regionManager, IServiceLocator serviceLocator, IHcdzClient hcdzClient)
 		{
@@ -78,8 +78,12 @@ namespace Hcdz.ModulePcie.ViewModels
         private void NoticeTcpData(TcpClientViewModel model)
         {
             var findItem = TcpViewModel.FirstOrDefault(o => o.Id == model.Id);
-            findItem.CurrentSize+= model.DataSize;
+            findItem.CurrentSize = model.DataSize;
             findItem.IsBegin = true;
+
+            findItem.RateText = string.Format("速率{0}MB/s", (model.DataSize / 1048576.0).ToString("f2"));
+           // findItem.DataSize += model.DataSize; 
+
         }
 
         /// <summary>
@@ -199,8 +203,7 @@ namespace Hcdz.ModulePcie.ViewModels
             DeviceDesc = string.Empty;
             BtnIsEnabled = true;
            // dispatcherTimer.Stop();
-            TextRate = "0.00MB/s";
-            total = 0;
+            TextRate = "0.00MB/s"; 
             OpenDeviceText = "连接设备";
             IsOpen = false;
         }
@@ -211,15 +214,20 @@ namespace Hcdz.ModulePcie.ViewModels
             if (drives == null)
                 return;
 			DriveInfoItems = new ObservableCollection<DriveInfo>(drives);
-			
-		}
+            _selectedDsik = DriveInfoItems.FirstOrDefault()?.Name;
+            if (!string.IsNullOrEmpty(_selectedDsik))
+            {
+                OnLoadSelectDir(_selectedDsik);
+            }
+            
+        }
 
 		private void ClientConnected(bool result)
         {
             if (result)
             {
 				LoadData();//加载基本信息
-				OnLoadSelectDir(_selectedDsik); 
+				 
 				Initializer();
                 InitTcpClient();
                 _hcdzClient.Connection.Closed += Connection_Closed;
@@ -236,7 +244,7 @@ namespace Hcdz.ModulePcie.ViewModels
               BtnIsEnabled = true;
              //dispatcherTimer.Stop();
             TextRate = "0.00MB/s";
-              total = 0;
+             
              await  _hcdzClient.CloseDma();
         }
 
@@ -248,21 +256,16 @@ namespace Hcdz.ModulePcie.ViewModels
             }
             try
             {
-                DriveInfo[] drives = await _hcdzClient.GetDrives();
-                if (drives == null)
+                var drive = await _hcdzClient.GetSingleDrive(dirPath.ToString());
+                if (drive == null)
                     return;
-                foreach (var drive in drives)
-                {
-                    if (drive.Name.Contains(dirPath.ToString()))
-                    {
-                        DiskVal = ByteFormatter.ToString(drive.AvailableFreeSpace) + " 可用";
-                        DiskPercent = 100.0 - (int)(drive.AvailableFreeSpace * 100.0 / drive.TotalSize);
-                    }
-                }
+
+                DiskVal = ByteFormatter.ToString(drive.AvailableFreeSpace) + " 可用";
+                DiskPercent = 100.0 - (int)(drive.AvailableFreeSpace * 100.0 / drive.TotalSize);
             }
             catch (Exception ex)
             {
- 
+
             }
            
             //if (drives.Count() > 1)
@@ -329,7 +332,7 @@ namespace Hcdz.ModulePcie.ViewModels
             if (result2.Contains("内存")|| result.Contains("内存"))
             {
                 MessageBox.Show("分配内存失败,请重新连接设备!");
-                total = 0;
+                
                 OpenDeviceText = "连接设备";
                 IsOpen = false; 
             }
@@ -429,9 +432,13 @@ namespace Hcdz.ModulePcie.ViewModels
 
         }
 
-        private void _hcdzClient_NotifyTotal(long obj)
-        {
-            total += obj;
+        private void _hcdzClient_NotifyTotal(long size)
+        {             
+            Application.Current.Dispatcher.Invoke(() => {
+                var text = (size / 1048576.0).ToString("f2") + "MB/s";
+                TextRate = text;
+                
+            });
         }
 
       
@@ -482,25 +489,21 @@ namespace Hcdz.ModulePcie.ViewModels
 
         private void DispatcherTimer_Tick(object sender, EventArgs e)
         {
-            Application.Current.Dispatcher.Invoke(() => {
-                var text = (total /1048576.0).ToString("f2")+"MB/s";
-                TextRate = text;
-                total = 0;
-            });
-            foreach (var item in TcpViewModel)
-            {
-                if (item.IsBegin)
-                {
-                    item.RateText = string.Format("速率{0}MB/s", ((item.CurrentSize - item.DataSize) / 1048576.0).ToString("f2"));
-                    item.DataSize = item.CurrentSize;                   
-                }
-                else
-                {
-                    item.RateText =string.Empty;
-                    item.DataSize = 0;
-                    item.CurrentSize = 0;
-                }
-            }
+           
+            //foreach (var item in TcpViewModel)
+            //{
+            //    if (item.IsBegin)
+            //    {
+            //        item.RateText = string.Format("速率{0}MB/s", ((item.CurrentSize - item.DataSize) / 1048576.0).ToString("f2"));
+            //        item.DataSize = item.CurrentSize;                   
+            //    }
+            //    else
+            //    {
+            //        item.RateText =string.Empty;
+            //        item.DataSize = 0;
+            //        item.CurrentSize = 0;
+            //    }
+            //}
         }
 
         #region 属性
@@ -750,6 +753,13 @@ namespace Hcdz.ModulePcie.ViewModels
             var clients = await _hcdzClient.GetAllTcpClients();
             if (clients == null)
                 return;
+            foreach (var item in clients)
+            {
+                if (item.IsConnected)
+                {
+                    item.BtnIsEnabled = false;
+                }
+            }
             TcpViewModel = new ObservableCollection<TcpClientViewModel>(clients);
         }
 

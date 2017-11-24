@@ -20,6 +20,8 @@ using System.ComponentModel;
 using Hcdz.WPFServer.Properties;
 using Pvirtech.Framework.Common;
 using Microsoft.Win32;
+using System.Windows.Threading;
+using Microsoft.AspNet.SignalR;
 
 namespace Hcdz.WPFServer
 {
@@ -28,28 +30,52 @@ namespace Hcdz.WPFServer
 	/// </summary>
 	public partial class MainWindow : Window
 	{
+
 		public IDisposable SignalR { get; set; }
 		protected string ServerURI ;
-
-		public MainWindow()
+        private   DispatcherTimer dispatcherTimer;
+        public event Action OnPush;
+        public static MainWindow CurrentWindow { get; set; }
+        public MainWindow()
 		{
 			InitializeComponent();
-			Init(); 
-          
+			Init();
+            this.Loaded += MainWindow_Loaded;
+            CurrentWindow = this;
         }
 
-		private void Init()
-		{
-			ServerURI = Settings.Default.Server;
-			txtLicence.Text = Settings.Default.License;
-			txtServer.Text = Settings.Default.Server;
-            chkReg.IsChecked = Settings.Default.IsAutoStart;
-            chkService.IsChecked= Settings.Default.IsAutoConnect;
-            if (Settings.Default.IsAutoConnect)
+        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (dispatcherTimer == null)
             {
-                InitStart();
+                dispatcherTimer = new DispatcherTimer(DispatcherPriority.Background)
+                {
+                    Interval = TimeSpan.FromSeconds(1)
+                };
+                dispatcherTimer.Tick += DispatcherTimer_Tick;
+                dispatcherTimer.Start();
             }
-            
+        }
+
+        private void DispatcherTimer_Tick(object sender, EventArgs e)
+        {
+            if (OnPush!=null)
+            {
+                OnPush();
+            }
+           
+        }
+
+        private void Init()
+        {
+            ServerURI = Settings.Default.Server;
+            txtLicence.Text = Settings.Default.License;
+            txtServer.Text = Settings.Default.Server;
+            chkReg.IsChecked = Settings.Default.IsAutoStart;
+            chkService.IsChecked = Settings.Default.IsAutoConnect;
+
+            InitStart();
+
         }
 
 		private void ButtonStart_Click(object sender, RoutedEventArgs e)

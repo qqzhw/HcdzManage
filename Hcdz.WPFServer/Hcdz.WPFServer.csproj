@@ -125,6 +125,7 @@
     <Compile Include="Models\CommonHelper.cs" />
     <Compile Include="Models\DeviceChannelModel.cs" />
     <Compile Include="Models\DirectoryInfoModel.cs" />
+    <Compile Include="Models\DriveInfoModel.cs" />
     <Compile Include="Models\PropertySupport.cs" />
     <Compile Include="Models\TcpClientViewModel.cs" />
     <Compile Include="MyHub.cs" />

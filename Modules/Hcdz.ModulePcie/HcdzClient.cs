@@ -591,5 +591,21 @@ namespace Hcdz.ModulePcie
             }
             return false;
         }
+
+        public async Task<DriveInfoModel> GetSingleDrive(string driveName = "")
+        {
+            try
+            {
+                if (_connection.State == ConnectionState.Connected)
+                {
+                    return await _chat.Invoke<DriveInfoModel>("GetSingleDrive",driveName);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.ErrorLog(ex);
+            }
+            return null;
+        }
     }
 }

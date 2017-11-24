@@ -42,8 +42,9 @@ namespace Hcdz.ModulePcie.ViewModels
 			_regionManager = regionManager;
 			_serviceLocator = serviceLocator;
 			_hcdzClient = hcdzClient;
-			//_driveInfoItems = new ObservableCollection<DriveInfo>();
-			DoubleClickCmd= new DelegateCommand<MouseButtonEventArgs>(OnDoubleClickDetail);
+            //_driveInfoItems = new ObservableCollection<DriveInfo>();
+            _directoryItems = new ObservableCollection<DirectoryInfoModel>();
+            DoubleClickCmd = new DelegateCommand<MouseButtonEventArgs>(OnDoubleClickDetail);
 			LoadDirCmd = new DelegateCommand<object>(OnBackDir);
 			SelectedLoadDirCmd = new DelegateCommand<DriveInfoModel>(OnSelectLoadDir);
             ListRightMenue = new DelegateCommand<object>(OnRightMenue);
@@ -188,7 +189,7 @@ namespace Hcdz.ModulePcie.ViewModels
             mi = new MenuItem()
             {
                 Header = "刷新",
-                Command = DeleteCmd,
+                Command = RefreshCmd,
                 CommandParameter = model
             };
             Menu.Add(mi); 
@@ -280,6 +281,7 @@ namespace Hcdz.ModulePcie.ViewModels
             IsBusy = true;
 			var items=await List(drive.Name);
             SelectedPath = drive.Name;
+            OnLoadSelectDir(SelectedPath);
             DirectoryItems = new ObservableCollection<DirectoryInfoModel>(items.OrderByDescending(o=>o.IsDir));
             IsBusy = false;
         }
@@ -330,7 +332,10 @@ namespace Hcdz.ModulePcie.ViewModels
                     var items = await List(_selectedItem.FullName);
                     SelectedPath = _selectedItem.FullName;
                     UtilsHelper.UploadFilePath = _selectedItem.FullName;
-                    DirectoryItems = new ObservableCollection<DirectoryInfoModel>(items.OrderByDescending(o => o.IsDir));                    
+                    if (items != null)
+                    { 
+                        DirectoryItems = new ObservableCollection<DirectoryInfoModel>(items.OrderByDescending(o => o.IsDir));
+                    }
                     IsBusy = false;
                 }
             } 
@@ -442,6 +447,7 @@ namespace Hcdz.ModulePcie.ViewModels
             var drives = await _hcdzClient.GetDrives();
             if (drives == null)
                 return;
+            //drives = drives.Take(2).ToArray();
             foreach (var item in drives)
             {
                 var drive = new DriveInfoModel()
@@ -470,7 +476,36 @@ namespace Hcdz.ModulePcie.ViewModels
 		   DirectoryItems = new ObservableCollection<DirectoryInfoModel>(items);
             SelectedPath = DriveInfoItems.FirstOrDefault()?.Name;
             EnableValue = DriveInfoItems.FirstOrDefault()?.AvailableFreeSpaceText;
-          IsBusy = false;         
+            if (!string.IsNullOrEmpty(SelectedPath))
+            {
+                OnLoadSelectDir(SelectedPath.Substring(0, 3));
+            }
+            
+           IsBusy = false;         
+        }
+        private async void OnLoadSelectDir(object dirPath)
+        {
+            if (dirPath == null)
+            {
+                return;
+            }
+            try
+            {
+                var drive = await _hcdzClient.GetSingleDrive(dirPath.ToString());
+                if (drive == null)
+                    return; 
+                EnableValue = ByteFormatter.ToString(drive.AvailableFreeSpace) + " 可用";
+                 
+            }
+            catch (Exception ex)
+            {
+
+            }
+
+            //if (drives.Count() > 1)
+            //{
+            //    DriveIndex = 1;
+            //}
         }
         /// <summary>
         /// 远程获取文件目录及文件

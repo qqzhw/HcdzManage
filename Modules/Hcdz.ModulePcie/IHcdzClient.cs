@@ -58,5 +58,6 @@ namespace Hcdz.ModulePcie
         Task CloseScanDevice();
         Task DeleteFile(string filePath);
         Task<bool>  GetNetWork();
+        Task<DriveInfoModel> GetSingleDrive(string driveName = "");
     }
 }
