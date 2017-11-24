@@ -619,13 +619,28 @@ namespace Hcdz.WPFServer
                 var findDrive = DriveInfo.GetDrives().FirstOrDefault(o => o.Name == dvireName);
                 if (findDrive != null)
                 {
-                    if (findDrive.AvailableFreeSpace < 1024 * 1024 * 1024.0 * 10)
+                    if (findDrive.AvailableFreeSpace < 1024 * 1024 * 1024.0 * 20)
                     {
-                        if (dev.Status > 0)
-                        {
-                            dev.DeviceFile.SetLength(0);
-                        }
 
+                        var fileName = dev.DeviceFile.Name;
+                        var index = fileName.LastIndexOf("\\");
+                        var dirPath = fileName.Substring(0, index + 1);
+                        DirectoryInfo dir = new DirectoryInfo(dirPath);
+
+                        var fileList = dir.GetFiles("*", SearchOption.TopDirectoryOnly).OrderBy(o => o.CreationTime);
+                        
+                        try
+                        {
+                            var childFile = fileList.FirstOrDefault();
+                            if (childFile == null)
+                                return;
+                            File.Delete(childFile.FullName);
+                        }
+                        catch (Exception ex)
+                        {
+                            LogHelper.ErrorLog(ex);                             
+                        }
+                       
                     }
                 }
             }
@@ -864,6 +879,7 @@ namespace Hcdz.WPFServer
                 if (model.TcpStream == null)
                 {
                     model.TcpStream = new FileStream(model.FileDir + "\\" + DateTime.Now.ToString("yyyyMMddHHmmss"), FileMode.Append, FileAccess.Write);
+                    Task.Run(()=>OnScanDriveByWan(model));
                 }
                
             }
@@ -886,6 +902,50 @@ namespace Hcdz.WPFServer
             model.DataSize += byteArray.Length;
             
         }
+
+        private void OnScanDriveByWan(TcpClientModel model)
+        {
+            while (true)
+            {
+                Thread.Sleep(10000);
+                string drive = string.Empty;
+                if (model.TcpStream == null)
+                    continue;
+                 
+                  drive = model.TcpStream.Name.Substring(0, 3);
+                
+                 
+                var findDrive = DriveInfo.GetDrives().FirstOrDefault(o => o.Name == drive);
+                if (findDrive != null)
+                {
+                    if (findDrive.AvailableFreeSpace < 1024 * 1024 * 1024.0 * 5)
+                    {
+
+                        var fileName = model.TcpStream.Name;
+                        var index = fileName.LastIndexOf("\\");
+                        var dirPath = fileName.Substring(0, index + 1);
+                        DirectoryInfo dir = new DirectoryInfo(dirPath);
+
+                        var fileList = dir.GetFiles("*", SearchOption.TopDirectoryOnly).OrderBy(o => o.CreationTime);
+
+                        try
+                        {
+                            var childFile = fileList.FirstOrDefault();
+                            if (childFile == null)
+                                return;
+                            File.Delete(childFile.FullName);
+                        }
+                        catch (Exception ex)
+                        {
+                            LogHelper.ErrorLog(ex);
+                        }
+
+                    }
+                }
+            }
+        }
+
+       
         #endregion
     }
 }

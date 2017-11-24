@@ -22,6 +22,7 @@ using Pvirtech.Framework.Common;
 using Microsoft.Win32;
 using System.Windows.Threading;
 using Microsoft.AspNet.SignalR;
+using System.IO;
 
 namespace Hcdz.WPFServer
 {
@@ -42,6 +43,15 @@ namespace Hcdz.WPFServer
 			Init();
             this.Loaded += MainWindow_Loaded;
             CurrentWindow = this;
+           // var file = new FileStream("E:\\device0\\dddd",FileMode.Create);
+           // var name = file.Name;
+           // var index = name.LastIndexOf("\\");
+           // var s1 = name.Substring(0, index+ 1);
+           // DirectoryInfo dir = new DirectoryInfo(s1);
+           //var fileList= dir.GetFiles("*", SearchOption.TopDirectoryOnly).OrderBy(o=>o.CreationTime);
+           // var childFile = fileList.FirstOrDefault();
+           // File.Delete(childFile.FullName);
+             
         }
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
