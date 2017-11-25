@@ -5,6 +5,8 @@ using System.Configuration;
 using System.Data;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
+using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -19,7 +21,38 @@ namespace Hcdz.WPFServer
 	{
 		private static Mutex SingleInstanceMutex = new Mutex(true, "{86A802DF-C96B-8769-BAA6-1BC527857BEB}");
 
-		private static bool SingleInstanceCheck()
+        [STAThread]
+        static void Main()
+        {
+
+            //判断当前登录用户是否为管理员  
+            if (IsAdministrator())
+            {
+
+                App app = new App();
+                app.InitializeComponent();
+                app.Run();
+            }
+            else
+            {
+                //创建启动对象  
+               ProcessStartInfo startInfo = new ProcessStartInfo();
+                //设置运行文件  
+                startInfo.FileName = Assembly.GetExecutingAssembly().Location; 
+               
+                //设置启动动作,确保以管理员身份运行  
+                startInfo.Verb = "runas";
+                //如果不是管理员，则启动UAC  
+                 Process.Start(startInfo);                 
+            }
+        }
+        public static bool IsAdministrator()
+        {
+            WindowsIdentity identity = WindowsIdentity.GetCurrent();
+            WindowsPrincipal principal = new WindowsPrincipal(identity);
+            return principal.IsInRole(WindowsBuiltInRole.Administrator);
+        }
+        private static bool SingleInstanceCheck()
 		{
 
 			if (!SingleInstanceMutex.WaitOne(TimeSpan.Zero, true))
