@@ -341,10 +341,11 @@ namespace Hcdz.WPFServer
                             bStatus = true;
                         }
                     }
-                    if (bStatus)
-                    {
-                        Clients.Client(Context.ConnectionId).NoticeMessage(string.Format("已成功断开设备{0}!\n", i + 1));
-                    }
+                    
+                }
+                if (bStatus)
+                {
+                    Clients.Client(Context.ConnectionId).NoticeMessage("已成功断开设备!\n");
                 }
                 return bStatus;
             }
@@ -486,14 +487,14 @@ namespace Hcdz.WPFServer
                 return false;
             }
             ////DWORD wrDMASize = dataSize; //16kb
-            if (!dev.ScanDMAWriteMenAlloc(1024))
+            if (!dev.ScanDMAWriteMenAlloc(2048))
             {
                 //MessageBox.Show("内存分配失败!");
                 return false;
             }
             dev.StartWrDMA(0);
-            //dev.WriteBAR0(0, 0x60, 1);		//中断屏蔽
-            //dev.WriteBAR0(0, 0x50, 1);		//dma 写报告使能
+            dev.WriteBAR0(0, 0x60, 1);		//中断屏蔽
+            dev.WriteBAR0(0, 0x50, 1);		//dma 写报告使能
 
             var dma = (WD_DMA)dev.m_dmaMarshaler.MarshalNativeToManaged(dev.pScanReportWrDMA);
             var ppwDma = (WD_DMA)dev.m_dmaMarshaler.MarshalNativeToManaged(dev.pScanpwDma);
@@ -502,23 +503,19 @@ namespace Hcdz.WPFServer
             //设置初始DMA写地址,长度等
             dev.WriteBAR0(0, 0x4, (uint)ppwDma.Page[0].pPhysicalAddr);		//wr_addr low
             dev.WriteBAR0(0, 0x8, (uint)(ppwDma.Page[0].pPhysicalAddr >> 32));	//wr_addr high
-            dev.WriteBAR0(0, 0xC, (UInt32)1024);           //dma wr size
-                                                           //dev.WriteBAR0(0, 0x30, 1);
-                                                           //Thread.Sleep(10);
-                                                           //dev.WriteBAR0(0, 0x34, 1);
-                                                           //Thread.Sleep(10);
-                                                           //dev.WriteBAR0(0, 0x38, 1);
-                                                           //Thread.Sleep(10);
+            dev.WriteBAR0(0, 0xC, (UInt32)2048);           //dma wr size
+                                                          
             dev.WriteBAR0(0, 0x28, 1);
-            Thread.Sleep(1000);
+            Thread.Sleep(5000);
             dev.WriteBAR0(0, 0x10, 1);
-            Thread.Sleep(200);
+            Thread.Sleep(500);
             dev.WriteBAR0(0, 0x10, 0);
+            Thread.Sleep(500);
             dev.WriteBAR0(0, 0x28, 0);
             //启动DMA
             //       //dma wr 使能
-            byte[] tmpResult = new Byte[1024];
-            Marshal.Copy(dev.pScanWbuffer, tmpResult, 0, 1024);
+            byte[] tmpResult = new Byte[2048];
+            Marshal.Copy(dev.pScanWbuffer, tmpResult, 0, 2048);
             Clients.Client(Context.ConnectionId).NoticeScanByte(CommonHelper.ByteToString(tmpResult), deviceIndex);
              
             return true;
@@ -871,8 +868,7 @@ namespace Hcdz.WPFServer
             { 
                 var fileName = DateTime.Now.ToString("yyyyMMddHHmmss");
                 var dir = model.FileDir + "Wan" + model.Id.ToString();
-                model.TcpStream = new FileStream(dir + "\\" + fileName, FileMode.Append, FileAccess.Write);
-                model.ConnectedTime = DateTime.Now;
+                model.TcpStream = new FileStream(dir + "\\" + fileName, FileMode.Append, FileAccess.Write);                
             }
             else
             {
@@ -880,9 +876,9 @@ namespace Hcdz.WPFServer
                 {
                     model.TcpStream = new FileStream(model.FileDir + "\\" + DateTime.Now.ToString("yyyyMMddHHmmss"), FileMode.Append, FileAccess.Write);
                     Task.Run(()=>OnScanDriveByWan(model));
-                }
-               
+                } 
             }
+            model.ConnectedTime = DateTime.Now;
             var message = e.Message as ScsTextMessage;
             // var byteArray = System.Text.Encoding.Default.GetBytes(message.Text);
             // var b1 = System.Text.Encoding.ASCII.GetBytes(message.Text); 

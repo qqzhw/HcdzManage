@@ -148,10 +148,10 @@
                                             <StackPanel Orientation="Horizontal"   Margin="10,0,0,0">
                                                 <Ellipse Width="16" Height="16"  Fill="{Binding IsConnected,Converter={StaticResource colorConvert}}" Margin="2,0,0,0"/>
                                                 <Label Content="IP地址" Margin="5,0,0,0" VerticalAlignment="Center" />
-                                                <TextBox  x:Name="txtIp" Text="{Binding Ip}" Width="140" VerticalAlignment="Center" />
+                                                <TextBox  x:Name="txtIp" Text="{Binding Ip}" Width="130" VerticalAlignment="Center" />
                                                 <Label Content="端口" VerticalAlignment="Center" Margin="10,0,0,0"/>
                                                 <TextBox Width="50" Text="{Binding Port}" Height="26" VerticalAlignment="Center"  x:Name="txtPort"/>
-                                                <TextBlock Text="{Binding RateText}"  VerticalAlignment="Center" Margin="2,0,0,0"/>
+                                                <TextBlock Text="{Binding RateText}"  VerticalAlignment="Center" Margin="5,0,0,0"/>
                                                 <Button  Height="28" VerticalAlignment="Center" IsEnabled="{Binding BtnIsEnabled}" Margin="20,0,0,0" Width="58"  Content="连接" Style="{DynamicResource MetroFlatButton}" Command="{Binding DataContext.ConnectClick ,RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}"  CommandParameter="{Binding}"/>
                                                 <Button Height="28" Margin="10,0,0,0" Width="58"  Content="断开" Style="{DynamicResource MetroFlatButtonDisable}" Command="{Binding DataContext.CloseClick ,RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}"  CommandParameter="{Binding}"/>
                                             </StackPanel>

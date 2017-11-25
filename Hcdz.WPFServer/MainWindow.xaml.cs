@@ -40,7 +40,7 @@ namespace Hcdz.WPFServer
         public MainWindow()
 		{
 			InitializeComponent();
-			Init();
+			
             this.Loaded += MainWindow_Loaded;
             CurrentWindow = this;
            // var file = new FileStream("E:\\device0\\dddd",FileMode.Create);
@@ -56,6 +56,7 @@ namespace Hcdz.WPFServer
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
+            Init();
             if (dispatcherTimer == null)
             {
                 dispatcherTimer = new DispatcherTimer(DispatcherPriority.Background)

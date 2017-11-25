@@ -161,7 +161,7 @@ namespace Hcdz.ModulePcie.ViewModels
                 var findItem = barList.FirstOrDefault(o => o != 63);
                 if (findItem==0)
                 {
-                    MessageBox.Show(string.Format("设备{0}所有通道运行正常!",deviceIndex+1));
+                    MessageBox.Show(string.Format("所有通道运行正常!",deviceIndex+1));
                 }
                 else
                 {
@@ -171,8 +171,8 @@ namespace Hcdz.ModulePcie.ViewModels
                     {
                         deviceInfo[i] = V2.Substring(i * 2, 2); 
                     }
-                    string errorInfo = string.Format("设备{0}自检返回数据:  ", deviceIndex+1) + string.Join("  ", deviceInfo);
-                    LogHelper.WriteLog("设备{0}自检返回数据: "+strByte);
+                    string errorInfo ="设备自检返回数据:  " + string.Join("  ", deviceInfo);
+                    LogHelper.WriteLog("设备自检返回数据: "+strByte);
                     LogInfo += errorInfo + "\n";
                     var list=deviceInfo.Reverse().ToList();
                     string tmpInfo = string.Empty;
@@ -184,7 +184,7 @@ namespace Hcdz.ModulePcie.ViewModels
                         }
                         if (list[i]!="11")
                         {
-                            string info = string.Format("设备{0}  通道{1} 有异常\n", deviceIndex + 1, i + 1);
+                            string info = string.Format("设备通道有异常\n");
                             tmpInfo += info;
                         }
                     }
@@ -288,7 +288,8 @@ namespace Hcdz.ModulePcie.ViewModels
 
         private async void OnScanDevice(object obj)
         { 
-		    var result=await	_hcdzClient.ScanDevice(0);             
+		    var result=await	_hcdzClient.ScanDevice(0);
+            Thread.Sleep(100);
              var result2=await _hcdzClient.ScanDevice(1);
             if (result&&result2)
             {
