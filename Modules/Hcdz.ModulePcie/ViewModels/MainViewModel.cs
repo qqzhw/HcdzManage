@@ -147,54 +147,58 @@ namespace Hcdz.ModulePcie.ViewModels
 
         private void OnNoticeScanByte(string strByte,int deviceIndex)
         {
-          //strByte=  "3C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 3C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 3C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 3C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 3C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 3C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 3C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 3C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00";
-            var result = CommonHelper.StrToHexByte(strByte);
-            if (result!=null)
+            //strByte=  "3C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 3C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 3C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 3C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 3C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 3C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 3C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 3C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00";
+
+            if (string.IsNullOrEmpty(strByte))
             {
-                List<byte> bytes = new List<byte>();
-                var index = result.Length / 16;
-                for (int i = 0; i <index; i++)
+                MessageBox.Show("设备所有通道自检正常!");
+                LogInfo += "设备所有通道自检正常!\n";
+            }
+            else
+            {
+                MessageBox.Show(strByte);
+                LogInfo += strByte;
+            }
+          
+           
+                //List<byte> bytes = new List<byte>();
+                //var index = result.Length / 16;
+                //for (int i = 0; i <index; i++)
+                //{
+                //    bytes.Add(result[16 * i]);
+                //}
+                //var barList = bytes.Skip(10);
+                //var findItem = barList.FirstOrDefault(o => o != 63);
+                //if (findItem==0)
+                //{
+                //    MessageBox.Show(string.Format("所有通道运行正常!",deviceIndex+1));
+                //}
+               // else
                 {
-                    bytes.Add(result[16 * i]);
-                }
-                var barList = bytes.Skip(2);
-                var findItem = barList.FirstOrDefault(o => o != 63);
-                if (findItem==0)
-                {
-                    MessageBox.Show(string.Format("所有通道运行正常!",deviceIndex+1));
-                }
-                else
-                {
-                    var V2 = Convert.ToString(findItem, 2);
-                    string[] deviceInfo= new string[V2.Length/2];
-                    for (int i = 0; i < V2.Length / 2; i++)
-                    {
-                        deviceInfo[i] = V2.Substring(i * 2, 2); 
-                    }
-                    string errorInfo ="设备自检返回数据:  " + string.Join("  ", deviceInfo);
-                    LogHelper.WriteLog("设备自检返回数据: "+strByte);
-                    LogInfo += errorInfo + "\n";
-                    var list=deviceInfo.Reverse().ToList();
-                    string tmpInfo = string.Empty;
-                    for (int i = 0; i < list.Count(); i++)
-                    {
-                        if (i>2)
-                        {
-                            break;
-                        }
-                        if (list[i]!="11")
-                        {
-                            string info = string.Format("设备通道有异常\n");
-                            tmpInfo += info;
-                        }
-                    }
-                    if (!string.IsNullOrEmpty(tmpInfo))
-                    {
-                        MessageBox.Show(tmpInfo);
-                    }
+                    //var V2 = Convert.ToString(findItem, 2);
+                    //string[] deviceInfo= new string[V2.Length/2];
+                    //for (int i = 0; i < V2.Length / 2; i++)
+                    //{
+                    //    deviceInfo[i] = V2.Substring(i * 2, 2); 
+                    //}
+                    //string errorInfo ="设备自检返回数据:  " + string.Join("  ", deviceInfo);
+                    //LogHelper.WriteLog("设备自检返回数据: "+strByte);
+                    //LogInfo += errorInfo + "\n";
+                    //var list=deviceInfo.Reverse().ToList();
+                    //string tmpInfo = string.Empty;
+                    //for (int i = 0; i < list.Count(); i++)
+                    //{
+                    //    if (i>2)
+                    //    {
+                    //        break;
+                    //    }
+                    //    if (list[i]!="11")
+                    //    {
+                    //        string info = string.Format("设备通道有异常\n");
+                    //        tmpInfo += info;
+                    //    }
                    
-                }
-                 
+                      
             }
         }
 

@@ -33,6 +33,7 @@ namespace Hcdz.WPFServer
         private static bool IsStop = false;
         private static long readSize=0;
         private static long tcpReadSize = 0;
+        private static string scanStr = string.Empty;
         //private static DispatcherTimer dispatcherTimer;
         private readonly static List<TcpClientModel> TcpModels = new List<TcpClientModel>()
         {  new TcpClientModel() { Id = 1 },       new TcpClientModel() { Id = 2 }
@@ -359,7 +360,7 @@ namespace Hcdz.WPFServer
 
         public string InitDeviceInfo(int index)
         {
-            Clients.Client(Context.ConnectionId).NoticeMessage("获取链路信息..." + "\n");
+          
             DeviceChannelList.Clear();
             string desc = string.Empty;
             var device = PCIE_DeviceList.TheDeviceList().Get(index);
@@ -388,6 +389,7 @@ namespace Hcdz.WPFServer
                 desc += "链路宽度：x8";
             else
                 desc += "width judge error/s\r\n";
+            Clients.Client(Context.ConnectionId).NoticeMessage("已成功获取链路信息!" + "\n");
             return desc;
         }
 
@@ -476,6 +478,7 @@ namespace Hcdz.WPFServer
 
         public bool ScanDevice(int deviceIndex)
         {
+            int count = PCIE_DeviceList.TheDeviceList().Count;
             PCIE_Device dev = PCIE_DeviceList.TheDeviceList().Get(deviceIndex);
             if (dev == null)
             {
@@ -487,7 +490,7 @@ namespace Hcdz.WPFServer
                 return false;
             }
             ////DWORD wrDMASize = dataSize; //16kb
-            if (!dev.ScanDMAWriteMenAlloc(2048))
+            if (!dev.ScanDMAWriteMenAlloc(16*1024))
             {
                 //MessageBox.Show("内存分配失败!");
                 return false;
@@ -503,20 +506,77 @@ namespace Hcdz.WPFServer
             //设置初始DMA写地址,长度等
             dev.WriteBAR0(0, 0x4, (uint)ppwDma.Page[0].pPhysicalAddr);		//wr_addr low
             dev.WriteBAR0(0, 0x8, (uint)(ppwDma.Page[0].pPhysicalAddr >> 32));	//wr_addr high
-            dev.WriteBAR0(0, 0xC, (UInt32)2048);           //dma wr size
-                                                          
+            dev.WriteBAR0(0, 0xC, (UInt32)16 * 1024);           //dma wr size
+             
             dev.WriteBAR0(0, 0x28, 1);
-            Thread.Sleep(5000);
+            Thread.Sleep(2000);
+            //int readIndex = 0;
+            //while (readIndex < 50000)
+            //{
+            //  //  dev.WriteBAR0(0, 0x10, 1);
+            //    readIndex++;
+            //}
             dev.WriteBAR0(0, 0x10, 1);
-            Thread.Sleep(500);
-            dev.WriteBAR0(0, 0x10, 0);
-            Thread.Sleep(500);
+            //Thread.Sleep(500);
+          
+            //Thread.Sleep(500); 
+            
+            
             dev.WriteBAR0(0, 0x28, 0);
+            dev.WriteBAR0(0, 0x10, 0);
             //启动DMA
             //       //dma wr 使能
-            byte[] tmpResult = new Byte[2048];
-            Marshal.Copy(dev.pScanWbuffer, tmpResult, 0, 2048);
-            Clients.Client(Context.ConnectionId).NoticeScanByte(CommonHelper.ByteToString(tmpResult), deviceIndex);
+            byte[] tmpResult = new Byte[16*1024];
+            Marshal.Copy(dev.pScanWbuffer, tmpResult, 0, 16*1024);
+            List<byte> byteValues = new List<byte>();
+            var index = tmpResult.Length / 16;
+            for (int i = 0; i < index; i++)
+            {
+                byteValues.Add(tmpResult[16 * i]);
+            }
+            var barList = byteValues.Skip(10);
+            var findItem = barList.FirstOrDefault(o => o != 63);
+            if (findItem==0)
+            {
+                // scanStr = "设备所有通道自检正常!";
+            }
+            else
+            {
+                var V2 = Convert.ToString(findItem, 2);
+                string[] deviceInfo = new string[V2.Length / 2];
+                for (int i = 0; i < V2.Length / 2; i++)
+                {
+                    deviceInfo[i] = V2.Substring(i * 2, 2);
+                } 
+                LogHelper.WriteLog("设备自检返回数据: " + CommonHelper.ByteToString(tmpResult));            
+                var list = deviceInfo.Reverse().ToList();
+                string tmpInfo = string.Empty;
+                for (int i = 0; i < list.Count(); i++)
+                {
+                    if (i > 2)
+                    {
+                        break;
+                    }
+                    if (list[i] != "11")
+                    {
+                        tmpInfo += deviceIndex==0?(i+1).ToString():(i+4).ToString();
+                    }
+                }
+                scanStr += string.Format("设备通道{0}有异常! \n", tmpInfo);
+            }
+            if (count==1)
+            {
+                Clients.Client(Context.ConnectionId).NoticeScanByte(scanStr, count);
+                scanStr = string.Empty;
+            }
+            else
+            {
+                if (deviceIndex==1)
+                {
+                    Clients.Client(Context.ConnectionId).NoticeScanByte(scanStr, count);
+                    scanStr = string.Empty;
+                }
+            }
              
             return true;
         }
@@ -531,16 +591,20 @@ namespace Hcdz.WPFServer
 
             //    }
             //}
-            
+            int cout = PCIE_DeviceList.TheDeviceList().Count;
+            if (cout==1&&deviceIndex==1)
+            {
+                return "";
+            }
             PCIE_Device dev = PCIE_DeviceList.TheDeviceList().Get(deviceIndex);
             if (dev == null)
             {
-                Clients.Client(Context.ConnectionId).NoticeMessage("设备读取发生异常 null" + "\n");
+                Clients.Client(Context.ConnectionId).NoticeMessage("设备DMA读取发生异常" + "\n");
                 return "设备读取异常,请重试";
             }
             if (dev.Status == 1)
                 return "正在读取数据...";
-            Clients.Client(Context.ConnectionId).NoticeMessage(string.Format("正在读取设备{0}数据...\n", deviceIndex + 1));
+            Clients.Client(Context.ConnectionId).NoticeMessage("正在读取设备数据...\n");
             dev.FPGAReset(0);
             if (dev.WDC_DMAContigBufLock() != 0)
             {
@@ -592,15 +656,7 @@ namespace Hcdz.WPFServer
             //Thread nonParameterThread = new Thread(new ParameterizedThreadStart(p => NonParameterRun(dev, dvireName, dataSize, deviceIndex)));
             //nonParameterThread.Start();
             Task.Factory.StartNew(new Action(() => NonParameterRun(dev, dvireName, dataSize, deviceIndex))).ContinueWith(t =>
-            {
-                //foreach (var item in list)
-                //{
-                //    if (item.Stream == null)
-                //        continue;
-                //    item.Stream.Flush();
-                //    item.Stream.Close();
-                //    item.Stream.Dispose();
-                //}
+            {              
                 dev.DeviceFile.Flush();
                 dev.DeviceFile.Close();
                 dev.DeviceFile.Dispose();

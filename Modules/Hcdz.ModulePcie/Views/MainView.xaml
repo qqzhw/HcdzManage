@@ -43,7 +43,7 @@
                     </i:Interaction.Triggers>
                 </ComboBox>
                 <Label Content="DMA大小" VerticalAlignment="Center" Margin="20,0,0,0"/>
-                <ComboBox Margin="2,0,0,0" x:Name="cbxDma" Width="60" Height="20"  SelectedIndex="1" SelectedItem="{Binding SelectedDMA}"    telerik:StyleManager.Theme="Windows8Touch">                 
+                <ComboBox Margin="2,0,0,0" x:Name="cbxDma" Width="60" Height="20"  SelectedIndex="0" SelectedItem="{Binding SelectedDMA}"    telerik:StyleManager.Theme="Windows8Touch">                 
                     <ComboBoxItem Content="16K"/>
                     <ComboBoxItem Content="32K"/>
                     <ComboBoxItem Content="64K"/>
