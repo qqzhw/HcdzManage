@@ -261,7 +261,7 @@ namespace Hcdz.ModulePcie
 			}
 			catch (Exception ex)
 			{
-				_connection.Trace(TraceLevels.Events, ex.Message);
+				//_connection.Trace(TraceLevels.Events, ex.Message);
 				LogHelper.ErrorLog(ex);
 			}
 		}
@@ -278,8 +278,8 @@ namespace Hcdz.ModulePcie
 					}
 					catch (Exception ex)
 					{
-						_connection.Trace(TraceLevels.Events, ex.Message);
-
+                        //_connection.Trace(TraceLevels.Events, ex.Message);
+                        LogHelper.ErrorLog(ex);
 					}
 				}
 			});
@@ -488,20 +488,20 @@ namespace Hcdz.ModulePcie
 		/// 设备自检
 		/// </summary>
 		/// <returns></returns>
-		public async Task<bool> ScanDevice(int deviceIndex)
+		public async Task<string> ScanDevice(int deviceIndex)
 		{
             try
             {
                 if (_connection.State == ConnectionState.Connected)
                 {
-                    return await _chat.Invoke<bool>("ScanDevice", deviceIndex);
+                    return await _chat.Invoke<string>("ScanDevice", deviceIndex);
                 }
             }
             catch (Exception ex)
             {
                 LogHelper.ErrorLog(ex);
             }		
-			return false;
+			return "orther";
 		}
 
         public async Task CloseScanDevice()

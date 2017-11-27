@@ -24,19 +24,19 @@ namespace Hcdz.WPFServer
         [STAThread]
         static void Main()
         {
-
+            log4net.Config.XmlConfigurator.Configure();
             //判断当前登录用户是否为管理员  
             if (IsAdministrator())
             {
-
+                //LogHelper.WriteLog("当前登录用户是管理员 ");
                 App app = new App();
                 app.InitializeComponent();
                 app.Run();
             }
             else
-            {
+            { 
                 //创建启动对象  
-               ProcessStartInfo startInfo = new ProcessStartInfo();
+                ProcessStartInfo startInfo = new ProcessStartInfo();
                 //设置运行文件  
                 startInfo.FileName = Assembly.GetExecutingAssembly().Location; 
                
@@ -88,7 +88,7 @@ namespace Hcdz.WPFServer
 				return;
 			}
 			base.OnStartup(e);
-			log4net.Config.XmlConfigurator.Configure();
+			
 			Initialize();
 		}
 

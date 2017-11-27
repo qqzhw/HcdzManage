@@ -23,6 +23,9 @@ using Microsoft.Win32;
 using System.Windows.Threading;
 using Microsoft.AspNet.SignalR;
 using System.IO;
+using System.Threading;
+using Hcdz.WPFServer.Models;
+using System.Management;
 
 namespace Hcdz.WPFServer
 {
@@ -36,6 +39,8 @@ namespace Hcdz.WPFServer
 		protected string ServerURI ;
         private   DispatcherTimer dispatcherTimer;
         public event Action OnPush;
+        private bool IsStarted;
+        private int index = 0;
         public static MainWindow CurrentWindow { get; set; }
         public MainWindow()
 		{
@@ -43,15 +48,20 @@ namespace Hcdz.WPFServer
 			
             this.Loaded += MainWindow_Loaded;
             CurrentWindow = this;
-           // var file = new FileStream("E:\\device0\\dddd",FileMode.Create);
-           // var name = file.Name;
-           // var index = name.LastIndexOf("\\");
-           // var s1 = name.Substring(0, index+ 1);
-           // DirectoryInfo dir = new DirectoryInfo(s1);
-           //var fileList= dir.GetFiles("*", SearchOption.TopDirectoryOnly).OrderBy(o=>o.CreationTime);
-           // var childFile = fileList.FirstOrDefault();
-           // File.Delete(childFile.FullName);
-             
+            // var file = new FileStream("E:\\device0\\dddd",FileMode.Create);
+            // var name = file.Name;
+            // var index = name.LastIndexOf("\\");
+            // var s1 = name.Substring(0, index+ 1);
+            // DirectoryInfo dir = new DirectoryInfo(s1);
+            //var fileList= dir.GetFiles("*", SearchOption.TopDirectoryOnly).OrderBy(o=>o.CreationTime);
+            // var childFile = fileList.FirstOrDefault();
+            // File.Delete(childFile.FullName);
+           //var s= CommonHelper.IsWanAlive();
+           // //ManagementObjectSearcher s1 = new ManagementObjectSearcher(
+           // //  @"SELECT DeviceID FROM Win32_NetworkAdapter WHERE NetConnectionStatus=2 AND PNPDeviceID LIKE 'PCI%'");
+           // ManagementObjectSearcher s1 = new ManagementObjectSearcher(
+           //  @"SELECT DeviceID FROM Win32_NetworkAdapter WHERE PNPDeviceID LIKE 'PCI%'");
+           // var ss1 = s1.Get(); 
         }
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
@@ -146,8 +156,8 @@ namespace Hcdz.WPFServer
  
        private void InitStart()
         {
-            WriteToConsole("Starting server...");
-            ButtonStart.IsEnabled = false;
+            WriteToConsole("正在启动服务...");
+            this.Dispatcher.Invoke(() => ButtonStart.IsEnabled = false);           
             Task.Run(() => StartServer());
         }
 
@@ -175,15 +185,25 @@ namespace Hcdz.WPFServer
 			try
 			{
 				SignalR = WebApp.Start(ServerURI);
-			}
+                IsStarted = true;
+                index = 0;
+            }
 			catch (TargetInvocationException ex)
 			{
-				WriteToConsole("A server is already running at " + ServerURI);
+                LogHelper.ErrorLog(ex); 
+                
+               // WriteToConsole("A server is already running at " + ServerURI);
 				this.Dispatcher.Invoke(() => ButtonStart.IsEnabled = true);
-				return;
+                if (!IsStarted)
+                {
+                    Thread.Sleep(1000);
+                    StartServer();
+                    //index++;
+                }
+                return;
 			}
 			this.Dispatcher.Invoke(() => ButtonStop.IsEnabled = true);
-			WriteToConsole("Server started at " + ServerURI);
+			WriteToConsole("服务已启动： " + ServerURI);
 		}
 		///This method adds a line to the RichTextBoxConsole control, using Dispatcher.Invoke if used
 		/// from a SignalR hub thread rather than the UI thread.

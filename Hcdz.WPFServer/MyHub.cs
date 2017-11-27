@@ -22,6 +22,7 @@ using Pvirtech.TcpSocket.Scs.Client;
 using Pvirtech.TcpSocket.Scs.Communication.EndPoints.Tcp;
 using Pvirtech.TcpSocket.Scs.Communication.Messages;
 using Pvirtech.TcpSocket.Scs.Communication;
+using System.Management;
 
 namespace Hcdz.WPFServer
 {
@@ -34,6 +35,7 @@ namespace Hcdz.WPFServer
         private static long readSize=0;
         private static long tcpReadSize = 0;
         private static string scanStr = string.Empty;
+        private static string tmpInfo = string.Empty;
         //private static DispatcherTimer dispatcherTimer;
         private readonly static List<TcpClientModel> TcpModels = new List<TcpClientModel>()
         {  new TcpClientModel() { Id = 1 },       new TcpClientModel() { Id = 2 }
@@ -71,7 +73,7 @@ namespace Hcdz.WPFServer
             {
                 if (readSize > 0)
                 {
-                    Clients.Client(Context.ConnectionId).NotifyTotal(readSize);
+                    Clients.All.NotifyTotal(readSize);
                     readSize = 0;
                 }
             });
@@ -152,7 +154,17 @@ namespace Hcdz.WPFServer
 
         public bool GetNetWork()
         {
-            return CommonHelper.IsConnected();
+            //var flag = CommonHelper.IsWanAlive();
+            //var connect = CommonHelper.IsConnected();
+            ManagementObjectSearcher connectedCount = new ManagementObjectSearcher(
+              @"SELECT DeviceID FROM Win32_NetworkAdapter WHERE NetConnectionStatus=2 AND PNPDeviceID LIKE 'PCI%'");
+            ManagementObjectSearcher totalWan = new ManagementObjectSearcher(
+             @"SELECT DeviceID FROM Win32_NetworkAdapter WHERE PNPDeviceID LIKE 'PCI%'");
+            if (connectedCount==totalWan)
+            {
+                return true;
+            }
+            return false;
         }
         public void CopyFileEx(string sourceFullPath, string targetFullPath)
         {
@@ -476,24 +488,24 @@ namespace Hcdz.WPFServer
             return list;
         }
 
-        public bool ScanDevice(int deviceIndex)
+        public string ScanDevice(int deviceIndex)
         {
             int count = PCIE_DeviceList.TheDeviceList().Count;
             PCIE_Device dev = PCIE_DeviceList.TheDeviceList().Get(deviceIndex);
             if (dev == null)
             {
-                return false;
+                return "device";
             }
             if (dev.WDCScan_DMAContigBufLock() != 0)
             {
                 //MessageBox.Show(("分配报告内存失败"));
-                return false;
+                return "device";
             }
             ////DWORD wrDMASize = dataSize; //16kb
             if (!dev.ScanDMAWriteMenAlloc(16*1024))
             {
                 //MessageBox.Show("内存分配失败!");
-                return false;
+                return "device";
             }
             dev.StartWrDMA(0);
             dev.WriteBAR0(0, 0x60, 1);		//中断屏蔽
@@ -508,19 +520,19 @@ namespace Hcdz.WPFServer
             dev.WriteBAR0(0, 0x8, (uint)(ppwDma.Page[0].pPhysicalAddr >> 32));	//wr_addr high
             dev.WriteBAR0(0, 0xC, (UInt32)16 * 1024);           //dma wr size
              
-            dev.WriteBAR0(0, 0x28, 1);
-            Thread.Sleep(2000);
+            dev.WriteBAR0(0, 0x28, 1);            
             //int readIndex = 0;
-            //while (readIndex < 50000)
-            //{
-            //  //  dev.WriteBAR0(0, 0x10, 1);
-            //    readIndex++;
-            //}
-            dev.WriteBAR0(0, 0x10, 1);
-            //Thread.Sleep(500);
-          
-            //Thread.Sleep(500); 
-            
+            var dt = DateTime.Now;
+            while(true)
+            {               
+                var current = (DateTime.Now - dt).Milliseconds;
+                if (current>100)
+                {
+                    break;
+                }
+               dev.WriteBAR0(0, 0x10, 1);
+            }
+            dev.WriteBAR0(0, 0x10, 1);             
             
             dev.WriteBAR0(0, 0x28, 0);
             dev.WriteBAR0(0, 0x10, 0);
@@ -528,57 +540,80 @@ namespace Hcdz.WPFServer
             //       //dma wr 使能
             byte[] tmpResult = new Byte[16*1024];
             Marshal.Copy(dev.pScanWbuffer, tmpResult, 0, 16*1024);
-            List<byte> byteValues = new List<byte>();
-            var index = tmpResult.Length / 16;
-            for (int i = 0; i < index; i++)
-            {
-                byteValues.Add(tmpResult[16 * i]);
-            }
-            var barList = byteValues.Skip(10);
-            var findItem = barList.FirstOrDefault(o => o != 63);
-            if (findItem==0)
+            LogHelper.WriteLog(string.Format("设备{0}自检返回数据: ", deviceIndex + 1) + CommonHelper.ByteToString(tmpResult));
+            var findItem = tmpResult.Where(o => o== 63).Count();
+            LogHelper.WriteLog(findItem.ToString());
+            //var findItem = barList.FirstOrDefault(o => o != 63);
+            if (findItem>50)
             {
                 // scanStr = "设备所有通道自检正常!";
+                return string.Empty;
             }
             else
-            {
-                var V2 = Convert.ToString(findItem, 2);
-                string[] deviceInfo = new string[V2.Length / 2];
-                for (int i = 0; i < V2.Length / 2; i++)
+            {                
+                string errorStr = "Error";
+                var query = tmpResult.Where(o =>o==3).Count();
+                if (query> 50)
                 {
-                    deviceInfo[i] = V2.Substring(i * 2, 2);
-                } 
-                LogHelper.WriteLog("设备自检返回数据: " + CommonHelper.ByteToString(tmpResult));            
-                var list = deviceInfo.Reverse().ToList();
-                string tmpInfo = string.Empty;
-                for (int i = 0; i < list.Count(); i++)
-                {
-                    if (i > 2)
-                    {
-                        break;
-                    }
-                    if (list[i] != "11")
-                    {
-                        tmpInfo += deviceIndex==0?(i+1).ToString():(i+4).ToString();
-                    }
+                    errorStr = deviceIndex == 0 ? "1,2" : " 4,5";
                 }
-                scanStr += string.Format("设备通道{0}有异常! \n", tmpInfo);
-            }
-            if (count==1)
-            {
-                Clients.Client(Context.ConnectionId).NoticeScanByte(scanStr, count);
-                scanStr = string.Empty;
-            }
-            else
-            {
-                if (deviceIndex==1)
+                var query1 = tmpResult.Where(o =>o==12).Count();
+                if (query1 > 50)
                 {
-                    Clients.Client(Context.ConnectionId).NoticeScanByte(scanStr, count);
-                    scanStr = string.Empty;
+                    errorStr = deviceIndex == 0 ? "1,3" : " 4,6";
                 }
-            }
-             
-            return true;
+                var query2 = tmpResult.Where(o => o==15).Count();
+                if (query2 > 50)
+                {
+                    errorStr = deviceIndex == 0 ? "1" : " 4";
+                    LogHelper.WriteLog(query2.ToString());
+                }
+                var query3 = tmpResult.Where(o =>o==48).Count();
+                if (query3 > 50)
+                {
+                    errorStr = deviceIndex == 0 ? "2,3" : " 5,6";
+                }
+                var query4 = tmpResult.Where(o =>o==51).Count();
+                if (query4 > 50)
+                {
+                    errorStr = deviceIndex == 0 ? "2" : " 5";
+                }
+                var query5 = tmpResult.Where(o =>o== 60);
+                
+                if (query5.Count() > 50)
+                {
+                    errorStr = deviceIndex == 0 ? "3" : " 6";
+                    LogHelper.WriteLog(query5.ToString());
+                }
+                //switch (findItem)
+                //{
+                //    case 3:
+                //        errorStr = deviceIndex == 0 ? "1,2" : " 4,5";
+                //        break;
+                //    case 12:
+                //        errorStr = deviceIndex == 0 ? "1,3" : " 4,6";
+                //        break;
+                //    case 15:
+                //        errorStr = deviceIndex == 0 ? "1" : " 4";
+                //        break;
+                //    case 48:
+                //        errorStr = deviceIndex == 0 ? "2,3" : " 5,6";
+                //        break;
+                //    case 51:
+                //        errorStr = deviceIndex == 0 ? "2" : " 5";
+                //        break;
+                //    case 60:
+                //        errorStr = deviceIndex == 0 ? "3" : " 6";
+                //        break;
+                //    default:
+                //        errorStr ="Error";
+                //        break;
+                //}
+                // scanStr += errorStr;
+               //  tmpInfo +=errorStr+"";
+                return errorStr;
+            } 
+            
         }
 
         public string OnReadDma(string dvireName, int dataSize, int deviceIndex)

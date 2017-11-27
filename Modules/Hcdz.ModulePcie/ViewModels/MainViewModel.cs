@@ -31,7 +31,8 @@ namespace Hcdz.ModulePcie.ViewModels
 		private readonly IHcdzClient  _hcdzClient;
 		private DispatcherTimer dispatcherTimer;
         private DispatcherTimer timer;
-        
+        private int scanIndex = 0;
+        private string scanStr = string.Empty;
        // private FileStream Stream;
 		public MainViewModel(IUnityContainer container, IEventAggregator eventAggregator, IRegionManager regionManager, IServiceLocator serviceLocator, IHcdzClient hcdzClient)
 		{
@@ -73,6 +74,12 @@ namespace Hcdz.ModulePcie.ViewModels
             _hcdzClient.NoticeTcpData +=NoticeTcpData;
             LoadDeviceChannel();
             InitRefresh();
+            Application.Current.Exit += Current_Exit;
+        }
+
+        private   void Current_Exit(object sender, ExitEventArgs e)
+        {
+            OnCloseReadDma(null);
         }
 
         private void NoticeTcpData(TcpClientViewModel model)
@@ -148,33 +155,51 @@ namespace Hcdz.ModulePcie.ViewModels
         private void OnNoticeScanByte(string strByte,int deviceIndex)
         {
             //strByte=  "3C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 3C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 3C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 3C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 3C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 3C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 3C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 3C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00";
-
-            if (string.IsNullOrEmpty(strByte))
+            //scanStr = string.Format("设备通道{0}有异常! \n", tmpInfo);
+            scanStr += strByte;
+            scanIndex++;
+            if (scanIndex == 2)
             {
-                MessageBox.Show("设备所有通道自检正常!");
-                LogInfo += "设备所有通道自检正常!\n";
-            }
-            else
-            {
-                MessageBox.Show(strByte);
-                LogInfo += strByte;
-            }
-          
-           
-                //List<byte> bytes = new List<byte>();
-                //var index = result.Length / 16;
-                //for (int i = 0; i <index; i++)
-                //{
-                //    bytes.Add(result[16 * i]);
-                //}
-                //var barList = bytes.Skip(10);
-                //var findItem = barList.FirstOrDefault(o => o != 63);
-                //if (findItem==0)
-                //{
-                //    MessageBox.Show(string.Format("所有通道运行正常!",deviceIndex+1));
-                //}
-               // else
+                scanStr = string.Empty;
+                scanIndex = 0;
+                if (string.IsNullOrEmpty(scanStr))
                 {
+                    MessageBox.Show("设备所有通道自检正常!");
+                    LogInfo += "设备所有通道自检正常!\n";
+                }
+                else
+                {
+                    if (scanStr.Contains("Error"))
+                    {
+                        MessageBox.Show("设备通道未知异常!");
+                        LogInfo += "设备通道未知异常!\n";
+                    }
+                    else
+                    {
+                        string result = string.Format("设备通道{0}有异常! \n", scanStr);
+                        MessageBox.Show(result);
+                        LogInfo += result;
+                    }
+
+                }
+                
+            }
+
+
+            //List<byte> bytes = new List<byte>();
+            //var index = result.Length / 16;
+            //for (int i = 0; i <index; i++)
+            //{
+            //    bytes.Add(result[16 * i]);
+            //}
+            //var barList = bytes.Skip(10);
+            //var findItem = barList.FirstOrDefault(o => o != 63);
+            //if (findItem==0)
+            //{
+            //    MessageBox.Show(string.Format("所有通道运行正常!",deviceIndex+1));
+            //}
+            // else
+            {
                     //var V2 = Convert.ToString(findItem, 2);
                     //string[] deviceInfo= new string[V2.Length/2];
                     //for (int i = 0; i < V2.Length / 2; i++)
@@ -291,14 +316,29 @@ namespace Hcdz.ModulePcie.ViewModels
         }
 
         private async void OnScanDevice(object obj)
-        { 
-		    var result=await	_hcdzClient.ScanDevice(0);
-            Thread.Sleep(100);
-             var result2=await _hcdzClient.ScanDevice(1);
-            if (result&&result2)
+        {
+            ScanBtnEnable = false;
+            var result=await	_hcdzClient.ScanDevice(0);
+           
+            var result2=await _hcdzClient.ScanDevice(1);
+            if (string.IsNullOrEmpty(result)&& string.IsNullOrEmpty(result2))
             {
-
+                MessageBox.Show("设备所有通道自检正常！");
+                ScanBtnEnable = true;
             }
+            else if(result.Contains("device")||result.Contains("orther")||result2.Contains("device") || result.Contains("orther"))
+            {
+                MessageBox.Show("设备自检发生异常！");
+                ScanBtnEnable = true;
+            }
+            else
+            {
+                string showMsg = string.Format("设备通道{0},{1}有异常! \n", result,result2);
+                MessageBox.Show(showMsg);
+                LogInfo += showMsg;
+                
+            }
+            ScanBtnEnable = true;
             var network = await _hcdzClient.GetNetWork();
             if (network)
             {
@@ -341,99 +381,7 @@ namespace Hcdz.ModulePcie.ViewModels
                 OpenDeviceText = "连接设备";
                 IsOpen = false; 
             }
-            //PCIE_Device dev =pciDevList.Get(0);
-            //dev.FPGAReset(0);
-            //if (dev.WDC_DMAContigBufLock() != 0)
-            //{
-            //    MessageBox.Show(("分配报告内存失败"));
-            //    return;
-            //}
-            //DWORD wrDMASize = 16; //16kb
-            //if (!dev.DMAWriteMenAlloc((uint)0, (uint)1, wrDMASize * 1024))
-            //{
-            //    MessageBox.Show("内存分配失败!");
-            //    return;
-            //}
-            //var dt = DateTime.Now.ToString("yyyyMMddHHmmss");
-            //foreach (var item in _deviceChannelModels)
-            //{
-            //    var dir = Path.Combine(SelectedDsik, item.DiskPath);
-            //    if (!Directory.Exists(dir))
-            //    {
-            //        Directory.CreateDirectory(dir);
-            //    }
-            //    var filePath = Path.Combine(dir, dt);
-            //    //File.Create(filePath);
-            //    item.FilePath = filePath;
-            //    if (item.IsOpen)
-            //    {
-            //      item.Stream = new FileStream(filePath, FileMode.Append, FileAccess.Write);
-            //    }
-
-            //}
-            //dev.StartWrDMA(0);
-            //dispatcherTimer.Start();
-            ////if (p->bWriteDisc[0])
-            ////CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)savefile0, p, 0, NULL);
-            //Thread nonParameterThread = new Thread(new ParameterizedThreadStart(p => NonParameterRun(dev)));
-
-            //nonParameterThread.Start();
-
-
-
-            //p->WriteBAR0(0, 0x28, 1);			//dma wr 使能
-            //using (FileStream fs = new FileStream("G:\\dd4", FileMode.OpenOrCreate, FileAccess.Write))
-            //{
-            //    var s = Marshal.ReadByte(dev.pWbuffer);
-            //    var sr = dev.pWbuffer.ToString();
-            //    byte[] ss = new Byte[16*1024];
-            //    var temp = new byte[Marshal.SizeOf(dev.pWbuffer)];
-            //    Marshal.Copy(dev.pWbuffer, ss, 0, ss.Length);
-            //    int d = 0;
-            //    IntPtr dd = IntPtr.Zero;
-            //    StringBuilder stringBuilder = new StringBuilder();
-
-            //    var tmp = new byte[16];
-            //    var bytes = ss.Length / 16;
-            //    for (int i = 0; i <bytes; i++)
-            //    {
-            //        var index = i * 16;
-            //        byte[] result = new byte[16];
-            //        for (int j = 0; j < 16; j++)
-            //        {
-            //            result[j] = ss[index+j]; 
-            //        }
-            //        var barValue = Convert.ToBoolean(result[15]);
-            //        if (barValue)
-            //        {
-            //            int s2 = 9;
-            //            var barfile = result[8]; 
-            //            WriteFile(result);
-            //        }
-            //    }
-            //    fs.Write(ss, 0, ss.Length);
-            //    UInt32* h = (UInt32*)d;
-            //    // dev.pReportWrBuffer = IntPtr.Zero;
-            //    var ssss = *(UInt32*)dev.pReportWrBuffer;
-            //    ByteToString(ss);
-            // 	中断模式*/
-            //  while (*(UInt32*)dev.pReportWrBuffer != 0x1)
-            //{
-            //if (p->stop[0])//还得通知程序已经完成
-            //{		
-            //    goto dma_write_end;
-            //}
-            //  }
-            // *(UInt32*)dev.pReportWrBuffer = 0;
-
-            //dev.WriteBAR0(0, 0x10, 1);
-
-            //  var ssss22 = dev.pReportWrBuffer;
-            //  byte[] ss1 = new Byte[8192];
-            //  Marshal.Copy(dev.pWbuffer, ss1, 0, ss.Length);
-            // fs.Write(ss1,0, 8192);
-            //NEWAMD86_Device.WriteFile(fs.Handle,ref dev.pWbuffer, (uint)8192, out dd, 0);
-            // }
+          
 
         }
 
@@ -535,6 +483,12 @@ namespace Hcdz.ModulePcie.ViewModels
         //    get { return devicesItems; }
         //    set { SetProperty(ref devicesItems, value); }
         //}
+        private bool _scanBtnEnable=true;
+        public bool ScanBtnEnable
+        {
+            get { return _scanBtnEnable; }
+            set { SetProperty(ref _scanBtnEnable, value); }
+        }
         private bool _isOpen;
         public bool IsOpen { get { return _isOpen; } set { SetProperty(ref _isOpen, value); } }
 		private bool  _btnIsEnabled=false;

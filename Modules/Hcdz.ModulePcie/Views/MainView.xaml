@@ -58,7 +58,7 @@
                     <ComboBoxItem Content="存盘" />
                     <ComboBoxItem Content="测速"/>                    
                 </ComboBox>
-                <Button   Margin="20,0,0,0" VerticalAlignment="Center" Width="80"  Content="自检" Style="{DynamicResource MetroFlatButton}"  Command="{Binding ScanDeviceCmd}" CommandParameter="{Binding}"/>
+                <Button   Margin="20,0,0,0" VerticalAlignment="Center" Width="80"  Content="自检" Style="{DynamicResource MetroFlatButton}"  Command="{Binding ScanDeviceCmd}" IsEnabled="{Binding ScanBtnEnable}" CommandParameter="{Binding}"/>
                 <Button   Margin="20,0,0,0" VerticalAlignment="Center" Width="80"  Content="启动DMA" Style="{DynamicResource MetroFlatButton}"  Command="{Binding ReadDmaCmd}" IsEnabled="{Binding BtnIsEnabled}"  CommandParameter="{Binding}"/>
                 <Button   Margin="20,0,0,0" VerticalAlignment="Center" Width="80"  Content="关闭DMA" Style="{DynamicResource MetroFlatButton}"  Command="{Binding CloseDmaCmd}"  CommandParameter="{Binding}"/>
                 <Button   Margin="20,0,0,0" VerticalAlignment="Center" Width="80"  Content="数据解析" Style="{DynamicResource MetroFlatButton}"  Command="{Binding LocalDataJxCmd}"  CommandParameter="{Binding}"/>
