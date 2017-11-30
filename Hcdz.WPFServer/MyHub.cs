@@ -525,8 +525,8 @@ namespace Hcdz.WPFServer
             var dt = DateTime.Now;
             while(true)
             {               
-                var current = (DateTime.Now - dt).Milliseconds;
-                if (current>100)
+                var current = (DateTime.Now - dt).Seconds;
+                if (current>1)
                 {
                     break;
                 }
@@ -555,7 +555,7 @@ namespace Hcdz.WPFServer
                 var query = tmpResult.Where(o =>o==3).Count();
                 if (query> 50)
                 {
-                    errorStr = deviceIndex == 0 ? "1,2" : " 4,5";
+                    errorStr = deviceIndex == 0 ? "2,3" : " 5,6";
                 }
                 var query1 = tmpResult.Where(o =>o==12).Count();
                 if (query1 > 50)
@@ -565,13 +565,13 @@ namespace Hcdz.WPFServer
                 var query2 = tmpResult.Where(o => o==15).Count();
                 if (query2 > 50)
                 {
-                    errorStr = deviceIndex == 0 ? "1" : " 4";
+                    errorStr = deviceIndex == 0 ? "3" : " 6";
                     LogHelper.WriteLog(query2.ToString());
                 }
                 var query3 = tmpResult.Where(o =>o==48).Count();
                 if (query3 > 50)
                 {
-                    errorStr = deviceIndex == 0 ? "2,3" : " 5,6";
+                    errorStr = deviceIndex == 0 ? "1,2" : " 4,5";
                 }
                 var query4 = tmpResult.Where(o =>o==51).Count();
                 if (query4 > 50)
@@ -582,7 +582,7 @@ namespace Hcdz.WPFServer
                 
                 if (query5.Count() > 50)
                 {
-                    errorStr = deviceIndex == 0 ? "3" : " 6";
+                    errorStr = deviceIndex == 0 ? "1" : " 4";
                     LogHelper.WriteLog(query5.ToString());
                 }
                 //switch (findItem)
@@ -704,6 +704,10 @@ namespace Hcdz.WPFServer
             while (true)
             {
                 Thread.Sleep(10);
+                if (readSize==0)
+                {
+                    continue;
+                }
                 var findDrive = DriveInfo.GetDrives().FirstOrDefault(o => o.Name == dvireName);
                 if (findDrive != null)
                 {

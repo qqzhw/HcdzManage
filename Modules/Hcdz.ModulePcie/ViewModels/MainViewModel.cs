@@ -75,11 +75,37 @@ namespace Hcdz.ModulePcie.ViewModels
             LoadDeviceChannel();
             InitRefresh();
             Application.Current.Exit += Current_Exit;
+            Application.Current.MainWindow.Closing += MainWindow_Closing;
+        }
+
+        private void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            
+            if (!string.IsNullOrEmpty(TextRate))
+            {
+                MessageBox.Show("DMA正在读取数据,请先停止读取！");
+                e.Cancel = true;
+            }
+            var flag = false;
+            foreach (var item in TcpViewModel)
+            {
+                if (item.IsBegin)
+                {
+                    flag = true;
+                    break;
+                }
+            }
+            if (flag)
+            {
+                MessageBox.Show("TCP网络正在读取数据,请关闭TCP连接！");
+                e.Cancel = true;
+            }
         }
 
         private   void Current_Exit(object sender, ExitEventArgs e)
         {
             OnCloseReadDma(null);
+             
         }
 
         private void NoticeTcpData(TcpClientViewModel model)
@@ -131,6 +157,7 @@ namespace Hcdz.ModulePcie.ViewModels
 
         private async void OnCloseTcp(TcpClientViewModel model)
         {
+            model.IsBegin = false;
             await   _hcdzClient.CloseTcpServer(model.Id);
         }
 
@@ -232,7 +259,7 @@ namespace Hcdz.ModulePcie.ViewModels
             DeviceDesc = string.Empty;
             BtnIsEnabled = true;
            // dispatcherTimer.Stop();
-            TextRate = "0.00MB/s"; 
+            TextRate = ""; 
             OpenDeviceText = "连接设备";
             IsOpen = false;
         }
@@ -272,7 +299,7 @@ namespace Hcdz.ModulePcie.ViewModels
         {
               BtnIsEnabled = true;
              //dispatcherTimer.Stop();
-            TextRate = "0.00MB/s";
+              TextRate = "";
              
              await  _hcdzClient.CloseDma();
         }
@@ -319,7 +346,7 @@ namespace Hcdz.ModulePcie.ViewModels
         {
             ScanBtnEnable = false;
             var result=await	_hcdzClient.ScanDevice(0);
-           
+            Thread.Sleep(200);
             var result2=await _hcdzClient.ScanDevice(1);
             if (string.IsNullOrEmpty(result)&& string.IsNullOrEmpty(result2))
             {
@@ -346,7 +373,7 @@ namespace Hcdz.ModulePcie.ViewModels
             }
             else
             {
-                LogInfo += "网络连接异常!\n";
+                LogInfo += "网络连接异常,请检查服务端网口!\n";
             }
         }
 

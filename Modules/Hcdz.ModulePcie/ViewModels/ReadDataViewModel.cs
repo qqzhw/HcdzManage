@@ -104,6 +104,9 @@ namespace Hcdz.ModulePcie.ViewModels
                     item.Value.Close();
                     item.Value.Dispose();
                 }
+                dispatcherTimer.Stop();
+                ProgressText = "解析完成!";
+                RateText = string.Empty;
             }
         }
         private string CreateDir(string directory)

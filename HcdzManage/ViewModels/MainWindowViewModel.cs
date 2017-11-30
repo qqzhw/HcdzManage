@@ -77,22 +77,8 @@ namespace HcdzManage.ViewModels
             //        LineList.Add(sLine);
             //}
             //objReader.Close();
-            String str = @"E:\device0\\20171116001914";
-            //using (FileStream fsWriter = new FileStream(str, FileMode.Create, FileAccess.Write))
-            //{
-
-                using (FileStream fsReader = new FileStream(str, FileMode.Open, FileAccess.Read))
-                {
-                    byte[] bytes = new byte[16];//4kB是合适的；
-                    int readNum;
-                    while ((readNum = fsReader.Read(bytes, 0, bytes.Length)) != 0)//小于说明读完了
-                    {
-                    //  fsWriter.Write(bytes, 0, readNum);
-                       int d = 6;
-                    }
-
-                //}
-            }
+            
+             
         }
 
         [InjectionMethod]
