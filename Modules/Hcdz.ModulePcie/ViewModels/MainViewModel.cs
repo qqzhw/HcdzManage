@@ -76,14 +76,20 @@ namespace Hcdz.ModulePcie.ViewModels
             InitRefresh();
             Application.Current.Exit += Current_Exit;
             Application.Current.MainWindow.Closing += MainWindow_Closing;
+            Application.Current.MainWindow.Closed += MainWindow_Closed;
+        }
+
+        private async void MainWindow_Closed(object sender, EventArgs e)
+        { 
+            var flag = await _hcdzClient.DeviceClose(0);
         }
 
         private void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             
-            if (!string.IsNullOrEmpty(TextRate))
+            if (IsStart)
             {
-                MessageBox.Show("DMA正在读取数据,请先停止读取！");
+                MessageBox.Show("DMA正在读取数据,请先停止读取并断开设备连接！");
                 e.Cancel = true;
             }
             var flag = false;
@@ -298,10 +304,10 @@ namespace Hcdz.ModulePcie.ViewModels
 		private async void OnCloseReadDma(object obj)
         {
               BtnIsEnabled = true;
-             //dispatcherTimer.Stop();
-              TextRate = "";
-             
+             //dispatcherTimer.Stop(); 
              await  _hcdzClient.CloseDma();
+            TextRate = "";
+            IsStart = false;
         }
 
         private  async void OnLoadSelectDir(object dirPath)
@@ -379,18 +385,21 @@ namespace Hcdz.ModulePcie.ViewModels
 
         private async void OnReadDma(object obj)
         {
+            IsStart = true;
             BtnIsEnabled = false;
             var findItem = _deviceChannelModels.FirstOrDefault(O => O.IsOpen == true); 
 			if (findItem==null)
             {
                 MessageBox.Show("请打开设备通道！");
                 BtnIsEnabled = true;
+                IsStart = false;
                 return;
             }
             if (string.IsNullOrEmpty(SelectedDsik))
             {
                 MessageBox.Show("请选择存储盘符！");
                 BtnIsEnabled = true;
+                IsStart = false;
                 return;
             }
            
@@ -406,7 +415,8 @@ namespace Hcdz.ModulePcie.ViewModels
                 MessageBox.Show("分配内存失败,请重新连接设备!");
                 
                 OpenDeviceText = "连接设备";
-                IsOpen = false; 
+                IsOpen = false;
+                IsStart = false;
             }
           
 
@@ -417,7 +427,10 @@ namespace Hcdz.ModulePcie.ViewModels
             Application.Current.Dispatcher.Invoke(() => {
                 var text = (size / 1048576.0).ToString("f2") + "MB/s";
                 TextRate = text;
-                
+                if (!IsStart)
+                {
+                    TextRate = "0.00MB/s";
+                }
             });
         }
 
@@ -504,12 +517,12 @@ namespace Hcdz.ModulePcie.ViewModels
             get { return _viewModel; }
             set { SetProperty(ref _viewModel,value); }
         }
-        //private ObservableCollection<PCIE_Device> devicesItems;
-        //public ObservableCollection<PCIE_Device> DevicesItems
-        //{
-        //    get { return devicesItems; }
-        //    set { SetProperty(ref devicesItems, value); }
-        //}
+        private bool _isStart;
+        public bool IsStart
+        {
+            get { return _isStart; }
+            set { SetProperty(ref _isStart, value); }
+        }
         private bool _scanBtnEnable=true;
         public bool ScanBtnEnable
         {

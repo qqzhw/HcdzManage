@@ -478,10 +478,19 @@ namespace Hcdz.ModulePcie
 
         public async Task CloseDma()
         {
-            if (_connection.State == ConnectionState.Connected)
+            try
             {
-                await _chat.Invoke("CloseDma");
+                if (_connection.State == ConnectionState.Connected)
+                {
+                    await _chat.Invoke("CloseDma");
+                }
             }
+            catch  
+            {
+
+                
+            }
+            
         }
 
 		/// <summary>

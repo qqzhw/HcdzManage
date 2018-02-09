@@ -551,7 +551,7 @@ namespace Hcdz.WPFServer
             }
             else
             {                
-                string errorStr = "Error";
+                string errorStr = deviceIndex == 0 ? "1,2,3" : " 4,5,6"; 
                 var query = tmpResult.Where(o =>o==3).Count();
                 if (query> 50)
                 {
@@ -585,6 +585,11 @@ namespace Hcdz.WPFServer
                     errorStr = deviceIndex == 0 ? "1" : " 4";
                     LogHelper.WriteLog(query5.ToString());
                 }
+                //var query6 = tmpResult.Where(o => o == 0);
+                //if (query6.Count()==tmpResult.Count())
+                //{
+                //    errorStr = deviceIndex == 0 ? "1,2,3" : " 4,5,6";
+                //}
                 //switch (findItem)
                 //{
                 //    case 3:
@@ -840,7 +845,7 @@ namespace Hcdz.WPFServer
             for (int i = 0; i < devices.Count; i++)
             {
                 var dev = (PCIE_Device)devices[i];
-                //dev.WriteBAR0(0, 0x28, 0);
+                dev.WriteBAR0(0, 0x28, 0);
                 dev.WriteBAR0(0, 0x10, 0);
                 dev.Status = 0;
             }
